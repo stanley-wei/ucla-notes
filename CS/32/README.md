@@ -1,4 +1,4 @@
-Course: COM SCI 32: Introduction to Computer Science II
+COM SCI 32 - Introduction to Computer Science II
 
 Instructor: David Smallberg
 

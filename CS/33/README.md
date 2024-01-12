@@ -1,4 +1,4 @@
-Course: COM SCI 33: Introduction to Computer Organization
+COM SCI 33 - Introduction to Computer Organization
 
 Instructor: Glenn Reinman
 

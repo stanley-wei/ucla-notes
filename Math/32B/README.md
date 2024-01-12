@@ -1,4 +1,4 @@
-Course: Math 32B: Calculus of Several Variables
+Math 32B - Calculus of Several Variables
 
 Instructor: Konstantinos Varvarezos
 

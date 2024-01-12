@@ -1,4 +1,4 @@
-Course: Sociol 1: Introductory Sociology
+SOCIOL 1 - Introductory Sociology
 
 Instructor: Andrés Villarreal
 

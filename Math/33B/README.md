@@ -1,4 +1,4 @@
-Course: Math 33B: Differential Equations
+Math 33B - Differential Equations
 
 Instructor: Chengxi Wang
 

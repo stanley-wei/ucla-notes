@@ -1,4 +1,4 @@
-Course: COM SCI 31: Introduction to Computer Science I
+COM SCI 31 - Introduction to Computer Science I
 
 Instructor: David Smallberg
 
