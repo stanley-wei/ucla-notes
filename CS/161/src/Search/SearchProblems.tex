@@ -1,0 +1,211 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{colortbl}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+\usepackage[explicit]{titlesec}
+\usepackage{ulem}
+
+\graphicspath{ {./../Images/Notes/} }
+
+\title{CS161: Fundamentals of Artificial Intelligence}
+\author{Stanley Wei}
+\date{Prof. van den Broeck $\vert$ Winter 2024}
+
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{#1\hrule\vspace*{-14pt}}
+
+\titleformat{\subsubsection}
+  {\normalfont\bfseries}{}{0pt}{\uline{#1}}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+
+\theoremstyle{remark}
+\newtheorem*{example}{Ex}
+\newtheorem*{note}{($\ast$) Note}
+
+\newcommand{\pstart}[0]{\noindent}
+\newcommand{\newp}[0]{~\\ \pstart}
+\newcommand{\term}[1]{\noindent\textbf{\textit{#1}}}
+\newcommand{\titleul}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+\newcommand{\resetcases}[0]{\setcounter{case}{0}}
+
+\newcommand{\prob}[1]{\text{Pr}(#1)}
+\newcommand{\cond}[2]{#1\,\vert\,#2}
+
+\begin{document}
+\pstart
+\term{Search}: The problem of finding a sequence of actions to a goal state.
+
+\newp
+Search can be viewed as a function (called a \term{search engine}) that:
+\begin{enumerate}
+    \item Takes two inputs: a \term{search problem formulation} and a \term{search strategy} \begin{itemize}
+        \item[-] The behavior of a search is strongly sensitive to both inputs.
+    \end{itemize}
+    \item Gives one output: a \term{solution}
+\end{enumerate}
+
+\newp
+\textit{Applications of Search}: \begin{itemize}
+    \item Game solving
+    \item Mathematical problems \& proofs
+    \item Probabilistic reasoning
+    \item Satisfiability Problem
+    \item Route-finding \& Traveling Salesman
+\end{itemize}
+
+\subsection{Problem Formulation}
+\pstart
+Problems are usually described in the context of two types of objects: \begin{enumerate}
+    \item \term{Problem states}, indicating potential configurations of the \textit{world}. The \term{state space} is the set of all possible states.
+    \item \term{Actions}, transforming one problem state into another. The \term{action space} is the set of all potential actions.
+\end{enumerate}
+
+\vspace{5pt}
+\begin{tcolorbox}[colback=red!50!blue!10!white]
+    \begin{definition}
+    A \term{search problem formulation} or \term{specification} consists of:
+    \begin{enumerate}
+        \item An \term{initial state}
+        \item A \term{goal}: A goal may be defined either as a specific state to achieve (a \term{goal state}), or as a test that determines whether a given state meets goal criteria (a \term{goal test/predicate}).
+        \item \term{Actions}: the set of actions that may be performed
+        \item A \term{transition model/successor}: a set of rules governing how actions affect states.
+        \item (\textit{Optional}) A \term{cost}: a function used for determining the “optimality” of a given solution.
+    \end{enumerate}
+\end{definition}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=orange!15!white]
+    \begin{definition}
+    A \term{problem solution} is a \ul{sequence of actions} to get from the initial state to a state that fulfills the goal. An [the] \term{optimal solution} is a solution with lowest cost.\begin{itemize}
+        \item[($\ast$)] \textit{Ex}: A cost may be defined in terms of the number of actions taken; then an optimal solution is a solution requiring the least number of actions to achieve the goal state.
+    \end{itemize}
+\end{definition}
+\end{tcolorbox}
+
+\vspace{8pt}
+\pstart
+Given a problem, there may be more than one way to describe/interpret its actions. \begin{itemize}
+    \item[($\ast$)] \textit{Ex (Sliding Tile):} \begin{enumerate}
+        \item ``An action is moving a number either up, left, right, or down'' 
+        
+        $\implies$ Actions as number-direction pairs [e.g. (4, $\rightarrow$)$\,$] \hspace*{\fill}[\# actions: $8\cdot 4=$ \textbf{32}]
+        \item ``An action is moving a number into the direction of the blank space''
+
+        $\implies$ Actions as numbers [e.g. (4)$\,$] \hspace*{\fill}[\# actions: \textbf{8}]
+
+        \item ``An action is moving the blank space either up, left, right, or down''
+
+        $\implies$ Actions as directions [e.g. ($\rightarrow$)$\,$] \hspace*{\fill}[\# actions: \textbf{4}]
+    \end{enumerate}
+\end{itemize}
+
+\iffalse
+\newp
+\textbf{Sliding Tile - Observations}
+\begin{enumerate}
+    \item Is an \term{uninformed search} - a search where problem states are \term{atomic}. \begin{itemize}
+        \item Problem states are called \textit{atomic} if the algorithm's knowledge regarding any state is limited only to whether or not it is a goal state (no heuristics, e.g.)
+    \end{itemize}
+    \item Problem states are \textit{discrete} (as opposed to continuous)
+    \item \textit{No percepts}: the search does not consider any information regarding the world beyond the provided slate of states and actions. \begin{itemize}
+        \item Assumes all actions are completed perfectly, in sequence, and without uncertainty.
+    \end{itemize}
+    \item The choice of action space is important - not all actions are necessarily allowed on all states, depending on the current state of the problem.
+    
+    \textit{Ex}: A number cannot move onto another space, if said space is already occupied.\begin{itemize}
+        \item Attempting a non-permitted action can be modeled either as causing failure, or (more simply) as causing no change to the state.
+    \end{itemize}
+    \item Actions need only be defined in a way that makes \textit{mathematical} sense; their definitions need not be ``realistic'' or perfectly model real-world conditions. \begin{itemize}
+        \item[($\ast$)] \textit{Ex}: Notions like ``moving a blank space'' or ``eating -1 apples'' make no sense in the real world, but are useful abstractions when problem-solving.
+    \end{itemize}
+\end{enumerate}
+\fi
+
+\pagebreak
+\subsection{Search Trees}
+\begin{tcolorbox}[colback=green!15!white]
+    \begin{definition}
+        A \term{search tree} is a tree, rooted at the initial state, where each node represents a problem state and has as children \ul{all possible states resulting from performing an action on the parent state}. 
+        
+        \newp More specifically: a node in the tree has \ul{one child for every possible action}.
+    \end{definition}
+\end{tcolorbox}
+
+\vspace{16pt}
+\noindent\begin{minipage}[t]{0.18\textwidth}
+\centering
+\textbf{Search Trees}:
+\end{minipage}
+\noindent\begin{minipage}[t]{0.779\textwidth}
+    \begin{itemize}
+        \item In the case of \textit{repeated states} (i.e. cases where a state is descendant of itself), repeated states can simply be treated as dead ends. \begin{itemize}
+                \item[($\ast$)] \textit{Reasoning}: If a solution can be found that visits a repeated state, a shorter solution can be found with no repeated states.
+                \item Real-world search algorithms will often weigh the gains given by remembering states vs. memory capacity required to do so.
+            \end{itemize}
+        \item A problem with infinite states can potentially have infinite paths in its search tree; however, any solution can only be a \ul{finite} path.
+        \item A \textit{search tree} is, notably, distinct from a \term{search space}, i.e. \ul{the set of all states connected by actions}. \begin{itemize}
+            \item A search space is a mathematical concept/space, a set of states; a search tree is an algorithmic data structure.
+        \end{itemize}
+    \end{itemize}
+\end{minipage}
+
+\vspace{24pt}\pstart
+Given a problem, its difficulty may be gauged via a number of metrics: \begin{itemize}
+    \item \term{Complexity}: the size of the state space
+    \item \term{Branching factor}: the number of actions
+    \item \term{Solution depth}: the number of steps needed to reach the goal
+\end{itemize}
+
+\vspace{8pt}\pstart
+The way states are represented inside a problem may affect the number of distinct possible actions, i.e. the branching factor of the problem.
+
+\newp
+Simplifying states and actions results in a smaller search tree, results in a faster search; can be done by eliminating ``no-information'' actions:\begin{itemize}
+    \item[($\ast$)] \textit{Ex: Missionaries \& Cannibals:}
+    \begin{enumerate}
+        \item Represent all 6 people as distinct $+$ actions distinguish direction of boat travel
+
+        $\implies(6\cdot 6)\cdot2=$ \ul{72 possible actions} (bad)
+        \item Represent people as missionary/cannibal $+$ actions distinguish dir. of boat travel
+
+        $\implies(2\cdot 3)\cdot2=$ \ul{12 possible actions} (better)
+        \item Represent people as missionary/cannibal, no direction of boat travel
+
+        $\implies(2\cdot 3)=$ \ul{6 possible actions} (best)
+    \end{enumerate}
+\end{itemize}
+
+~\\ \pstart
+Some problems (e.g. object placement/assignment problems; \textit{n-Queens}, \textit{cryptarithmetic}) can be formulated using one of two ways: \begin{enumerate}
+    \item \term{Incremental state formulation}: Begin with no objects placed, then add one object per step until all $n$ objects have been placed. 
+    
+    $\implies$ solution depth: exactly $n$.
+    \item \term{Complete state formulation}: Begin with all $n$ objects placed randomly, then re-place one object properly per step until all $n$ objects have been placed correctly.
+
+    $\implies$ solution depth: $\leq n$. (better)
+\end{enumerate}
+
+~\\ \pstart
+($\ast$) \titleul{Additional Types of Search}: \begin{itemize}
+    \item Search to minimize a cost function
+    \item Search where the initial state is (i) \ul{unsure} or (ii) \ul{unknown}
+    \item Search where the effects of actions are (i) \ul{unknown}, (ii) \ul{non-deterministic}, or (iii) \ul{random}
+    \item \term{Contingent planning}: a form of search where plans are continuously adjusted as additional observations of the world are recorded.
+    \item \term{Conformant planning}: a form of search without an ability to observe the state of the world (i.e. without knowledge of initial/current state) \begin{itemize}
+        \item Problem state represented via \term{belief states}: a set of all possible world states \begin{itemize}
+            \item Initial belief state given as the \ul{set of all possible initial states}
+            \item An action is performed on all states within a belief state simultaneously
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+\end{document}

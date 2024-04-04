@@ -1,0 +1,168 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{colortbl}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+\usepackage[explicit]{titlesec}
+\usepackage{ulem}
+
+\graphicspath{ {./../Images/Notes/} }
+
+\title{CS161: Fundamentals of Artificial Intelligence}
+\author{Stanley Wei}
+\date{Prof. van den Broeck $\vert$ Winter 2024}
+
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{#1\hrule\vspace*{-14pt}}
+
+\titleformat{\subsubsection}
+  {\normalfont\bfseries}{}{0pt}{\uline{#1}}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+
+\theoremstyle{remark}
+\newtheorem*{example}{Ex}
+\newtheorem*{note}{($\ast$) Note}
+
+\newcommand{\pstart}[0]{\noindent}
+\newcommand{\newp}[0]{~\\ \pstart}
+\newcommand{\term}[1]{\noindent\textbf{\textit{#1}}}
+\newcommand{\titleul}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+\newcommand{\resetcases}[0]{\setcounter{case}{0}}
+
+\newcommand{\prob}[1]{\text{Pr}(#1)}
+\newcommand{\cond}[2]{#1\,\vert\,#2}
+
+\begin{document}
+\pstart
+\term{Constraint satisfaction problems} [\textbf{CSPs}] are search problems that can be written in a formal language (i.e. in a form similar to mathematics)
+
+\vspace{7pt}\pstart
+\term{Constraints} specify what constitutes a solution to a CSP; analogous to goal tests \begin{itemize}
+    \item Many real-world problems can be modeled as CSPs
+\end{itemize}
+
+\newp
+CSPs typically written in terms of assigning values to some number of variables; written out as \term{factorized state representations} [breaking up states into all individual variables] \begin{itemize}
+    \item \textit{Ex}: For a colouring problem, can describe color of each section as a variable \begin{itemize}
+        \item Can specify color constraints explicitly (e.g. for two adjacent sections $A$ and $B$, write out all possible legal \& illegal states)
+    \end{itemize}
+\end{itemize}
+
+\newp
+\textit{Types of Constraints}: \begin{enumerate}
+    \item \ul{Unary}: Only involves one variable
+    \item \ul{Binary}: Involves two variables; better than unary constraints for solvers
+    \item \ul{Higher-order}: Involves more than two variables \begin{itemize}
+        \item \ul{Global}: Involves all variables
+        \item CSP solvers typically prefer many smaller constraints over a single larger constraint; smaller constraints may be faster to compute and fail more quickly, e.g.
+    \end{itemize}
+    \item[($\ast$)] Can also talk about \textit{preferences/soft constraints}
+\end{enumerate}
+
+\newp
+($\ast$) In the case of constraints that are mathematical expressions (e.g. $X^2+Y=4$), can distinguish between \textit{linear} vs \textit{non-linear} constraints \begin{itemize}
+    \item Linear constraints over $\mathbb{R}$ can be solved efficiently in polynomial-time [\textit{linear programming}] \begin{itemize}
+        \item Linear programming only works for solutions in $\mathbb{R}$; solving becomes NP-complete if solutions need to be integers
+        \item Works for both soft \& hard constraints
+    \end{itemize}
+    \item Diophantine equations (e.g. $x^3+y^3+z^3=42$) proven unsolvable/undecidable, i.e. there cannot exist any algorithm to solve them
+\end{itemize}
+
+
+\newp
+\textit{Ex: Cryptarithmetic} \begin{itemize}
+    \item Variables are the letters [to be assigned values]
+    \item Domain for variables are integers $\in\{0,1,2,3,4,5,6,7,8,9\}$
+    \item Constraints: \begin{enumerate}
+        \item \textit{All variables are different values} - written as many $\neq$ constraints
+        \item \textit{Overall expression fulfills equality} - written explicitly \begin{itemize}
+            \item \textit{Issue}: Would prefer to write as smaller constraints for individual digits rather than a single global expression, but cannot write as constraints for individual digit places without strange operators (e.g. modulos to control for carrying)
+
+            \newp
+            \textit{Solution}: Introduce ``artificial'' variables representing carried values
+        \end{itemize}
+    \end{enumerate}
+\end{itemize}
+
+
+\newp
+Can visualize CSPs using \term{constraint graphs} - graphs where each node is a variable, edges between nodes represent constraints across variables 
+
+\vspace{8pt}\pstart
+Type of graph depends on order of constraints: \begin{enumerate}
+    \item Binary constraints (simple case) - edges have two endpoints [\textit{binary constraint graph}]
+    \item Higher-order constraints - use \textit{hypergraphs/bipartite graphs/higher-order constraint graphs} \begin{itemize}
+        \item Introduce new type of ``node'' representing a constraint; for variables connected by a constraint, draw an edge from the variable nodes to the constraint ``node''
+    \end{itemize}
+\end{enumerate}
+
+\subsection{CSP Search}
+Framing CSP search as a search problem: \begin{enumerate}
+    \item \textit{Initial state}: Initial state consists of empty assignments to all variables
+    \item \textit{Actions}: Each action consists of assigning a value $v$ to a variable $X$ \begin{itemize}
+        \item \textit{Successor}: Successor function adds $X=v$ to the state
+    \end{itemize}
+    \item \textit{Goal}: Goal test checks that all variables are assigned, all constraints are satisfied
+\end{enumerate}
+
+\newp
+\term{Naive CSP search} uses uninformed search (\ul{DFS}), no heuristics \begin{itemize}
+    \item Is complete and optimal - search tree is finite, and all solutions have depth equal to number of variables
+    \item \textit{Complexity}: Given $n$ variables on a domain of size $d$: \begin{itemize}
+        \item Naive DFS: Branching factor $n\cdot d$ $\implies$ O($n!\cdot d^n$) [very bad] \begin{itemize}
+            \item Observation: Computes $n!\cdot d^n$ nodes, but there are only $d^n$ possible solutions
+        \end{itemize}
+        \item Order the assignments of variables and use backtracking search $\Rightarrow$ \ul{O($d^n$)}
+    \end{itemize}
+\end{itemize}
+
+
+\subsubsection{Optimizing CSP Search}
+Can optimize CSP search in three respects: \begin{enumerate}
+    \item Order of picking variables
+    \item Order of picking values
+    \item Detecting failure early
+\end{enumerate}
+
+\newp
+\ul{Variable Order}: For variable order, use variable selection heuristics: want to pick the variables that are most connected/most specified by constraints (to detect failure/violate constraints earlier - fail-first/fail-faster) \begin{enumerate}
+    \item \term{Most constrained variable/minimum remaining values}: Pick the variable with the fewest legal values remaining
+    \item \term{Degree heuristic}: Pick the variable with the most constraints on its remaining values \begin{itemize}
+        \item Easy to determine from constraint graph; can be used as a tie-breaker after most constrained variable
+    \end{itemize}
+\end{enumerate}
+
+\newp
+\ul{Value Order}: For value order, want to first test the values that are most likely to lead to success
+
+\vspace{4pt}\pstart
+$\Rightarrow$ use the \term{least constraining value heuristic}: Pick the variable value that rules out the fewest values in remaining variables
+
+
+\newp
+\ul{Detecting Failure}: To detect failure early, want to keep track of remaining legal values for variables; can stop a search prematurely if any variable has no more legal values
+
+\vspace{4pt}\pstart
+3 ways to check legal values: \begin{enumerate}
+    \item \textit{Only check constraints}: After assigning a value to a variable, only check to make sure the assignment did not break a constraint [simplest]
+    \item \term{Forward checking}: Upon assigning a value, update the legal values of \ul{adjacent} variables
+    \item \term{Arc consistency}: Upon assigning a value to on a variable, update the legal values for \ul{all} other variables\begin{itemize}
+        \item Updating legal values: for every pair of variables $(X,Y)$ connected by a constraint, for all legal values $x$ for $X$, verify that there exists a legal value $y$ for $Y$ such that $(x,y)$ satisfies the constraint \begin{itemize}
+            \item Any changes to legal values of a variable are then propagated through all of its connected variables
+        \end{itemize}
+        \item \textit{Time Complexity}: $d^2$ (for checking two variables on an edge) $\cdot\,d$ (run at most $d$ times on every edge until all values removed) $\cdot\,n^2$ (total edges) becomes O($n^2d^3$) \begin{itemize}
+            \item Arc consistency generally used as a preprocessor before starting CSP search; forward checking used during the search itself
+        \end{itemize}
+    \end{itemize}
+\end{enumerate}
+
+\end{document}

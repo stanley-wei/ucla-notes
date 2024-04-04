@@ -1,0 +1,148 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{colortbl}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+\usepackage[explicit]{titlesec}
+\usepackage{ulem}
+
+\graphicspath{ {./../Images/Notes/} }
+
+\title{CS161: Fundamentals of Artificial Intelligence}
+\author{Stanley Wei}
+\date{Prof. van den Broeck $\vert$ Winter 2024}
+
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{#1\hrule\vspace*{-14pt}}
+
+\titleformat{\subsubsection}
+  {\normalfont\bfseries}{}{0pt}{\uline{#1}}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+
+\theoremstyle{remark}
+\newtheorem*{example}{Ex}
+\newtheorem*{note}{($\ast$) Note}
+
+\newcommand{\pstart}[0]{\noindent}
+\newcommand{\newp}[0]{~\\ \pstart}
+\newcommand{\term}[1]{\noindent\textbf{\textit{#1}}}
+\newcommand{\titleul}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+\newcommand{\resetcases}[0]{\setcounter{case}{0}}
+
+\newcommand{\prob}[1]{\text{Pr}(#1)}
+\newcommand{\cond}[2]{#1\,\vert\,#2}
+
+\begin{document}
+\pstart
+A search problem becomes \term{local search} if either: \begin{enumerate}
+    \item The path to goal is irrelevant, we just want to find a goal state \begin{itemize}
+        \item \textit{Ex}: n-queens, crypt-arithmetic
+    \end{itemize}
+    \item The goal is to find maximize/minimize some value, rather than a specific state
+\end{enumerate}
+
+~\\ \pstart
+\textbf{Consequence}: Local search algorithms only need to know the current state; do not need to store paths in memory, e.g. \begin{itemize}
+    \item Benefit: Constant memory requirement (a single node/state)
+\end{itemize}
+
+\newp
+\textit{Local Search Terminology} \begin{itemize}
+    \item An \term{objective function/value} is a value we want to minimize/maximize. \begin{itemize}
+        \item \textit{Ex}: given a mathematical function, what point maximizes its value? \begin{itemize}
+            \item use gradient descent to locate
+        \end{itemize}
+    \end{itemize}
+    \item Given an objective function, we distinguish between \term{local extrema} (best within a given subset of the state space) vs \term{global extrema} (best across the entire state space)
+    \item A state space may be either \term{continuous} (e.g. $\mathbb{R}$ for a real-valued function) or \term{discrete} (e.g. placement of $n$ queens in n-queens)
+\end{itemize}
+
+~\\ \pstart
+\textbf{Recall}: In mathematics, we can find the local extrema of a function by following the gradient at each point (\term{gradient descent}).
+
+\subsection{Hill-Climbing Search}
+~\\ \pstart
+\term{Hill-Climbing Search/Greedy Local Search}: At a node $n_0$, always take the neighboring state $n$ that maximizes the objective function; stop when $f(n_0)>f(n)\;\forall\;n$. \begin{itemize}
+    \item Analogy: Taking the objective value of a node to be the \textit{elevation} of that node, hill-climbing search operates by always going in whichever direction is ``uphill''.
+    \item[($\ast$)] \textit{Ex (n-Queens)}: Defining the objective function on a state to be the number of queen pairs that are attacking each other: \begin{enumerate}
+        \item Begin by randomly initializating the placement of queens
+        \item For every queen, compute the objective function for all possible states from moving that queen
+        \item Perform a move that results in a state minimizing the objective function
+        \item Recompute \& continue until goal
+        
+        [\textit{Almost always succeeds on random instances of n-Queens}]
+    \end{enumerate}
+    \item[($\ast$)] \textit{Ex (Traveling Salesman)}: objective function as length of tour \begin{itemize}
+        \item define action: delete two edges, reconnect four affected cities with any new edges
+    \end{itemize}
+\end{itemize}
+
+\newp
+\textit{Issue}: A single instance of greedy local search may get stuck on local extrema, rather than reaching a global extremum.
+
+\newp
+\textit{Improvement 1}: Perform multiple greedy searches and pick the best result
+
+\newp
+\textit{Improvement 2 (\term{Beam Search})}:\begin{enumerate}
+    \item Start with $k>1$ starting points/states (``agents'')
+    \item For each agent, compute all of its next possible states
+    \item Rather than picking one next state for each agent, pick the $k$ best states out of \ul{all} found states and continue searching from those states
+    \item[($\ast$)] \textit{Ex}: Used in LLMs - keep finding next-best token/word via beam search
+\end{enumerate}
+
+\subsubsection{Simulated Annealing}
+\pstart
+\term{Simulated annealing} introduces randomness to step of picking next states: \begin{enumerate}
+    \item Begin on some state
+    \item For each state, pick a random next state: \begin{itemize}
+        \item If the next state is better than the current state, move to the next state [commit]
+        \item If the next state is worse than the current state by $\Delta E$, then commit to the next state with probability $e^{-\frac{\Delta E}{T}}$; otherwise, stay on current state
+    \end{itemize}
+\end{enumerate}
+
+\newp
+\textit{Intuition}: Simulated annealing is okay with moving to states that are worse than our current state, if they are not worse by too much \begin{itemize}
+    \item $T$ is the \ul{temperature parameter} - indicates how heavily ``worseness'' should be weighed \begin{itemize}
+        \item Can start with $T$ high (since the start is likely not near an extremum), then decrease $T$ over time
+        \item If $T=0$, algorithm is equivalent to hill-climbing
+    \end{itemize}
+    \item Overall structure is a random walk, but trends toward higher points ove time
+    \item Etymology: $E$ represents energy
+\end{itemize}
+
+
+\subsection{Genetic Algorithms}
+\pstart
+\term{Genetic algorithms} attempt to ``simulate'' the process of natural selection: \begin{enumerate}
+    \item Start with an ``initial population`` of states
+    \item For each state, assign a score to that state via a \textit{fitness function}
+    \item For each state, compute a probability that they will ``participate in procreation'' (take score of state divided by total score, e.g.)
+    \item \ul{Selection}: Pair the procreating states up as parents
+    \item \ul{Crossover}: For each pair of parent states, generate a child state(s) that contains ``features'' of both parents
+    \item \ul{Mutation}: For each child state, perform some random alteration
+    \item Repeat process with set of child states; over time, population becomes better
+\end{enumerate}
+
+\newp
+Genetic algorithms are inspired by real-life processes of genetic inheritance, evolution \begin{itemize}
+    \item \textit{Ex}. (\textit{n-Queens}): Given two parent states, create a child state with the same columns 1-3 as first parent, same columns 4-8 as second parent \begin{itemize}
+        \item Two child states per pair [two ways to assign first, second parent]
+        \item Mutation - pick a random column [within each child] and move the corresponding queen to a different position
+    \end{itemize}
+    \item Genetic algorithms are popular due to novelty, but are also often slow and wasteful due to testing many bad sequences \begin{itemize}
+        \item Are rarely best solutions to problems, but can offer reasonable and simple solutions to new, not-yet-solved problems
+        \item[($\ast$)] \textit{Ex}: Genetic algorithms currently used for neural architecture search - task of learning the ideal structure for an ML model (\# layers, e.g.)
+    \end{itemize}
+\end{itemize} 
+
+\end{document}

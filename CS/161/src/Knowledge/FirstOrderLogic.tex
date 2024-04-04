@@ -1,0 +1,174 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{colortbl}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+\usepackage[explicit]{titlesec}
+\usepackage{ulem}
+
+\graphicspath{ {./../Images/Notes/} }
+
+\title{CS161: Fundamentals of Artificial Intelligence}
+\author{Stanley Wei}
+\date{Prof. van den Broeck $\vert$ Winter 2024}
+
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{#1\hrule\vspace*{-14pt}}
+
+\titleformat{\subsubsection}
+  {\normalfont\bfseries}{}{0pt}{\uline{#1}}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+
+\theoremstyle{remark}
+\newtheorem*{example}{Ex}
+\newtheorem*{note}{($\ast$) Note}
+
+\newcommand{\pstart}[0]{\noindent}
+\newcommand{\newp}[0]{~\\ \pstart}
+\newcommand{\term}[1]{\noindent\textbf{\textit{#1}}}
+\newcommand{\titleul}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+\newcommand{\resetcases}[0]{\setcounter{case}{0}}
+
+\newcommand{\prob}[1]{\text{Pr}(#1)}
+\newcommand{\cond}[2]{#1\,\vert\,#2}
+
+\begin{document}
+\pstart
+Why logic? Used in many instances \begin{itemize}
+    \item Commonly: have a specification $\alpha$ and implementation $\beta$, want to show that $\beta$ satisfies $\alpha$
+    \item Reasoning/learning
+\end{itemize}
+
+\newp
+$\Rightarrow$ Why \titleul{first-order logic}? \begin{itemize}
+    \item[(+)] More expressive/succinct than propositional logic \begin{itemize}
+        \item Relational databases as applications of first-order logic \begin{itemize}
+            \item SQL queries as checking sentences within world represented by database
+        \end{itemize}
+    \end{itemize}
+    \item[(+)] Allows for more efficient reasoning
+    \item[(-)] Can result in more complicated reasoning
+\end{itemize}
+
+\subsection{First-Order Logic}
+\vspace{3pt}
+\begin{tcolorbox}[colback=orange!20!white]
+    \titleul{First-Order Logic} \vspace{6pt}
+    
+    \term{First-order/predicate logic} describes the world in terms of: \begin{enumerate}
+        \item \textbf{Objects}: Discrete objects that exist in the world
+        \item \textbf{Relations} between \& \textbf{properties} of objects
+        \item \textbf{Functions}: maps some number of objects to another object
+    \end{enumerate}
+\end{tcolorbox}
+
+~\\ \pstart
+First-order/predicate logic: \begin{itemize}
+    \item A relation can be between many objects
+    \item Can view a property as a relation between an object and itself
+\end{itemize}
+
+~\\ \pstart
+Can make different choices in terms of determining how to represent world mathematically \begin{itemize}
+    \item Ex: is every natural number its own object? \begin{itemize}
+        \item Can have objects beyond those specified in the world
+    \end{itemize}
+\end{itemize}
+
+\newp
+\subsubsection{Syntax of First-Order Logic}
+
+\pstart
+Within first-order logic, have: \begin{itemize}
+    \item \textit{Constants} - strings of characters (e.g. King John, UCLA) \begin{itemize}
+        \item Represent \ul{names of objects}
+    \end{itemize}
+    \item \textit{Predicates} - names for relations/properties (e.g. BrotherOf, >)
+    \item \textit{Functions} - map an object/objects to another object
+    \item \textit{Connectives} - $\lor,\land,\neg,\implies$, etc.
+    \item \textit{Equality} - $=$
+    \item \textit{Logical variables} - $x,y,z$
+    \item \textit{Quantifiers} - $\forall,\exists$, e.g. \begin{itemize}
+        \item Allow for making general statements about many objects at once
+    \end{itemize}
+\end{itemize}
+
+\newp
+\term{Semantics} of first-order logic divided into \textit{terms}, \textit{predicates}, and \textit{sentences}: \begin{itemize}
+    \item \term{Terms} are pieces of syntax that refer to objects in the real world: \begin{itemize}
+        \item Constants and logical variables refer to/name objects
+        \item Function outputs (given some input) also refer to objects
+    \end{itemize}
+    \item \term{Predicates} refer to relations between objects
+    \item \term{Sentences} are True/False statements within a world, similar to propositional logic \begin{itemize}
+        \item \textit{Atomic} sentences are predicates applied to terms (e.g. BrotherOf(KingJohn, Richard); are either True or False \begin{itemize}
+            \item Syntax: Predicate(Term1, Term2, ...) \begin{itemize}
+                \item Terms may be either constants or logical variables
+            \end{itemize}
+            \item Represent the simplest form of sentence
+        \end{itemize}
+        \item Can use connectives and quantified logical variables build more complex sentences from atomic ones \begin{itemize}
+            \item \textit{Ex}: Sentence1 $\land$ Sentence2 $\implies$ Sentence3
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\subsection{Interpretation of First-Order Logic}
+Process of describing worlds in first-order logic divided into two phases: (i) \term{pre-interpretation} and (ii) \term{interpretation}
+
+\begin{enumerate}
+    \item Pre-interpretation starts by fixing \term{domain of discourse} - set of objects that [are assumed to] exist
+    \item From domain of discourse, construct \term{interpretation} of: \begin{enumerate}
+        \item Constants: are mapped to real-world objects
+        \item Functions: are made as mappings of [existing] real-world objects to other [existing] real-world objects \begin{itemize}
+            \item The input of functions are real-world objects, not the constants mapped to them
+
+            \vspace{4pt}
+            \textit{Ex}: A function may take the person corresponding to ``KingJohn'', but not the string literal ``KingJohn'
+        \end{itemize}
+        \item Predicates: map a number of real-world objects to either True or False \begin{itemize}
+            \item A True/False assignment corresponds to whether that relation is True between/for that given set of objects
+            \item[($\ast$)] Equality is a special predicate - already has predefined value
+        \end{itemize}
+        \item Statements like $\forall$ apply to all objects in DoD
+    \end{enumerate}
+\end{enumerate}
+
+\newp
+Quantifiers make first-order logic powerful \begin{itemize}
+    \item[($\ast$)] Using $\implies$: $\exists\; z : X(z)\implies Y(z)$ is true either if there is $z$ with $X$ and $Y$ true, or $z'$ with $X$ and $Y$ both false
+\end{itemize}
+
+\subsection{($\ast$) Reasoning in First-Order Logic}
+Similar to propositional logic, can perform reasoning with first-order logic
+
+\newp
+\term{Rounding}: To convert first-order logic to propositional logic, can replace ($\forall\;x\;[Y(x)]$ or $\exists\;x\;[Y(x)]$) statements with conjunctions/disjunctions of $Y(x)$ statement across all $x$ \begin{itemize}
+    \item Can use SAT solvers to perform inference on converted propsotional logic
+\end{itemize}
+
+\newp
+\textit{Issue}: The first-order logic sentences may generate an infinite propositional logic base \begin{itemize}
+    \item \textit{Theorem} (Herbrand): If a sentence is entailed by a first-order $KB$, then it is entailed by a \ul{finite} subset of the corresponding propositional $KB$. \begin{itemize}
+        \item Can apply search techniques (e.g. iterative deepening) to finite subsets of converted propositional $KB$
+    \end{itemize}
+\end{itemize}
+
+\newp
+\textit{Issue}/\textit{Theorem} (Church/Turing): Entailment in first-order logic is only \ul{semi-decidable}, i.e. first-order logic is not guaranteed to allow for inference \begin{itemize}
+    \item Even if a sentence is entailed, may still end up looping forever
+    \item[($\ast$)] Related to \ul{Godel's Incompleteness Theorems}: there will always exist something that is true (entailed by the knowledge base) but cannot be proved \begin{itemize}
+        \item[($\ast$)] Godel's Completeness Theorem: Everything can be proved, but may require using higher-order logics to do so
+    \end{itemize}
+\end{itemize}
+
+\end{document}

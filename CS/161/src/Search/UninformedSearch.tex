@@ -1,0 +1,253 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{colortbl}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+\usepackage[explicit]{titlesec}
+\usepackage{ulem}
+
+\graphicspath{ {./../Images/Notes/} }
+
+\title{CS161: Fundamentals of Artificial Intelligence}
+\author{Stanley Wei}
+\date{Prof. van den Broeck $\vert$ Winter 2024}
+
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{#1\hrule\vspace*{-14pt}}
+
+\titleformat{\subsubsection}
+  {\normalfont\bfseries}{}{0pt}{\uline{#1}}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+\newtheorem*{observation}{Observation}
+
+\theoremstyle{remark}
+\newtheorem*{example}{Ex}
+\newtheorem*{note}{($\ast$) Note}
+
+\newcommand{\pstart}[0]{\noindent}
+\newcommand{\newp}[0]{~\\ \pstart}
+\newcommand{\term}[1]{\noindent\textbf{\textit{#1}}}
+\newcommand{\titleul}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+\newcommand{\resetcases}[0]{\setcounter{case}{0}}
+
+\newcommand{\prob}[1]{\text{Pr}(#1)}
+\newcommand{\cond}[2]{#1\,\vert\,#2}
+
+\begin{document}
+\pstart
+An \term{uninformed search} is a search problem where no knowledge about the world is known beyond the initial state and the set of possible actions. An uninformed search is performed by \ul{exploring a search tree}
+
+\newp
+\textit{Search Tree Terminology}: \begin{enumerate}
+    \item \term{Generation}: Given a node $S$ and an action $A$, we \term{generate} a child $S'$ of $S$ by computing the state resulting from performing $A$ on $S_0$ and assigning that value to $S'$.
+    \item \term{Expansion}: Given a state $S$ in the tree, we \term{expand} it by generating a new child state $S'$ for every possible action performable on $S$.
+    \item \term{Frontier}: The \term{fringe/frontier} of a search tree is the set of all nodes in the tree that have been generated but not yet expanded.
+\end{enumerate}
+
+\vspace{5pt}
+\pstart
+Given a search tree, we can traverse it via the \term{tree search algorithm}:
+\begin{tcolorbox}[colback=blue!40!green!10!white]
+    \titleul{Tree Search Algorithm}
+
+    \vspace{5pt}
+    while $frontier$ is not empty: \begin{itemize}
+        \item[] pop $node$ from $frontier$
+        \item[] $expand$($node$)
+        \item[] for $child$ in $expand$($node$): \begin{itemize}
+            \item[] if $child=goal$, return
+            \item[] $frontier$ += $child$ 
+        \end{itemize}
+    \end{itemize} 
+\end{tcolorbox}
+
+\vspace{5pt} \pstart
+($\ast$) \textbf{Alternative}: \term{Graph search} is similar to tree search, but uses an additional data structure to keep track of which nodes have already been seen during the search process. \begin{itemize}
+    \item \textbf{Advantage}: No duplicate nodes; each node is expanded at most once
+    \item \textbf{Disadvantage}: Requires an additional cost for maintaining the data structure
+\end{itemize}
+
+\subsection{Uninformed Search Algorithms}
+
+\pstart
+The essence of search is the problem of \ul{determining which state to expand}.
+
+~\\ \pstart
+A search algorithm is classified in terms of \ul{4 characteristics}: \begin{enumerate}
+    \item \term{Completeness}: If $\exists$ a solution, will the algorithm always find it?
+    \item \term{Optimality}: Will the solution found by the algorithm be the best (i.e. minimum cost) of all possible solutions?
+    \item\term{Time Complexity}: What is the most amount of time (i.e. number of steps) taken by the algorithm?
+    \item\term{Space Complexity}: What is the most amount of additional space used by the algorithm?
+\end{enumerate}
+
+~\\ \pstart
+Two paradigms for node expansion: \term{BFS} \& \term{DFS}.
+\begin{center}
+    \term{Breadth-First Search}: \textit{Expand the state closest to the initial state}
+    
+    \term{Depth-First Search}: \textit{Expand the state furthest from the initial state}
+\end{center}
+
+~\\ \pstart
+To analyze these algorithms: assume they are being run on some algorithm with (i) \ul{branching factor $b$}, (ii) \ul{solution depth $d$}, and (iii) \ul{maximum depth $m$}.
+
+\newp
+\titleul{Properties of BFS}: \begin{enumerate}
+    \item \textbf{Is complete}: Every state will eventually be seen by the algorithm
+    \item \textbf{Is optimal}: Taking cost to be \# of actions to the goal, BFS will always look at the layers closest to goal first.
+    \item \textbf{Time complexity}: O($b^d$) \begin{enumerate}
+        \item Exponent depends on when each node $S$ is tested for goal: \begin{itemize}
+            \item[(i)] \textbf{After expanding $S$}: O($b^{d+1}$) [bad]
+            \item[(ii)] \textbf{After generating $S$}: O($b^d$) [good]
+        \end{itemize} 
+    \end{enumerate}
+    \item \textbf{Space complexity}: O($b^d$) \begin{enumerate}
+        \item Either O($b^{d+1}$) [bad] or O($b^d$) [good], similar to time complexity
+    \end{enumerate}
+\end{enumerate}
+
+\newp
+\titleul{Properties of DFS}: \begin{enumerate}
+    \item \textbf{Is not complete}: If a search tree is infinite (i.e. of infinite depth), DFS may keep going down the wrong path and never terminate \begin{itemize}
+        \item Is complete \ul{on finite state spaces}
+    \end{itemize}
+    \item \textbf{Is not optimal}: The solution found by DFS is not guaranteed to be optimal
+    \item \textbf{Time complexity}: O($b^m$)
+    \item \textbf{Space complexity}: O($mb$)
+\end{enumerate}
+
+\subsection{Extensions of DFS}
+When evaluating search algorithms, \ul{space complexity is more important than time complexity}: \begin{itemize}
+    \item[-] Time is [generally] \textit{unbounded}, i.e. we assume we have infinite time.
+    \item[-] Space is usually \textit{limited/bounded} (by hardware constraints, e.g.)
+\end{itemize}
+
+~\\
+DFS gives a much better space complexity than BFS [O($mb$) vs O($b^d$)], but: \begin{itemize}
+    \item[(i)] DFS is not guaranteed to terminate: if a state space is infinite, it may continue forever down a ``bad'' branch.
+    \item[(ii)] DFS is not complete
+    \item[(iii)] DFS is not optimal
+    \item[(iv)] DFS has worse time complexity: O($b^m$) vs O($b^d$)
+\end{itemize}
+
+\subsubsection{Depth-Limited Search}
+\textbf{Improvement 1}: To make DFS terminate, we can set a \ul{maximum depth limit $l$} that limits how far DFS is allowed to explore. (\term{Depth-Limited Search})
+
+~\\
+\titleul{Properties of DLS}: \begin{enumerate}
+    \item \textbf{Is not complete}: DLS finds a solution \ul{only if $l\geq d$} \begin{itemize}
+        \item This can be useful if a solution is known to exist within a certain depth
+        \item $(\ast)$ \textit{Ex}. (\textit{Shortest Path}): \begin{itemize}
+            \item Given a graph with $n$ nodes, any longest path between two nodes in the graph will have \ul{at most $n-1$ edges}
+            \item Let $k$ be the longest path between any two nodes; then the shortest path between those nodes uses at most $k$ edges.
+        \end{itemize}
+    \end{itemize}
+    \item \textbf{Is not optimal}: Same behavior as DFS
+    \item \textbf{Time complexity}: O($b^l$)
+    \item \textbf{Space complexity}: O($b\cdot l$)
+\end{enumerate}
+
+\subsubsection{Iterative Deepening Search}
+\textbf{Improvement 2}: To make DFS complete and optimal: we can set an initial depth limit and \ul{keep incrementing it until a solution is found}. (\term{Iterative Deepening Search})
+
+~\\
+\titleul{Properties of IDS}: \begin{enumerate}
+    \item \textbf{Is complete}: If we keep incrementing our depth limit $l$, then we will eventually reach $l=d\implies$ our algorithm will find a solution
+    \item \textbf{Is optimal}: When our depth limit reaches $l=d$, we will find the optimal solution; before then, we can never return a suboptimal solution
+    \item \textbf{Time complexity}: $O(b\cdot d)$
+    \item \textbf{Space complexity}: $O(b^d)$ \begin{itemize}
+        \item We see that our algorithm will generate the nodes in the first layer $d$ times, the nodes in the second layer $d-1$ times, $\hdots$, and the nodes in the $d^{th}$ layer $1$ time \begin{align*}
+            \implies (d)b^1+(d-1)b^2+\hdots+(1)b^d=&\,b^d(1+2b^{-1}+\hdots+db^{1-d})\\
+            \leq&\,b^d\sum_{n=0}^\infty nb^{n-1}=b^d\left(1-\frac{1}{b}\right)^{-2}\sim b^d
+        \end{align*}
+        \textbf{Consequence}: Despite rerunning DLS $d$ times, our time complexity is no worse than our best algorithm [BFS].
+    \end{itemize}
+\end{enumerate}
+
+~\\
+\begin{tabular}{|c|c|c|c|c|}
+    \hline \cellcolor{black!60} & \textbf{Breadth-First} & \textbf{Depth-First} & \textbf{Depth-Limited} & \textbf{Iterative Deepening}  \\ \hline
+    \textbf{Complete} & \cellcolor{green!60!black!40!white} Yes & \cellcolor{red!60!black!40!white} No & \cellcolor{red!60!black!40!white} Only if $d\leq l$ & \cellcolor{green!60!black!40!white} Yes \\ \hline
+    \textbf{Optimal} & \cellcolor{green!60!black!40!white} Yes & \cellcolor{red!60!black!40!white} No & \cellcolor{red!60!black!40!white} No & \cellcolor{green!60!black!40!white} Yes \\ \hline
+    \textbf{Time} & \cellcolor{green!60!black!40!white} O($b^d$) & \cellcolor{red!60!black!40!white} O($b^m$) & \cellcolor{green!60!black!40!white} O($b^l$) & \cellcolor{green!60!black!40!white} O($b^d$) \\ \hline
+    \textbf{Space} & \cellcolor{red!60!black!40!white} O($b^d$) & \cellcolor{green!60!black!40!white} O($b\cdot m$) & \cellcolor{green!60!black!40!white} O($b\cdot l$) & \cellcolor{green!60!black!40!white} O($b\cdot d$) \\ \hline
+\end{tabular}
+
+~\\~\\
+(Note: We can also \textit{combine} different search algorithms, e.g. BFS \& DFS, to create a new algorithm.)
+
+\pagebreak
+\subsection{Bidirectional Search (BDS)}
+\begin{observation}
+    In the case of our search algorithms, the algorithms will start at states near the initial state and progressively increase the size of the \term{search area} (i.e. time taken/number of nodes examined) until the goal is found.
+\end{observation}
+
+~\\
+\term{Bidirectional Search}: Rather than just searching from the initial state; if we know the goal state beforehand, we can run \textbf{two searches in parallel} until a \textit{shared state} is found: \begin{enumerate}
+    \item One search starting from the initial state
+    \item One search ``in reverse'', starting from the goal state. 
+\end{enumerate}
+
+~\\ \pstart
+In terms of search area: \begin{itemize}
+    \item[] \textbf{Before}: One search area with ``radius'' $d$
+
+    \qquad$\implies$ \textbf{Time Complexity}: $O(b^d)$
+    \item[] \textbf{After}: Two search areas with radius $d/2$
+    
+    \qquad$\implies$ \textbf{Time Complexity}: $O(b^{\frac{d}{2}})=O\left(\left[\sqrt{b}\right]^d\right)$
+\end{itemize}
+
+~\\ \pstart
+\textbf{Drawbacks of BDS}: \begin{enumerate}
+    \item BDS only works if we already know the goal state
+    \item For at least one search area, we need to remember every node in its frontier in order to check for shared states
+
+    \quad$\implies$ \textbf{Space Complexity}: $O(b^{\frac{d}{2}})$
+\end{enumerate}
+
+\pagebreak
+\subsection{Uniform-Cost Search}
+We may need to run search in scenarios where cost is not always 1 per action (though we do assume that costs are non-negative). \begin{itemize}
+    \item[($\ast$)] \textit{Ex}: Distances between graph nodes in a weighted graph
+\end{itemize}
+
+\vspace{5pt}\pstart
+Previous algorithms fail (ex: vanilla BFS will no longer be optimal); use \term{uniform-cost ssearch/Djikstra's algorithm}.
+
+\newp
+\titleul{Uniform-Cost-Search}: 
+\vspace{6pt}\newp
+Defining evaluation function $f(n)$ to be the distance $g(n)$ of a node from the start:
+\begin{tcolorbox}[colback=blue!5!white]
+    \titleul{Djikstra's Algorithm}
+    \begin{enumerate}
+        \item While the goal has not been \ul{expanded}, keep expanding the cheapest/least-cost node in the frontier \begin{itemize}
+            \item For each node in the tree, keep track of/store the least-cost path to that node from the initial state
+            \item When the goal is expanded, take its least-cost path as the solution
+        \end{itemize}
+    \end{enumerate}
+\end{tcolorbox}
+
+~\\ \pstart
+\textit{Optimality}: When the goal is expanded, all other unexpanded nodes in the tree will be of higher cost [to reach] than the current solution; then any path through those nodes will be worse than the current solution.
+
+~\\ \pstart
+\textit{Complexity}: Define new parameters: \ul{cost of optimal solution $c^\ast$}, \ul{cost of cheapest action $\epsilon$} 
+
+\vspace{5pt} \pstart
+$\implies$ maximum solution depth: $\frac{c^\ast}{\epsilon}$
+
+\vspace{5pt} \pstart
+$\implies$ \textbf{Time, Space Complexity}: $O\left(b^{\frac{c^\ast}{\epsilon}+1}\right)$ [similar to BFS with goal test on expansion]
+
+\end{document}

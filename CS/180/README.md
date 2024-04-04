@@ -5,3 +5,7 @@ Instructor: Majid Sarrafzadeh
 Quarter: Fall 2023
 
 Note: Bellman-Ford was not covered in lecture, but did appear in homework.
+
+---
+
+"Assume, for the sake of contradiction, that our algorithm fails."

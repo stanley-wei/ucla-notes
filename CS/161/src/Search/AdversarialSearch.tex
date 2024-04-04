@@ -1,0 +1,223 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{colortbl}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+\usepackage[explicit]{titlesec}
+\usepackage{ulem}
+
+\graphicspath{ {./../Images/Notes/} }
+
+\title{CS161: Fundamentals of Artificial Intelligence}
+\author{Stanley Wei}
+\date{Prof. van den Broeck $\vert$ Winter 2024}
+
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{#1\hrule\vspace*{-14pt}}
+
+\titleformat{\subsubsection}
+  {\normalfont\bfseries}{}{0pt}{\uline{#1}}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+
+\theoremstyle{remark}
+\newtheorem*{example}{Ex}
+\newtheorem*{note}{($\ast$) Note}
+
+\newcommand{\pstart}[0]{\noindent}
+\newcommand{\newp}[0]{~\\ \pstart}
+\newcommand{\term}[1]{\noindent\textbf{\textit{#1}}}
+\newcommand{\titleul}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+\newcommand{\resetcases}[0]{\setcounter{case}{0}}
+
+\newcommand{\prob}[1]{\text{Pr}(#1)}
+\newcommand{\cond}[2]{#1\,\vert\,#2}
+
+\begin{document}
+\pstart
+Computer science long used to study games (ex: chess)\begin{itemize}
+    \item Games are very abstract, can be very complicated, but still possess very well-defined rules
+\end{itemize}
+
+\newp
+\textit{Subclasses of Games}: \begin{itemize}
+    \item \ul{Perfect vs imperfect information games} - how much of the game state is immediately visible to each player? \begin{itemize}
+        \item In the case of imperfect information, may need to use actions to obtain additional information (ex: poker)
+    \end{itemize}
+    \item \ul{Deterministic vs chance games} - is there a degree of randomness?
+    \item \ul{Zero-sum vs non-zero-sum} - is one player's gain always the other player's loss?
+\end{itemize}
+
+\newp
+Some complications in adversarial search problems are: \begin{itemize}
+    \item Presence of an active opponent: \begin{itemize}
+        \item Opponent actions add uncertainty
+        \item Due to opponent presence, a sequence of actions [that assumes what the opponent's actions are] is not enough as a solution; need a different kind of solution \begin{itemize}
+            \item Easier: A solution is just a single action [i.e. just returns the next action]
+            \item Harder: A solution is a \term{strategy} - specifies an action for every possible scenario
+        \end{itemize}
+    \end{itemize}
+    \item Often involve high branching factor, large search tree depth \begin{itemize}
+        \item[($\ast$)] \textit{Ex}: Chess has $b=35$, $d\approx 100$
+    \end{itemize}
+    \item May sometimes have time limits on decisions
+\end{itemize}
+
+\newp
+Typically judge/compare game outcomes via a \term{utility function} (\textit{ex}: win=1/loss=-1/draw=0)
+
+\newp
+($\ast$) \textit{Terminology} \begin{itemize}
+    \item Move - pair of actions (one action for each player)
+    \item Half-move/ply - one action from one player
+\end{itemize}
+
+\subsection{Minimax Algorithm}
+\pstart
+The \term{minimax algorithm} uses a search tree and assigns a \term{utility} for each node. 
+
+\vspace{4pt}\pstart
+Simple case: two players (one trying to minimize the utility function; one trying to maximize utility function) alternating turns: \begin{enumerate}
+    \item Generate a search tree rooted at the initial state
+    \item Compute the utility of nodes as follows: \begin{itemize}
+        \item If the node is a leaf, then find its utility via utility function
+        \item If the node is not a leaf: \begin{itemize}
+            \item If the next action from that node is by the minimizing player, assign its utility as the minimum of the utilities of its children
+            \item If the next action from that node is by the maximizing player, assign its utility as the maximum of the utilities of its children
+        \end{itemize}
+    \end{itemize}
+    \item Build the tree: \begin{enumerate}
+        \item[(i)] Strategy 1: Build bottom-up (starting from the leaves), store entire search tree \begin{itemize}
+            \item Time: $b^m$, space: $b^m$
+        \end{itemize}
+        \item[(ii)] Strategy 2: Keep running depth-first search on branches, starting from the root \begin{itemize}
+            \item Time: $b^m$, space: $bm$
+        \end{itemize}
+    \end{enumerate}
+\end{enumerate}
+
+\vspace{8pt}\pstart
+\textit{Minimax Algorithm}: \begin{itemize}
+    \item Consequence of minimax: If all players play optimally, the game will always end in the same way (either a specific player wins, or all players draw) \begin{itemize}
+        \item \textit{Ex}: Tic-tac-toe is solved - always ends in a draw
+    \end{itemize}
+    \item Behavior from minimax depends only on ordering of preferences (i.e. relative values of utility function on various end-states), not numerical value of rewards
+    \item Minimax algorithm assumes optimal behavior by both players when optimizing utility \begin{itemize}
+        \item If a player is playing non-optimally, the other player may be able to obtain a better outcome [utility] than given by minimax
+    \end{itemize}
+\end{itemize}
+
+\newp
+In the case of multiple players alternating moves, similar principle: compute the utility of each node based on the objective of whichever player is acting next \begin{itemize}
+    \item[($\ast$)] May run into Nash equilibria (differences between optimizing common, individual goods)
+\end{itemize}
+
+\subsubsection{Optimizing Minimax}
+\pstart
+During minimax, can prematurely determine that certain subtrees will never be taken and stop evaluating them early (\ul{$\alpha$-$\beta$ pruning}): \begin{itemize}
+    \item \textit{Ex}: If the maximizing player is on a node $n$: \begin{itemize}
+        \item If the utility of the first child is $x$, mark utility of $n$ as $\geq x$
+        \item Evaluate all remaining children: \begin{itemize}
+            
+            \item If, at any point, a descendant has value $\leq 5$, we can stop calculating that subtree and return
+        \end{itemize}
+    \end{itemize}
+    \item Use $\alpha$ to denote the best choice for max player, $\beta$ best choice for the min player
+\end{itemize}
+
+\newp
+Degree of optimization (i.e. effective branching factor) depends on the order states are visited \begin{itemize}
+    \item Want most constraining alpha/beta (highest alpha, lowest beta) to reduce search tree as much as possible \begin{itemize}
+        \item Difficult to do exactly, but can approximate using heuristics to order outcomes \begin{itemize}
+            \item[($\ast$)] \textit{Ex}: In chess, prioritize outcomes that capture a piece
+        \end{itemize}
+    \end{itemize}
+    \item Time complexities ($\alpha$-$\beta$ pruning): \begin{itemize}
+        \item Random visit order: $b^m\to b^{\frac{3}{4}}$, typically
+        \item Optimal visit order: $b^m\to b^{\frac{m}{2}}=\left(\sqrt{b}\right)^m$
+    \end{itemize}
+\end{itemize}
+
+\newp
+For complex games, it is typically only feasible (and is still sufficient) to only search to a certain depth; search depth required to win depends on opponent:\begin{itemize}
+    \item[($\ast$)] \textit{Ex}: Chess may take from 4 moves (bad players) up to 12 moves (grandmasters)
+\end{itemize}
+
+\pstart
+\textit{Issue} (\term{Horizon Effect}): Even if a game state has an inevitable outcome, a player might be able to ``postpone'' that outcome until it goes beyond the search depth of an algorithm.
+
+\vspace{4pt}\pstart
+To solve, need to let algorithms know to search deeper:\begin{itemize}
+    \item \ul{Quiescence search}: If a state has a child state that is significantly different from itself (e.g. a queen is captured), continue searching rather than evaluating the current state
+    \item \ul{Singular extension}: If a move is obviously good, search deeper in that direction
+    \item \ul{Forward pruning}: if a move is obviously bad, ignore it
+\end{itemize}
+
+\newp
+\textit{Minimax Algorithm}: \begin{itemize}
+    \item For further optimization, can use iterative deepening within minimax to save space
+    \item \textit{Issue}: Defining a utility function can be difficult, since slight variations in game state may result in very different outcomes \begin{itemize}
+        \item Modern approach: use trained neural networks as utility functions for evaluation
+    \end{itemize}
+    \item Additional optimizations/modifications: \begin{itemize}
+        \item Opening tables - rather than recomputing the first few moves, use the same openings as those used by existing experts
+        \item Can build specialized hardware for specific games (e.g. IBM)
+    \end{itemize}
+\end{itemize}
+
+\newp
+In the case of games with chance/randomness involved, add a chance node for each move; children are all possible resulting states (with associated probabilities) \begin{itemize}
+    \item Assign the utility of a chance node to be the expected value of its children's utility (weighted sum of children's utility, weighted by probability) \begin{itemize}
+        \item Consequence: Due to taking an expected value, the magnitude/scale of rewards begins to matter (no longer just relative order)
+    \end{itemize}
+    \item \textit{Note}: Adding chance nodes increases tree size dramatically; usually results in shallower trees [less moves simulated]
+\end{itemize}
+
+\subsection{($\ast$) Monte-Carlo Tree Search}
+\pstart
+Current state of the art: \term{Monte-Carlo tree search}  (reinforcement learning)\begin{itemize}
+    \item Used to solve Go (in conjunction with a neural network, as evaluation function)
+    \item Proven to converge to minimax after infinite \# attempts
+\end{itemize} 
+
+\newp
+\textit{Principle}: Traverse search tree randomly (randomly play games) and look for the moves that most often lead to success \begin{itemize}
+    \item For each node, keep track of: \begin{enumerate}
+        \item[(i)] A counter $n$, indicating how many times the node was visited/passed through
+        \item[(ii)] A value $v$, containing the average outcome value/utility of all games that passed through that node
+    \end{enumerate}
+\end{itemize}
+
+\vspace{4pt}\pstart
+\textit{Monte-Carlo Tree Search (Algorithm)}:\begin{enumerate}
+    \item Create a search tree (initially empty) in memory
+    \item \textit{Selection}: Randomly perform actions [select edges in the search tree] until a leaf node (i.e. a node with a not-yet-tested action) is reached
+    \item \textit{Playout}: Simulate (play out) the rest of the game by playing random moves
+    \item \textit{Expansion}: Based on results of the game, create a new child under the leaf with scores assigned based on the result of game
+    \item \textit{Backprop}: Backpropagate the result to update the scores of ancestor nodes in the tree
+\end{enumerate}
+
+\newp
+During selection phase, decide which nodes to select based on on certain statistics \begin{itemize}
+    \item Two possible criteria/approaches for picking a child: \begin{itemize}
+        \item Criterion 1: Pick the child with the highest value [most promising]
+        \item Criterion 2: Pick the least-visited child [least information]
+    \end{itemize}
+    \item Want to find an approach that balances both criteria (reinforcement learning: \textit{exploitation-exploration tradeoff})
+
+    \vspace{8pt}
+    \textit{Solution}: Rank using {upper confidence bound} [UCB] score $UCB=v_i+C\sqrt{\frac{\ln{N}}{n_i}}$ \begin{itemize}
+            \item $C$ a constant; higher $C$ prioritizes exploration more heavily
+            \item Originally used in multi-armed bandit
+        \end{itemize}
+\end{itemize}
+
+\end{document}

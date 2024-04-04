@@ -1,0 +1,76 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+\usepackage[explicit]{titlesec}
+\usepackage{ulem}
+
+\graphicspath{ {./../Images/Notes/} }
+
+\title{CS161: Fundamentals of Artificial Intelligence}
+\author{Stanley Wei}
+\date{G. van den Broeck $\vert$ Winter 2024}
+
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{#1\hrule\vspace*{-14pt}}
+
+\titleformat{\subsubsection}
+  {\normalfont\bfseries}{}{0pt}{\uline{#1}}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+
+\theoremstyle{remark}
+\newtheorem*{example}{Ex}
+\newtheorem*{note}{($\ast$) Note}
+
+\newcommand{\pstart}[0]{\noindent}
+\newcommand{\term}[1]{\noindent\textbf{\textit{#1}}}
+\newcommand{\probtitle}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+\newcommand{\resetcases}[0]{\setcounter{case}{0}}
+
+\begin{document}
+\section{\textit{Was Ist A.I.}?}
+What is considered ``\term{intelligent}''/``\term{A.I.}'' is \ul{context-dependent}: \begin{itemize}
+    \item[-] \textit{Ex}. Chess bots, GPS routing were considered A.I. 20 years ago, but are rarely described as being ``A.I.'' today.
+\end{itemize}
+
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline & \textbf{Acting }& \textbf{Thinking} \\
+        \hline \textbf{Humanly} & \textit{Chatbots} & \textit{Computational Neuroscience} \\
+        \hline \textbf{Rationally} & \multicolumn{2}{|c|}{\textit{Lots of modern A.I.}} \\ \hline
+    \end{tabular}
+    \caption{4 A.I. archetypes}
+\end{table}
+
+\pstart$\exists$ many possible \& historical definitions for ``A.I.'': Turing test, Winograd schemas, etc., but still no hard line/boundary; A.I. is, in some sense, a moving target.
+
+\begin{definition}[\term{A.I. (Historical)}]
+    \term{A.I.} is the study of \ul{\textbf{intelligent, rational agents}}.
+\end{definition}
+
+\begin{definition}
+    A \term{rational agent} is something that acts to achieve the best [expected] outcome based on some some objective. \begin{itemize}
+        \item More formally: A \term{rational agent} is something that, for every possible \term{percept} sequence (perception of \term{the world}), should select an \term{action} that is expected to maximize its \term{performance measure} given the percept sequence and the agent's own internal \term{knowledge}.
+    \end{itemize}
+    
+    \vspace{8pt}\pstart\textbf{Issue}: Defining a performance measure, is not always clear/easy to conceive; ex:\begin{enumerate}
+        \item \textit{Is there a clear objective?}: What is the performance measure of Facebook?
+        \item \textit{How do we define \& quantify success?}: ChatGPT was built on human grading as a performance measure; in a sense, it was trained to fool humans/lie satisfactorily?
+        \item \textit{Could there be unforeseen effects?} See: paperclip maximizer
+    \end{enumerate}
+\end{definition}
+
+
+
+\end{document}

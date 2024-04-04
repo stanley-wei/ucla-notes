@@ -1,0 +1,214 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{colortbl}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+\usepackage[explicit]{titlesec}
+\usepackage{ulem}
+
+\graphicspath{ {./../Images/Notes/} }
+
+\title{CS161: Fundamentals of Artificial Intelligence}
+\author{Stanley Wei}
+\date{Prof. van den Broeck $\vert$ Winter 2024}
+
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{#1\hrule\vspace*{-14pt}}
+
+\titleformat{\subsubsection}
+  {\normalfont\bfseries}{}{0pt}{\uline{#1}}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+
+\theoremstyle{remark}
+\newtheorem*{example}{Ex}
+\newtheorem*{note}{($\ast$) Note}
+
+\newcommand{\pstart}[0]{\noindent}
+\newcommand{\newp}[0]{~\\ \pstart}
+\newcommand{\term}[1]{\noindent\textbf{\textit{#1}}}
+\newcommand{\titleul}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+\newcommand{\resetcases}[0]{\setcounter{case}{0}}
+
+\newcommand{\prob}[1]{\text{Pr}(#1)}
+\newcommand{\cond}[2]{#1\,\vert\,#2}
+
+\begin{document}
+\pstart
+A \term{reasoning engine} takes in a knowledge base and questions; outputs conclusions/deductions obtained via \term{deductive inference}: \begin{itemize}
+    \item The \term{knowledge base} ($KB$) contains all knowledge known about the world \begin{itemize}
+        \item Logic operates only on information in knowledge base; needs knowledge base to be comprehensive \& complete
+        \item Stored as declarative sentences in knowledge-representation language
+    \end{itemize}
+    \item \term{Observations/queries} specify what information what needs to be known
+    \item \term{Conclusions} [\textit{deductions}] are the results of reasoning
+\end{itemize}
+
+\newp
+Logic is a way to overcome ignorance about the world via reasoning \begin{itemize}
+    \item Conclusions are \ul{guaranteed} to be correct
+    \item[($\ast$)] Two models for reasoning/inference:  causal model (X causes Y) vs evidential model (if X, conclude from X that Y) \begin{itemize}
+        \item Causal models generally easier, more applicable to probabilistic models
+    \end{itemize}
+\end{itemize}
+
+\newp
+\textit{Applications of Logic}: \begin{itemize}
+    \item \textit{Verification}: Given specification $\alpha$ and implementation $\beta$, can use logic to show that $\beta$ entails/fulfills $\alpha$ [implementation matches specification] \begin{itemize}
+        \item Can be used for hardware/software verification
+    \end{itemize}
+    \item Generating mathematical proofs (\textit{ex}: boolean Pythagorean triples)
+    \item Natural language processing [symbolic/logical knowledge]
+    \item[($\ast$)] Dominant AI paradigm from 1958-1988; later overtaken by probabilistic models
+\end{itemize}
+
+\subsection{Syntax \& Semantics}
+\pstart 
+Syntax composed of two types of objects: \begin{enumerate}
+    \item \term{Atoms}
+    \item \term{Logical connectives}: unary, and/or, implies, if, if and only if
+\end{enumerate}
+
+\newp
+Syntax given via logical formulas/\term{sentences}; sentences either considered atomic [composed of a single \term{literal}] or compound [contain multiple \term{literals}] \begin{itemize}
+    \item Literal - an atom, or its negation
+\end{itemize}
+
+\newp
+Syntax are just symbols; are mapped to real-world objects via \textit{semantics}: \begin{itemize}
+    \item Given a sentence $\alpha$, world $\omega$: either sentence $\alpha$ is true in world $\omega$ (\ul{$\omega\models\alpha$}, $\omega$ \term{satisfies} $\alpha$) or $\alpha$ is false in world $\omega$ (\ul{$\omega\not\models\alpha$}) \begin{itemize}
+        \item Meaning of $\alpha$: only possible worlds are worlds satisfying $\alpha$ (models of $\alpha$: $M(\alpha)=\{\omega:\omega\models\alpha\}$)
+    \end{itemize}
+    \item Can express the same models using many different sentences
+\end{itemize}
+
+\newp
+To determine whether a world satisfies a set of sentences, can check each sentence individually \begin{itemize}
+    \item Can be done in linear time (relative to number of sentences)
+    \item Alternative: Build a \term{truth table} listing all possible worlds, determine values of compound sentences from values of literals \begin{itemize}
+        \item A world is simply an assignment of a value True/False to each atom
+    \end{itemize}
+\end{itemize}
+
+\pagebreak
+\subsection{Relationships Between Sentences}
+\pstart
+Interpret knowledge base $KB$ as a set of sentences; is true if $\omega\models KB$
+
+\begin{tcolorbox}[colback=purple!10!white]
+    \titleul{Definitions}: \begin{itemize}
+        \item A sentence $\alpha$ is \term{valid} if all worlds satisfy $\alpha$ ($\forall\;\omega:\omega\models\alpha$; $M(\alpha)=W$) \begin{itemize}
+            \item Represent subset of universe $W$ with $\alpha$ satisfied, as circle with vertical lines
+        \end{itemize}
+        \item A sentence $\alpha$ is \term {satisfiable} [\textbf{SAT}] if at least one world satisfies $\alpha$ ($\exists\;\omega:\omega\models\alpha;M(\alpha)\neq\emptyset$)
+        \item A sentence $\alpha$ is \term{unsatisfiable} [\textbf{UNSAT}] if it holds in no world ($\forall\;\omega:\omega\not\models\alpha$; $M(\alpha)=\emptyset$) \begin{itemize}
+            \item Also called: inconsistent, not consistent, not satisfiable
+        \end{itemize}
+        \item $\alpha$ \term{entails} $\beta$ ($\alpha\models\beta$) if: whenever $\alpha$ holds, $\beta$ must also hold ($\forall\;\omega$: if $\omega\models\alpha$ then $\omega\models\beta$) \begin{itemize}
+            \item Alternatively: $M(\alpha)\subseteq M(\beta)$, $\alpha\implies\beta$
+            \item If $\alpha$ true, $\beta$ false; but can be that $\beta$ true, but $\alpha$ false
+        \end{itemize}
+        \item $\alpha$ and $\beta$ are \term{equivalent} if $\omega\models\alpha$ iff $\omega\models\beta$, $M(\alpha)=M(\beta)$
+        \item $\alpha$ and $\beta$ \term{mutually exclusive} (\textit{mutex}) if $\forall\;\omega:\omega\not\models\alpha\lor\omega\not\models\beta$; $M(\alpha)\cap M(\beta)=\emptyset$
+    \end{itemize}
+\end{tcolorbox}
+
+\newp
+\textbf{Relationships between Logical Notions:} \begin{enumerate}
+    \item \textit{Validity to SAT}: $\alpha$ is valid iff $\neg\alpha$ is UNSAT 
+    \item \textit{Entailment to SAT}: $KB\models\alpha$ iff $KB\cap\neg\alpha$ UNSAT ($KB$: knowledge base)
+    \item \textit{Entailment to Validity}: $KB\models\alpha$ iff ($KB\implies\alpha$ is valid)
+    \item \textit{Equivalence to SAT}: $\alpha=\beta$ iff [$(\alpha\cap\neg\beta)\cup(\neg\alpha\cap\beta)$] UNSAT
+\end{enumerate}
+
+\newp
+($\ast$) \term{Monotonicity of Logic}: If $KB\models\alpha$ and we learn a new fact $\beta$, then it is still the case that $(KB\cap\beta)\models\alpha$. \begin{itemize}
+    \item \textit{Consequence}: If we ``know'' something, it is not possible to revise this knowledge/retract a claim  [vs non-monotonic probabilistic logic]
+    \item Is accurate mathematically, but not necessarily true to real-life reasoning
+\end{itemize}
+
+\subsection{Normal Forms}
+\textbf{Terminology}: \begin{itemize}
+    \item A \term{literal} is a variable $X$ or a variable negation $\neg X$ \begin{itemize}
+        \item A literal is called \textit{positive} if it is not a negation
+    \end{itemize}
+    \item A \term{clause} is a \textit{disjunction of literals}, i.e. a union/OR of literals ($A\cup B\cup \neg C$, e.g.) \begin{itemize}
+        \item A \term{Horn clause} is a clause that contains at most 1 positive literal
+        \item A \term{defininte clause} is a clause that contains exactly 1 positive literal
+    \end{itemize}
+    \item A \term{term} is a \textit{conjunction of literals}, i.e. an intersection/AND of literals ($A\cap \neg B\cap C$, e.g.)
+\end{itemize}
+
+\newp
+\textbf{Observations}: \begin{itemize}
+    \item Removing a literal from a clause returns a subset of the original clause \begin{itemize}
+        \item The \textit{empty clause} (all literals removed) is equivalent to \textit{False}
+    \end{itemize}
+    \item Removing a literal from a term returns a superset of the original clause \begin{itemize}
+        \item The \textit{empty term} (all literals removed) is equivalent to \textit{True}
+    \end{itemize}
+\end{itemize}
+
+~\\
+\pstart
+\titleul{Normal Forms}: restrictions of permissible syntax \begin{itemize}
+    \item \term{Conjunctive normal form} (\textbf{CNF}): conjuction of disjunction of literals \begin{itemize}
+        \item \textit{Disjunction}: $A\cup\neg B$ \begin{itemize}
+            \item Removing terms from clauses: removing a term (e.g. $A\cup B\cup \neg C$ to $A\cup B$) takes a subset of original clause
+        \end{itemize}
+        \item \textit{Conjunction}: $(A\cup\neg B)\cap(B\cup\neg C\cup\neg D)$, \textit{a la} SAT
+        \item \ul{Any propositional logic sentence can be expressed in CNF}
+    \end{itemize}
+    \item \term{Disjunctive normal form} (\textbf{DNF}): disjunction of conjunction of literals \begin{itemize}
+        \item Conjunction of literals - term/conjunctive clause
+    \end{itemize}
+    \item \term{Horn form}: conjunction of Horn clauses (clauses with at most 1 positive literal) \begin{itemize}
+        \item Is a subset of CNF - imposes additional restriction on clauses
+        \item \textit{Interpretation}: ($B\cup\neg C\cup\neg D$) implies ($C\cap D\implies B$) \begin{itemize}
+            \item $\neg B\cup\neg C$ says $C\cap E\implies$ False (integrity constraint - specifies something not allowed/cannot happen)
+            \item $A\cup\neg B$ says $B\implies A$ (is a definite clause: has exactly 1 positive literal)
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\newp
+\textbf{Complexity of Normal Form solvers}: \begin{itemize}
+    \item Check if \textbf{CNF SAT}: \ul{\textit{NP}-complete}
+    \item Check if \textbf{CNF Valid}: \ul{Linear} in \# clauses \begin{itemize}
+            \item Check all clauses sequentially; if any clause is not valid (i.e. can create a world where clause is false), fail
+            \item CNF clause is valid iff contains a variable $\neg\alpha\lor\alpha$ 
+        \end{itemize}
+    \item Check if \textbf{DNF SAT}: \ul{Linear} in \# clauses \begin{itemize}
+        \item Check all clauses sequentially; if any clause is satisfiable, return true 
+        \item Note: negation of CNF is DNF; negation of DNF is CNF
+        \item Equivalent of checking DNF SAT is checking negation [CNF] valid
+    \end{itemize}
+    \item Check if \textbf{DNF Valid}: \ul{\textit{NP}-complete} \begin{itemize}
+        \item Since negation of DNF Valid is CNF SAT
+    \end{itemize}
+\end{itemize}
+
+\newp
+\titleul{Reducing to CNF (Steps)} \begin{enumerate}
+    \item Eliminate $\Longleftrightarrow$: convert to $\Longleftarrow$, $\Longrightarrow$
+    \item Eliminate $\Longleftarrow,\Longrightarrow$: convert $\alpha\implies\beta$ to $\neg\alpha\lor\beta$ [disjunctions]
+    \item Move $\neg$ inside: if $\neg$ on a compound expression, move inside \begin{itemize}
+        \item Ex: $\neg(\alpha\lor\beta)$ to $\neg\alpha\land\neg\beta$
+    \end{itemize}
+    \item Distribute $\lor$ over $\land$ (only want $\land$ on outside, $\lor$ oon inside) \begin{itemize}
+        \item Ex: $\alpha\lor(\beta\land\gamma)$ to $(\alpha\lor\beta)\land(\alpha\lor\gamma)$
+        \item Worst case: CNF size increases exponentially \begin{itemize}
+            \item Because of this, cannot convert ``is DNF valid'' to ``is equivalent CNF valid'' and solve in linear time
+        \end{itemize}
+    \end{itemize}
+\end{enumerate}
+
+\end{document}

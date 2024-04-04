@@ -1,0 +1,265 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{colortbl}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+\usepackage[explicit]{titlesec}
+\usepackage{ulem}
+
+\graphicspath{ {./../Images/Notes/} }
+
+\title{CS161: Fundamentals of Artificial Intelligence}
+\author{Stanley Wei}
+\date{Prof. van den Broeck $\vert$ Winter 2024}
+
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{#1\hrule\vspace*{-14pt}}
+
+\titleformat{\subsubsection}
+  {\normalfont\bfseries}{}{0pt}{\uline{#1}}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+
+\theoremstyle{remark}
+\newtheorem*{example}{Ex}
+\newtheorem*{note}{($\ast$) Note}
+
+\newcommand{\pstart}[0]{\noindent}
+\newcommand{\newp}[0]{~\\ \pstart}
+\newcommand{\term}[1]{\noindent\textbf{\textit{#1}}}
+\newcommand{\titleul}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+\newcommand{\resetcases}[0]{\setcounter{case}{0}}
+
+\newcommand{\prob}[1]{\text{Pr}(#1)}
+\newcommand{\cond}[2]{#1\,\vert\,#2}
+
+\begin{document}
+Can divide inference/reasoning into two types: \term{deduction} and \term{induction}\begin{itemize}
+    \item \term{Deduction} (\textit{General $\to$ specific}): Given general information [$KB$], asks specific questions: does $KB\models\alpha$ [$KB\models d_5$]? given $\rho$, what is $\rho(x)$?  \begin{itemize}
+        \item Can be proven via precise mathematical rules
+        \item Ex: Propositional logic
+    \end{itemize}
+    \item \term{Induction} (\textit{Specific $\to$ general}): Given data points $d_i$, tries to create general $\hat{\rho}$ [generalization] \begin{itemize}
+        \item \term{Machine learning} is a form of inductive inference; attempts to infer a knowledge base from data.
+        \item Less philosophically straightforward than deduction
+    \end{itemize}
+\end{itemize}
+
+\newp
+\textbf{Principle} (\term{Machine Learning}): Nature [the world] is an \textit{unknown probability distribution} $p_r(x)$ over many variables $x$ [$x_1,x_2,\hdots$]; given data points $d_i$ [$d_1,d_2,\hdots$] sampled from the world, each with values for variables $x_i$, want to construct approximation $\hat{p}_r(x)$ of $p_r(x)$.
+
+
+\subsection{Machine Learning Overview}
+\textbf{Types of Machine Learning}: \begin{itemize}
+    \item \term{Unsupervised learning}: given points $d_i$ from $\rho(x)$ ($x$ variables in the world), try to recreate $\hat{\rho}(x)$ without any other specific objective \begin{itemize}
+        \item[($\ast$)] \textit{Ex}: ChatGPT tries to model human communication, generative models try to recreate nature; Bayesian networks, RNNs, transformers
+    \end{itemize}
+    \item \term{Supervised learning}: given points $x_1y_1,x_2y_2,\hdots$ from $\rho(xy)$ ($x$ variables in the world; $y$ some target or label), try to infer $\hat{\rho(\cond{y}{x})}$ \begin{itemize}
+        \item \textit{Classification}: $y$ is discrete (e.g. true/false, distinct categories) \begin{itemize}
+            \item \textit{Ex}: Naive Bayes, logistic regression
+        \end{itemize}
+        \item \textit{Regression}: $y$ is continuous \begin{itemize}
+            \item \textit{Ex}: linear regression
+        \end{itemize}
+        \item[($\ast$)] Additional categories: \begin{itemize}
+            \item \textit{Reinforcement learning}: given an agent that receives rewards based on its actions, want to learn behavior in the environment
+            \item \textit{Inverse reinforcement learning}: While observing people behave optimally in an unknown situation, try to infer what the goals/rules of the situation are.
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+~\\ \pstart
+Evaluating/comparing two inferred distributions $\hat{p}_{r_1}(x),\hat{p}_{r_2}(x)$: \begin{itemize}
+    \item One method is to use \textit{likelihoods}: compare the probability that we would obtain our observations $d_1,\hdots,d_n$ if $p_r(x)=\hat{p}_{r_1}(x)$ vs. if $p_r(x)=\hat{p}_{r_2}(x)$
+    \begin{itemize}
+        \item Mathematically: compute $\arg\max_i\left[\hat{p}_{r_i}(d_1,\hdots,d_n)=\prod_j\hat{p}_{r_i}(d_j)\right]$ 
+        \item Implicit assumption: data points are \ul{i.i.d.} (\textit{independent and identically distributed})
+    \end{itemize}
+    \item Binary classification (supervised learning): compare the rates of true/false positives and true/false negatives to create a score quantifying how well classification was done \begin{itemize}
+        \item How to determine score depends on relative importance/priority of true/false positives, negatives for the specific application
+        \item For a simple metric, can use accuracy = $\frac{TP+TN}{total=TP+TN+FP+FN}$
+    \end{itemize}
+\end{itemize}
+
+\newp
+\textit{Issue} (\term{Overfitting}): A given set of data points may accomplish good scores in training, but fail to generalize well to other datasets
+
+\vspace{4pt}\pstart
+\textit{Solutions}: \begin{enumerate}
+    \item More data
+    \item Limit model complexity (via \textit{regularization}, e.g.)
+    \item Evaluate the model on validation/test data separate from the training data
+    \item[($\ast$)] [\textit{Statistical}] \textit{learning theory} tries to prove that algorithm output will be similar to nature
+\end{enumerate}
+
+\newp
+Want a model to be complicated enough to represent nature, but not so complicated as to overfit - need to find a tradeoff \begin{itemize}
+    \item \textit{Intuition}: Given a \term{hypothesis space} $H$ [set of all learnable models] and data about a desired function $f(x)$, want to find $h(x)\approx f(x)$ \begin{itemize}
+        \item Hypothesis space is a subset of all possible functions
+        \item \textit{Bias-variance tradeoff}: If $|H|$ is large [large hypothesis space - many possible functions] may require a lot of data to find $h$
+        
+        If $|H|$ is small, it may be difficult to find a function matching $f$
+    \end{itemize}
+    \item[($\ast$)] Contemporary machine learning: for unknown reasons, neural networks seem to avoid/minimize bias-variance tradeoff \begin{itemize}
+        \item Validation error drops, but begins rising again at certain scale
+    \end{itemize}
+\end{itemize}
+
+\newp
+\textit{Ex}: Want to train a naive Bayesian network classifier with input variables $X_1,\hdots, X_n$, output label $Y$ [True/False] based on data \begin{enumerate}
+    \item Start with a parent node $Y$, children $X_1,\hdots, X_n$ \begin{itemize}
+        \item Using naive Bayes assumption: $\prob{Y,X_1,\hdots,X_n}=\prob{Y}\prod_i\prob{\cond{X_i}{Y}}$
+    \end{itemize}
+    \item Assigning variables: \begin{enumerate}
+        \item Assuming $\prob{Y}$ is unknown, can estimate based on examples in data
+        \item Similarly, estimate $\prob{\cond{X_i}{Y=k}}$ based on data points where $Y=k$
+    \end{enumerate}
+    \item[($\ast$)]\textit{Issue}: If an event $\{X_i=k\}$ is not represented in data points, the network may set both $\prob{\cond{X_i=k}{Y=True}},\prob{\cond{X_i=k}{Y=False}}=0$; sends entire product $\prob{Y,X_1,\hdots,X_n}$ to 0
+
+    Similarly: if the data contains one instance of $X_i=k$ and no instances of $X_i=\neg k$, classifier may always say $Y=false$ whenever $X_i=k$
+
+    $\Rightarrow$ \textit{Solution}: Make the model ``simple'' enough to never say $\prob{Y,X_1,\hdots,X_n}=0$ for any values $Y,X_1,\hdots, X_n$ [regularization]  \begin{itemize}
+        \item \textit{Method} (\textit{Pseudocounts}): Add a ``fake'' instance of $X_i=k$ with $Y=True$ and another fake instance of $X_i=k$ with $Y=False$
+
+        $\implies$ Rather than inferring $\prob{\cond{X_i=k}{Y=True}}=\frac{0}{n}$, will instead infer $\prob{\cond{X_i=k}{Y=True}}=\frac{0+1}{n+2}\neq 0$ [e.g.]
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Linear \& Logistic Regression}
+\pstart
+\term{Linear Regression}: Given data points $\{(x_i,y_i\}$, want to find a linear function $h_w(x)=w_0+w_1x_1+\hdots$ fitting the data [want to find coefficients $w_0,w_1,\hdots$] \begin{itemize}
+    \item Estimates a \ul{numerical} value $y$ based on inputs $x_1,\hdots$
+    \item Fit quality measured via \term{loss function} [ex: $L(w)=\sum_i (h_w(x_i)-y_i)^2$]; can progressively minimize loss via gradient descent
+    \item To avoid overfitting, use \term{regularization} to make weights ``prefer'' to be near 0 \begin{itemize}
+        \item Done via adding an additional loss term
+    \end{itemize}
+\end{itemize}
+
+\newp
+\textbf{Problem} (\term{Classification}): Rather than a numerical value/estimate, output a label \begin{itemize}
+    \item Perceptrons - early linear classifiers; output binary 0/1 classifications \begin{itemize}
+        \item Issue: Difficult to optimize via gradient descent
+    \end{itemize}
+    \item Logistic regression - outputs continuous probabilities
+\end{itemize}
+
+\newp
+\term{Logistic Regression} pushes linear prediction [from regression] through a \term{sigmoid activation function} to obtain a probability \begin{itemize}
+    \item Sigmoid activation: using linear predictor $g_w(x)$, output $h_w(x)=\frac{1}{1+\exp(-g_w(x))}$ \begin{itemize}
+        \item Turns numbers into probabilities, representing confidences in predicted labels
+    \end{itemize}
+    \item Similar to linear regression: use gradient descent for training, regularization for overfitting \begin{itemize}
+        \item Loss function - use cross-entropy loss, e.g.
+    \end{itemize}
+\end{itemize}
+
+\iffalse
+\newp
+Logistic regression similar to Naive Bayes \begin{itemize}
+    \item Naive Bayes: Assume $\prob{XY}=\prob{X}\prod_i\prob{\cond{X_i}{Y}}$
+    \item If two possible values [0 and 1] for $Y$, $\prob{\cond{Y=1}{X}}=\frac{\prob{Y=1,X}}{\prob{X}}=\frac{\prob{Y=1,X}}{\prob{Y=1,X}+\prob{Y=0,X}}$
+
+    $=\frac{1}{1+\frac{\prob{Y=0,X}}{\prob{Y=1,X}}}=\frac{1}{1+\exp\log\frac{\prob{Y=0}\prod_i\prob{\cond{X_i}{Y=0}}}{\prob{Y=1}\prod_i\prob{\cond{X_i}{Y=1}}}}=\frac{1}{1+\exp(\log\frac{\prob{Y=0}}{\prob{Y=1}}+\sum_i\log\frac{\prob{\cond{X_i}{Y=0}}}{\prob{\cond{X_i}{Y=1}}})}$
+
+    $=\frac{1}{1+\exp(w_0+\sum_iw_ix_i)}$
+\end{itemize}
+\fi
+
+\newp
+($\ast$) Nested logistic regression $\to$ neural networks/deep learning (informally) \begin{itemize}
+    \item Reductively: each neuron is an individual logistic regression classifier that sends its outputs to other logistic regressions [other neurons] \begin{itemize}
+        \item Each neuron, given a number of weights and inputs, computes input function \& pushes through activation f'n (sigmoid, e.g.) to create output prediction
+        \item Output prediction used as input for next layer of logistic regressions; neural networks use many, many logistic regressions
+    \end{itemize}
+\end{itemize}
+
+\subsection{Decision Trees}
+\pstart
+\term{Decision trees} represent a ``true function'' (i.e. a function outputting true/false) as a tree with True/False leaves; data parameters determine the path taken from the root to some leaf \begin{itemize}
+    \item Given a set of data points, attempts to construct decision tree that best matches data
+    \item Size of hypothesis space (number of possible learnable trees): \ul{$2^{2^n}$}, given $n$ binary variables \begin{itemize}
+        \item $2^n$ possible sets of assignments [rows] $\times$ $2$ ways to assign a value T/F to each row
+        \item Can reduce space size with simpler variables \begin{itemize}
+            \item Ex: variables are conjunctions $\to$ $3^n$ possible variables (each variable is either in a clause as positive, in as negative, or not in)
+        \end{itemize}
+    \end{itemize}
+    \item Generally use greedy to find a good decision tree
+\end{itemize}
+
+~\\ \pstart
+Can construct a tree via \term{top-down induction}: \begin{enumerate}
+    \item Pick a variable to split on [i.e. be the root of the decision tree]
+    \item On that variable: \begin{itemize}
+        \item If there are both $+$ and $-$ examples, split into $+$ and $-$ branches and recurse [i.e. learn a new decision tree] on both branches \begin{itemize}
+            \item[($\ast$)] If there are no more attributes/features left to split on, take a majority vote
+        \end{itemize}
+        \item Eventually: if all data is either only $+$ or only $-$, predict $+$/$-$ accordingly [leaf] \begin{itemize}
+            \item[($\ast$)] If there are no examples left, return a default value (e.g. overall majority class)
+        \end{itemize}
+    \end{itemize}
+    \item[($\ast$)] \term{Tree pruning}: If few there are only a few data points left, simply take majority vote \begin{itemize}
+        \item Justification: attempting to construct a tree on only a few points would likely overfit
+        \item Post-pruning: once tree is constructed, delete nodes with uncertain value
+    \end{itemize}
+\end{enumerate}
+
+\newp
+Decisions trees are \ul{very flexible models}; generally do not need as much data as neural networks \begin{itemize}
+    \item Are well-suited to non-image/text data (tabular data, e.g.)
+    \item \term{Random forests} consist of an ensemble of many individual decision trees based on slightly different subsets of data
+\end{itemize}
+
+\newp
+\textbf{Q}: How to choose which variable to split on? \begin{itemize}
+    \item Generally: variables with \ul{more conclusive splits} (i.e. separate positive/negative points more strongly) are better, allow for making predictions earlier
+\end{itemize}
+
+\newp
+Usefulness of information measured using \term{Shannon entropy}: \begin{align*}
+    H(<p_1,\hdots,p_n>)=\sum_i-p_i\log p_i\\
+    \text{($\log_2$, dealing with bits 0/1)}
+\end{align*}
+
+\pstart
+\textit{Shannon Entropy}: \begin{itemize}
+    \item Represents how much new information is gained when a question is answered, based on the prior belief of probability of each of possible answers
+    \item Higher entropy (measured in bits) corresponds to more uncertainty between answers. 
+    
+    \textit{Ex.} For a given true/false question [two options: $p_1,p_2$]: \begin{itemize}
+        \item Entropy $H(<p_1,p_2>)$ \textit{maximized} at 1 bit (both answers have probability 0.5) \begin{itemize}
+            \item Represents a state of maximal uncertainty
+        \end{itemize}
+        \item Entropy $H(<p_1,p_2>)$ \textit{minimized} at 0 bit (one answer has probability 1)
+        \item[($\ast$)] Multiple-choice: Measure bits by modeling as a sequence of true/false questions \begin{itemize}
+            \item \textit{Ex}: Four choices, maximally uncertain $\to$ two 50/50 questions, 1+1=2 bits
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\newp
+For decision trees, want splits resulting in subtrees with \textbf{minimum entropy} [least uncertainty] \begin{itemize}
+    \item Compute as the \ul{expected entropy} of splitting on any particular variable: weighted average of entropy of each child, based on probability of visiting that child
+    \item Compare splits by looking at the difference in entropy before/after a split [representing information gained by making the split]
+\end{itemize}
+
+\newp
+\textit{Intuition}: Given a true/false question with frequency $f^\ast$ of positive answers ($p$ positive answers, $n$ negative answers): have inital entropy $h^\ast=H(<\frac{p}{f^\ast(p+n)},\frac{n}{(1-f^\ast)(p+n)}>)$ \begin{itemize}
+    \item Given graph of entropy $H$ (0 to 1) vs probability $p_1$ (0 to 1), $h^\ast$ is the point $(f^\ast,h^\ast)$ located on the curve $H$
+    \item Given a child node with $p_i$ positive, $n_i$ negative: compute $h_i$ via similar formula, corresponding to point $f_i,h_i$ on the curve
+    \item Expected entropy: given children with $h_1,h_2$ and probability $q_1$ of taking $h_1$: $f^\ast$ is $1-q_1$ away from $f_1$, $q_1$ away from $f_2$.
+    
+    Drawing a line between $(f_1,h_1)$ and $(f_2,h_2)$, the \textit{expected entropy} after splitting into two branches $h_1,h_2$ is point on that line corresponding to $x=f^\ast$ \begin{itemize}
+            \item Information gain is $y$-distance between $(f^\ast,h^\ast)$ and aforementioned point
+            \item In some cases, may have $h_1>h^\ast$ or $h_2>h^\ast$; however, expected entropy will always be $\leq h^\ast$ [splitting will always result in an information gain]
+        \end{itemize}
+\end{itemize}
+
+\end{document}

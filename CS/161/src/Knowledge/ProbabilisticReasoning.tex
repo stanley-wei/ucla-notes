@@ -1,0 +1,277 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{colortbl}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+\usepackage[explicit]{titlesec}
+\usepackage{ulem}
+
+\graphicspath{ {./../Images/Notes/} }
+
+\title{CS161: Fundamentals of Artificial Intelligence}
+\author{Stanley Wei}
+\date{Prof. van den Broeck $\vert$ Winter 2024}
+
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{#1\hrule}
+
+\titleformat{\subsubsection}
+  {\bfseries}{\thesubsubsection}{1em}{\uline{#1}}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+
+\theoremstyle{remark}
+\newtheorem*{example}{Ex}
+\newtheorem*{note}{($\ast$) Note}
+
+\newcommand{\pstart}[0]{\noindent}
+\newcommand{\newp}[0]{~\\ \pstart}
+\newcommand{\term}[1]{\noindent\textbf{\textit{#1}}}
+\newcommand{\titleul}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+\newcommand{\resetcases}[0]{\setcounter{case}{0}}
+
+\newcommand{\prob}[1]{\text{Pr}(#1)}
+\newcommand{\cond}[2]{#1\,\vert\,#2}
+
+\begin{document}
+\pstart
+Most of modern reasoning is based on \ul{probability/probabilistic models}, not pure logic \begin{itemize}
+    \item Key breakthrough was creation of Bayesian networks (Judea Pearl, UCLA)
+\end{itemize}
+
+\newp
+\textit{Motivation} (\textit{Issues with Logic}): \begin{enumerate}
+    \item For a given event or observation, there may be many possible things that it implies or that may cause it; e.g. may have $\alpha\implies\beta\lor\gamma\lor\delta\lor\hdots$\begin{itemize}
+        \item Writing as pure logic can be intractable in both a theoretical/practical sense, be it due to laziness or ignorance
+    \end{itemize}
+    \item Monotonicity of logic is problematic for applications; to solve problems, must either: \begin{enumerate}
+        \item Model everything exhaustively (potentially intractable/impossible)
+        \item Make various assumptions/approximations, potentially causing issues if these assumptions are later contradicted \begin{itemize}
+            \item With monotonicity, cannot revise existing knowledge with further observations
+        \end{itemize}
+    \end{enumerate}
+\end{enumerate}
+
+\newp
+Can make an epistemological change: rather than solely believing in a set of possible worlds/models, can instead believe in a \textit{probability} for each world/configuration \begin{itemize}
+    \item Probability corresponds to a notion of ``\term{belief}'' in a given world \begin{itemize}
+        \item Replaces binary possible/impossible with a probability of a world being true
+    \end{itemize}
+    \item Does not change how the world \textit{is} [ontology], only how world is \textit{described} [epistemology]
+\end{itemize}
+
+\newp
+Additional motivator for probability: \ul{decision making} \begin{itemize}
+    \item With logic, may not be able to prove conclusively that a goal is achievable
+    \item With probability, can combine notions of utility (relative importance of goals/values of outcomes), probability (likelihoods of worlds) to define expected utilities
+\end{itemize}
+
+\newp
+Within logic: can have propisitions/variables that are Boolean, categorical (e.g. sunny, rainy, cloudy; can alternatively be represented with Bools), continuous (infinitely many Boolean variables)
+
+\subsection{Probability Overview}
+\pstart
+A belief consists of/encodes the probabilities of each \ul{world}; to determine the probability of a \ul{sentence} [event] $\alpha$, use Kolmogorov's axioms of probability: \begin{enumerate}
+    \item Probabilities are \ul{non-negative}
+    \item The probability of any true/certain event [i.e. holds in all possible worlds] is \ul{1}
+    \item If two sentences $\alpha$ and $\beta$ are mutually exclusive, \ul{Pr($\alpha\lor\beta$)=Pr($\alpha$)+Pr($\beta$)}
+\end{enumerate}
+
+\newp
+Everything (e.g. probability of a sentence) follows from axiomization: \begin{itemize}
+    \item Each sentence is a disjunction of models ($\alpha=\omega_1\lor\omega_3\lor\hdots$), where each $\omega_i$ is world representing conjunctions of literals ($x_1\land\neg x_2\lor\hdots$)
+    
+    Since worlds are mutex, obtain: \begin{align*}
+        \prob{\alpha}=\prob{\omega_1}+\prob{\omega_3}+\hdots=\sum_{\omega\models\alpha}\prob{\omega}=\sum_{\omega\in M(\alpha)}\prob{\omega}
+    \end{align*}\begin{itemize}
+        \item Called a \textit{marginal probability/single margin} - represents the sum of a slice of the table encoding complete joint distribution
+    \end{itemize}
+\end{itemize}
+
+\newp
+($\ast$) \textit{Notation}: $\prob{\alpha\land\beta}$ written as $\prob{\alpha,\beta}$
+
+\newp
+\textit{Probability Properties}: \begin{enumerate}
+    \item $\prob{\alpha}+\prob{\neg\alpha}=1$
+    \item \textit{Inclusion-Exclusion}: $\prob{\alpha \lor \beta}=\prob{\alpha}+\prob{\beta}-\prob{\alpha\land\beta}$
+\end{enumerate}
+
+\newp
+($\ast$) \textit{Betting Semantics}: can interpret probability in terms of making bets, gambling \begin{itemize}
+    \item If an agent has beliefs that are mathematically invalid (e.g. $\prob{\alpha}+\prob{\neg\alpha}>1$), may be able to set up bets against that agent all with positive expected value [Dutch book]
+\end{itemize}
+
+\subsubsection{Conditional Probability}
+Can define \textbf{conditional probability}: $\prob{\cond{\alpha}{\beta}}=\frac{\prob{\alpha\land\beta}}{\prob{\beta}}$ [probability of $\alpha$ \ul{given $\beta$}] \begin{itemize}
+    \item Represents a way to ``\textit{undo}'' or \textit{update} prior beliefs: can condition existing beliefs on new observations to revise them in light of new information (i.e. no monotonicity of belief)
+\end{itemize}
+
+\newp
+\ul{\textit{Additional Rules}}: \begin{enumerate}
+    \item \textit{Product Rule}: $\prob{X\land y}=\prob{X}\cdot\prob{\cond{Y}{X}}$
+    \item \textit{Chain Rule}: $\prob{X_1,X_2,\hdots,X_n}=\prob{X_1}\cdot\prob{\cond{X_2}{X_1}}\cdot\hdots\cdot\prob{\cond{X_n}{X_{n-1},\hdots,X_1}}$ \begin{itemize}
+        \item[($\ast$)] Alt. notation: $\prob{X_1,X_2,\hdots,X_n}=\prod_{i}\prob{\cond{X_i}{X_{i-1},\hdots,X_1}}$ 
+
+        [Describes an \textit{auto-regressive} distribution - each $X_i$ depends on preceding variables]
+    \end{itemize}
+    \item \textit{Partition Rule}: $\prob{Y}=\sum_Z\prob{Y,Z}=\sum_Z\prob{\cond{Y}{Z}}\prob{Z}$
+\end{enumerate}
+
+\newp
+($\ast$) If computing conditional probabilities $\prob{\cond{X}{Y}}$, $\prob{\cond{\neg X}{Y}}$, can skip computing $\prob{Y}$ - instead, say that results are $\prob{\cond{X}{Y}}=\alpha\prob{X\land Y}$ up to a normalizing constant $\alpha$
+
+\vspace{5pt}\pstart
+$\Rightarrow$ After computing both $\prob{X\land Y},\prob{\neg X\land Y}$, obtain \ul{$\alpha=\prob{X\land Y}+\prob{\neg X\land Y}$ }\begin{itemize}
+    \item Can represent $\prob{\cond{X}{Y}}$, $\prob{\cond{\neg X}{Y}}$ via a vector $\alpha\begin{pmatrix}
+        \prob{X\land Y} \\ \prob{\neg X\land Y}
+    \end{pmatrix}$
+    \item[($\ast$)] Partition Rule: $\prob{\cond{X}{e}}=\alpha\prob{X,e}=\alpha\sum_Y\prob{X,Y,e}$
+\end{itemize}
+
+\newp
+Define \term{independence}: say that an event $X$ is \term{[absolutely] independent} from events $Y_1,\hdots,Y_n$ if \ul{$\prob{X,Y_1,\hdots,Y_n}=\prob{X}\cdot\prob{Y_1,\hdots,Y_n}$} \begin{itemize}
+    \item Alt: $\prob{\cond{X}{Y_1,\hdots,Y_n}}=\prob{X}$ and vice versa
+\end{itemize}
+
+\newp
+From Product Rule, obtain \term{Bayes' Rule}: \begin{align*}
+    \prob{\cond{\alpha}{\beta}}=\frac{\prob{\cond{\beta}{\alpha}}\cdot\prob{\alpha}}{\prob{\beta}}
+\end{align*} 
+
+\pstart
+\textit{Bayes' Rule}: \begin{itemize}
+    \item Represents conditional probability, in reverse - allows for reversing direction of causality \begin{itemize}
+        \item Can use to find \textit{posterior probabilities} by conditioning the probability of an event based on new observations
+    \end{itemize}
+    \item Works for conditioning on multiple variables: $\prob{\cond{\alpha}{\beta,e}}=\frac{\prob{\cond{\beta}{\alpha, e}}\prob{\cond{\alpha}{e}}}{\prob{\cond{\beta}{e}}}$
+\end{itemize}
+
+
+\newp
+\textit{Application} (\textit{Spam Filtering}): Given words $W_1,\hdots,W_n$ in an email, want to determine if the email is spam
+
+\vspace{4pt}\pstart
+$\Rightarrow$ Reframe as a probability: $\prob{\cond{Spam}{W_1,\hdots,W_n}}=\alpha\prob{\cond{W_1,\hdots,W_n}{Spam}}\prob{Spam}$
+
+\newp
+To solve, use \term{Naive Bayes} - making a simplifying assumption: $\prob{\cond{W_1,\hdots,W_n}{Spam}}=\prod_i\prob{\cond{W_i}{Spam}}$ [i.e. words are independent of each other, given spam]\begin{itemize}
+    \item Spam filtering used as an early application of ML for spam filtering in 90s
+\end{itemize}
+
+\subsection{Bayesian Networks}
+\pstart
+\term{Bayesian networks} represent individual variables as nodes in a digraph. \begin{itemize}
+    \item If a variable $X$ is dependent on $Y$, represent dependence relationship graphically as a directed edge from $Y$ [parent] to $X$ [child] in the network \begin{itemize}
+        \item Assumption: \ul{No cycles}
+    \end{itemize}
+    \item For each child variable, write out its distributions conditioned on all possible sets of values of its parents
+\end{itemize}
+
+\newp
+Within a Bayesian network with variables $A,B,\hdots,N$: can write Pr($A,B,\hdots,N$) as product of the conditional probabilities of each variable conditioned \ul{only on its parents} \begin{itemize}
+    \item Represents an application of the Chain Rule + additional assumptions about the dependence/conditional dependence relationships within he network
+    \item Similar principle to transformer models
+\end{itemize}
+
+\newp
+Given a single set of variables [with independence and dependence relationships], can draw more than one potential Bayesian network \begin{itemize}
+    \item Edges are drawn based on conditional independence; resulting Bayesian network depends on ``order'' in which nodes are made
+    \item Networks with less edges are generally better (involve fewer parameters); want to find the orders resulting in less edges \begin{itemize}
+        \item Is generally best to use order following direction of causality
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Topological Semantics of Bayesian Networks}
+\pstart
+For any node $X$, associate three groups of nodes: \begin{enumerate}
+    \item \term{Parents} - variables on which $X$ is directly dependent
+    \item \term{Children} - variables directly dependent on $X$
+    \item \term{Non-descendants} - variables that are neither parents nor children of $X$
+\end{enumerate}
+
+\newp
+A Bayesian network encodes certain pieces of information, called its \term{topological semantics}.
+
+\vspace{4pt}\pstart
+Namely, for any node $X$ in a Bayesian network:
+\begin{enumerate}
+    \item \term{Markovian assumption}: Given the parents of $X$, then $X$ is [conditionally] independent of \ul{all of its non-descendants}.
+    \item \term{Markov blanket}: Given (i) the parents of $X$, (ii) the children of $X$, and (iii) all parents of children of $X$, then $X$ is [conditionally] independent of \ul{all other nodes in the network}.
+\end{enumerate}
+
+\newp
+A \term{Markov chain} is a Bayesian network with the structure of a \ul{straight line} (i.e. all variables are at most dependent on, and depended on by, one variable in each case). \begin{itemize}
+    \item Can also find Markov chains as subgraphs of a larger Bayesian network \begin{itemize}
+        \item \textit{Hidden Markov models} are Bayesian networks containing a Markov chain that is not directly knowable (can only be inferred from children of its variables).
+    \end{itemize}
+    \item[($\ast$)] \textit{Ex}. Markov chains commonly used in computational biology to model evolution of DNA sequences (and find matches between sequences)
+\end{itemize}
+
+\subsubsection{Probabilities in Bayesian Networks}
+Computing probabilities: Given knowledge/observations $e$, can compute probability of some event $X$ as $\prob{\cond{X}{e}}=\alpha\prob{X,e}=\sum_y \prob{X,e,y}$ (with sum taken over all possible values for all variables not specified in $X,e$) \begin{itemize}
+    \item \textit{Ex}: Variables $A,B,C,D$ [all True/False]; observation $A=a$, want probability $B=b$
+
+    $\implies$ $\prob{\cond{B=b}{A=a}}=\sum_{c\in\{T,F\}}\sum_{d\in\{T,F\}}\prob{a,b,c,d}$
+\end{itemize}
+
+\newp
+\ul{Optimization \#1} - Factor out constant terms: \begin{align*}
+    \alpha\sum_X\sum_Y \prob{A}\prob{B}\prob{X}\prob{Y}=\alpha\prob{A}\prob{B}\sum_X\prob{X}\sum_Y\prob{Y}
+\end{align*}
+
+\newp
+\textit{Observation}: If $Y$ is independent of $X$ (in example above), then we only need to calculate the innermost sum once
+
+\vspace{6pt}\pstart
+\ul{Optimization \#2} - Use dynamic programming to compute the sums in reverse [from innermost to outermost sum - \textit{variable elimination}]
+
+\newp
+\ul{\textit{Ex - Variable Elimination}}:
+
+\vspace{4pt}\pstart
+Given an outer loop over $e$ and an inner loop over $a$ containing a term $\prob{\cond{m}{a}}$, can create a table [\term{factor}] $\rho_m(a)$ storing the value of $\prob{\cond{m}{a=k}}$ for all legal values $k$ of $a$ \begin{itemize}
+    \item If the probability term depends on multiple variables [$b,c,d$, e.g.], can create a multidimensional table over all variables in quesiton $[\rho_{m}(b,c,d)$, e.g.]
+\end{itemize}
+
+\newp
+If multiple conditional probabilities $\prob{\cond{j}{a}}$, $\prob{\cond{m}{a}}$: store a table $\rho_3(a)$ with values $\rho_3(a)=\rho_1(a)\cdot\rho_2(a)$ [$\rho_1,\rho_2$ from $j,m$]
+
+
+\newp
+\textit{Factor multiplication} - To ``multiply'' two tables $\rho_1(a,b), \rho_2(b,c),\rho_3(b,c)$, can create a new table $\rho_4(a,b,c)$ with values $\rho_4(a,b,c)=\rho_1(a,b)\cdot\rho_2(b,c)\cdot\rho_3(b,c)$ \begin{itemize}
+    \item Keep building larger \& larger tables until innermost sum has only a single table/factor
+\end{itemize}
+
+\newp
+\textit{Summation}: Upon reaching a sum, to sum a factor $\rho_4(a,b,c)$ over $a$, create new table $\rho_5(b,c)$ with values $\rho_5(b,c)=\sum_a\rho_4(a,b,c)$ \begin{itemize}
+    \item Entire process repeats/recurses to eventually obtain a single probability; avoids having to sum over any variable more than once
+\end{itemize}
+
+\newp
+\textit{Time Complexity} [\textit{Table size}]: \ul{Exponential in table width} \begin{itemize}
+    \item Similar to constraint satisfaction
+    \item The closer network is to a tree (i.e. less dense), the better \begin{itemize}
+        \item Tree-like networks: Markov chain/hidden Markov models
+    \end{itemize}
+\end{itemize}
+
+\newp
+\textit{Variable Elimination}:
+\begin{itemize}
+    \item What kinds of probabilities are being considered (conditional probabilities, marginal probabilities, etc.) is not important; can treat everything as just ``some numbers''
+    \item Using dynamic programming to compute the sum of products is common in computer science; also seen in databases, e.g.
+    \item \textit{Challenge}: Finding the ideal order to sum the variables within probability expression is difficult - NP-hard \begin{itemize}
+        \item Can use various heuristics to guess/estimate
+    \end{itemize}
+\end{itemize}
+
+\end{document}

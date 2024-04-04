@@ -1,0 +1,783 @@
+\documentclass[12pt]{extarticle}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[lmargin=1.1in,rmargin=1.1in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{mathrsfs}
+\usepackage{mathtools}
+\usepackage{soul}
+\usepackage{tabularray}
+\usepackage{tcolorbox}
+\usepackage[explicit]{titlesec}
+
+\titleformat{\section}{\Large\bfseries}{\thesection}{1em}{#1\hrule\vspace{-15pt}}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{\ul{#1}\vspace{4pt}}
+
+\newcommand{\pstart}[0]{\noindent}
+\newcommand{\newp}[0]{~\\\pstart}
+
+\newcommand{\term}[1]{\textbf{\textit{#1}}}
+\newcommand{\titleul}[1]{\pstart\textbf{\ul{#1}}}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+\newtheorem*{theorem}{Theorem}
+\newtheorem*{observation}{Observation}
+
+\theoremstyle{remark}
+\newtheorem*{example}{Ex}
+\newtheorem*{note}{($\ast$) Note}
+
+\newcommand{\prob}[1]{\mathbb{P}\left(#1\right)}
+\newcommand{\cond}[2]{#1\,\vert\,#2}
+\newcommand{\expected}[1]{\mathbb{E}\left(#1\right)}
+\newcommand{\expectedcond}[2]{\mathbb{E}_{#1}\left(#2\right)}
+\newcommand{\variance}[1]{\text{Var}\left(#1\right)}
+\newcommand{\covariance}[2]{\text{Cov}\left(#1,#2\right)}
+\newcommand{\bias}[2]{\text{Bias}\left(#1,#2\right)}
+
+% Discrete Probability Distributions
+\newcommand{\bernoulli}[1]{\text{Bernoulli}(#1)}
+\newcommand{\binomial}[2]{\text{Binomial}(#1,#2)}
+\newcommand{\geometric}[1]{\text{Geometric}(#1)}
+\newcommand{\poisson}[1]{\text{Poisson}(#1)}
+
+% Continuous Probability Distributions
+\newcommand{\gammaDist}[2]{\text{Gamma}(#1,#2)}
+\newcommand{\normal}[2]{\text{N}(#1,#2)}
+\newcommand{\uniform}[1]{\text{Uniform}(#1)}
+
+\title{\vspace{-3cm}Study Guide}
+\date{Math 170A (Killip, W24)}
+
+\begin{document}
+\pstart Stanley Wei
+
+\vspace{5pt}
+\pstart Math 170A (Killip, W24)
+
+~\\
+\begin{center}
+	\begin{large}
+		\textbf{\ul{Study Guide}}
+	\end{large}
+\end{center}
+
+\tableofcontents
+
+\pagebreak
+\section{Probabilities}
+\subsection{Probability Spaces}
+\begin{definition}[\term{Sample Space}]
+    Given an experiment, we define its \term{sample space $\Omega$} to be 
+the set of all elementary outcomes.
+\end{definition}
+
+\begin{tcolorbox}[colback=green!18!white]
+    \begin{definition}[\term{$\sigma$-Algebra}]
+        A collection $\mathcal{F}$ of subsets $E\subseteq\Omega$ is called 
+a \term{$\sigma$-algebra} if the following hold: \begin{enumerate}
+            \item $\emptyset\in\mathcal{F}$ and $\Omega\in\mathcal{F}$.
+            \item If $A\in\mathcal{F}$, $A^c\in\mathcal{F}$.
+            \item If $A_n\in\mathcal{F}$ for $n\in\mathbb{N}$, 
+$\bigcup_{n=1}^\infty A_n\in\mathcal{F}$. [\textit{Countable unions}]
+        \end{enumerate}
+    \end{definition}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=red!50!yellow!25!white]
+    \begin{definition}[\term{Probability Measure}]
+        Given a sample space $\Omega$ and $\sigma$-algebra $\mathcal{F}$, 
+a \term{probability [measure]} is an assignment 
+$\mathbb{P}:\mathcal{F}\to\mathbb{R}$ subject to: \begin{enumerate}
+            \item $\mathbb{P}(A)\geq0\;\forall\;A\in\mathcal{F}$.
+            \item $\mathbb{P}(\emptyset)=0$; $\mathbb{P}(\Omega)=1$.
+            \item If $A_n\in\mathcal{F}$ are disjoint for 
+$n\in\mathbb{N}$, $\mathbb{P}(\bigcup_{n=1}^\infty 
+A_n)=\sum_{n=1}^\infty\mathbb{P}(A_n)$. [\textit{$\sigma$-additivity}]
+        \end{enumerate}
+    \end{definition}
+\end{tcolorbox}
+
+\subsection{Probabilities}
+\pstart
+\textbf{DeMorgan's Laws:}
+\begin{enumerate}
+    \item $(A\cup B)^c=A^c\cap B^c$
+    \item $(A\cap B)^c=A^c\cup B^c$
+\end{enumerate}
+
+~\\
+\pstart
+\textbf{Probability Properties:}
+
+\vspace{8pt}\pstart
+Let $A,B\in\mathcal{F}$.
+
+\vspace{5pt}\pstart
+\begin{minipage}[t]{0.5\textwidth}
+    \begin{enumerate}
+        \item $\mathbb{P}(A)+\mathbb{P}(A^c)=1$
+        \item[3.] $(A\cap B)\in\mathcal{F}$.
+        \item[5.] $\mathbb{P}(A\cup 
+B)=\mathbb{P}(A)+\mathbb{P}(B)-\mathbb{P}(A\cap B)$
+    \end{enumerate}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+    \begin{enumerate}
+        \item[2.] $0\leq \mathbb{P}(A)\leq 1$
+        \item[4.] $(A\setminus B)\in\mathcal{F}$.
+        \item[6.] If $A\subseteq B$, $\mathbb{P}(B)\geq \mathbb{P}(A)$
+    \end{enumerate}
+\end{minipage}
+
+\begin{enumerate}
+    \item[7.] If $A_n\in\mathcal{F}$ for $1\leq n\leq N$, then 
+$\bigcup_{n=1}^NA_n\in\mathcal{F}$. [\textit{Finite union}]
+\end{enumerate}
+
+\begin{theorem}[\textbf{Continuity}]~
+
+    \begin{enumerate}
+        \item Given events $A_1\subseteq A_2\subseteq\hdots\subseteq 
+A_n\subseteq\hdots$ for $n\in\mathbb{N}$, 
+\ul{$\mathbb{P}(\bigcup_{n=1}^\infty 
+A_n)=\lim_{n\to\infty}\mathbb{P}(A_n)$}.
+        \item Given events $A_1\supseteq A_2\supseteq\hdots\supseteq 
+A_n\supseteq\hdots$ for $n\in\mathbb{N}$, 
+\ul{$\mathbb{P}(\bigcap_{n=1}^\infty 
+A_n)=\lim_{n\to\infty}\mathbb{P}(A_n)$}.
+    \end{enumerate}
+\end{theorem}
+
+\subsection{Conditional Probability}
+\begin{tcolorbox}[colback=blue!20!white]
+    \begin{definition}[\term{Conditional Probability}]
+        Given a probability space $(\Omega,\mathcal{F},\mathbb{P})$ and an 
+event $B$ with $\mathbb{P}(B)>0$, then the \term{conditional probability} 
+of $A$ given $B$ is: 
+        \begin{gather*}
+            \prob{\cond{A}{B}}=\frac{\prob{A\cap B}}{\prob{B}}
+        \end{gather*} 
+    \end{definition}    
+\end{tcolorbox}
+
+\pstart
+``\textbf{Multiplication Rule}'': \begin{gather*}
+    \prob{A_1\cap\hdots\cap A_n}=\prob{\cond{A_n}{A_1\cap\hdots\cap 
+A_{n-1}}}\cdot\hdots\cdot\prob{\cond{A_2}{A_1}}\cdot\prob{A_1}
+\end{gather*}
+
+\subsection{Bayes' Rule}
+\begin{theorem}[\term{Partition Theorem}]
+    If $\{B_j\}$ form a partition of $\Omega$ with 
+$\prob{B_j}>0\;\forall\;j$, then $\forall\;A\in\mathcal{F}$: 
+\begin{align*}
+        \prob{A}=\sum_j\prob{A\cap 
+B_j}=\sum_j\prob{\cond{A}{B_j}}\cdot\prob{B_j}
+    \end{align*}
+\end{theorem}
+
+\begin{tcolorbox}[colback=blue!50!red!15!white]
+    \begin{definition}[\term{Bayes' Rule}]
+        Given events $A,B$ with $\prob{A},\prob{B}>0$: \begin{align*}            
+\prob{\cond{B}{A}}=\frac{\prob{\cond{A}{B}}\cdot\prob{B}}{\prob{A}}
+        \end{align*}
+    \end{definition}
+\end{tcolorbox}
+
+\begin{definition}[\term{Bayes' Rule on Partitions}]
+    Given a countable partition $\{B_j\}$ of $\Omega$ with 
+$\prob{B_j}>0\;\forall\;j$ and event $A$ with $\prob{A}>0$: \begin{align*}
+        \prob{\cond{B_j}{A}}=\frac{\prob{B_j\cap 
+A}}{\prob{A}}=\frac{\prob{\cond{A}{B_j}}\prob{B_j}}{\sum_k\prob{\cond{A}{B_k}}\prob{B_k}}
+    \end{align*}
+\end{definition}
+
+~\\\pstart
+Given a partition $\{B_j\}$ of $\Omega$ and event $A$, distinguish 
+between: \begin{enumerate}
+    \item \term{Likelihoods} $\prob{\cond{A}{B_j}}$ \begin{itemize}
+        \item Do \ul{\textbf{not}} comprise a probability measure
+    \end{itemize}
+    \item \term{Posterior probabilities} $\prob{\cond{B_j}{A}}$ 
+\begin{itemize}
+        \item \textbf{\ul{Do}} comprise a probability measure
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Independence}
+\begin{tcolorbox}[colback=red!80!yellow!10!white]
+    \begin{definition}[\term{Independence}] We say that: 
+        \begin{enumerate}
+        \item[(i)] Two events $A$, $B$ are \term{[statistically] 
+independent} if: \begin{align*}
+            \prob{A\cap B}=\prob{A}\prob{B}
+        \end{align*} \begin{itemize}
+            \item Alternatively: \begin{align*}
+                \prob{\cond{A}{B}}=\prob{A}
+            \end{align*}
+        \end{itemize}
+        \item[(ii)] Events $E_\alpha$ for $\alpha\in A$ are 
+\term{independent} if, for every finite $B\subseteq A$: \begin{align*}
+            \prob{\bigcap_{\alpha\in B}E_\alpha}=\prod_{\alpha\in 
+B}\prob{E_\alpha}
+        \end{align*}
+    \end{enumerate}
+    \end{definition}    
+\end{tcolorbox}
+
+
+\begin{definition}[\term{Conditional Independence}]
+    Let $\prob{C}>0$; say that two events $A$, $B$ are \term{conditionally 
+independent} given $C$ if: \begin{align*}
+        \prob{\cond{A\cap B}{C}}=\prob{\cond{A}{C}}\prob{\cond{B}{C}}
+    \end{align*} \begin{itemize}
+        \item Alternatively: \begin{align*}
+            \prob{\cond{A}{B,C}}=\prob{\cond{A}{C}}
+        \end{align*}
+    \end{itemize}
+\end{definition}
+
+\subsubsection{($\ast$) Independence of Infinite Experiments}
+Given an infinite experiment, we can describe it via the infinite product 
+of probability spaces. 
+
+~\\ \pstart
+Namely, given probability spaces 
+$(\Omega_\alpha,\mathcal{F}_\alpha,\mathbb{P}_\alpha)$ for $\alpha\in A$, 
+we can take the sample space $\prod_{\alpha\in A}\Omega_\alpha$.
+
+\begin{definition}[\term{Cylinder Set}]
+    We define a \term{cylinder set} as follows: let $S\subseteq A$ be a 
+finite set, and for each $\alpha\in S$ let 
+$E_\alpha\in\mathcal{F}_\alpha$. Then the associated cylinder set is: 
+\begin{align*}
+        \left(\prod_{\alpha\in 
+S}E_\alpha\right)\times\left(\prod_{\alpha\in S^c}\Omega_\alpha\right)
+    \end{align*}
+\end{definition}
+\begin{theorem}
+    Given probability spaces 
+$(\Omega_\alpha,\mathcal{F}_\alpha,\mathbb{P}_\alpha)$ for $\alpha\in A$, 
+there is a unique probability law on $(\prod_{\alpha\in 
+A},\otimes_{\alpha\in A}\mathcal{F}_\alpha,\mathbb{P})$ satisfying 
+($\forall$ finite $S\subseteq A$): \begin{align*}
+        \prob{\left(\prod_{\alpha\in 
+S}E_\alpha\right)\times\left(\prod_{\alpha\in 
+S}\Omega_\alpha\right)}=\prod_{\alpha\in S}\mathbb{P}_\alpha(E_\alpha)
+    \end{align*}
+\end{theorem}
+
+\pagebreak
+\section{Discrete Random Variables}
+\begin{tcolorbox}[colback=blue!50!green!15!white]
+    \begin{definition}[\term{Discrete Random Variable}]
+        A \term{discrete [real-valued] random variable} on a probability 
+space $(\Omega, \mathcal{F}, \mathbb{P})$ is a function \begin{align*}
+            X:\Omega\to\mathbb{Z}
+        \end{align*}
+        such that $X$ is \term{measurable}; i.e.: for each $n\in 
+X(\Omega)$, $\{\omega\in\Omega:X(\omega)=n\}\in\mathcal{F}$.
+    \end{definition}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=blue!70!green!15!white]
+    \begin{definition}[\term{Probability Mass Function}]
+        Given discrete random variable $X$, its \term{probability mass 
+function} [\textbf{PMF}] is the function $p_X:\mathbb{Z}\to[0,1]$ defined 
+by: \begin{align*}
+            p_X(n)=\prob{\{X=n\}}
+        \end{align*}
+    \end{definition}
+\end{tcolorbox}
+
+\begin{definition}[\term{Indicator}]
+    Given an event $E\in\mathcal{F}$, its \term{indicator random variable} 
+is the function $1_E$ defined by: \begin{align*}
+        1_e(\omega)=\begin{cases}
+            1 & \omega\in E \\
+            0 & \omega\not\in E
+        \end{cases}
+    \end{align*}
+\end{definition}
+
+~\\
+\subsection{Discrete Probability Distributions}
+\pstart
+\[\hskip-0.75cm\def\arraystretch{3}
+\begin{array}{|c|c|c|c|c|}
+    \hline \textbf{Distribution} & \textbf{Parameters} & \textbf{PMF} & 
+\expected{X} & \variance{X} \\ \hline
+
+    \bernoulli{p} & p\in[0,1] & p_X(k)=\begin{cases}
+        p & k=1\\ (1-p) & k=0 \\ 0 & \text{otherwise}
+    \end{cases} & p & p(1-p) \\ \hline
+    
+    \binomial{n}{p} & n\in\mathbb{N}\cup\{0\};p\in[0,1] & 
+p_X(k)=\begin{cases}
+        \binom{n}{k}p^k(1-p)^{n-k} & 0\leq k\leq n \\ 0 & \text{otherwise}
+    \end{cases}
+         & np & p(n-np) \\ \hline
+         
+    \geometric{p} & p\in(0,1] & p_X(k)=\begin{cases}
+        (1-p)^{k-1}p & k=1,2,\hdots \\ 0 & \text{otherwise}
+    \end{cases}
+         & \frac{1}{p} & \frac{1-p}{p^2} \\ \hline
+         
+    \poisson{\lambda} & \lambda\in\mathbb{N}\cup\{0\} & 
+p_X(k)=\begin{cases}
+        \frac{\lambda^k}{k!}e^{-\lambda} & k\in\mathbb{N} \\ 0 & 
+\text{otherwise}
+    \end{cases}
+        & \lambda & \lambda \\ \hline
+\end{array}\]
+
+\newp
+\titleul{Interpretations}: \begin{enumerate}
+    \item $\bernoulli{p}$: One trial with probability of success $p$ \\
+    \item $\binomial{n}{p}$: Number of successes across $n$ independent 
+$\bernoulli{p}$ trials \\
+    \item $\geometric{p}$: Number of independent $\bernoulli{p}$ trials to 
+reach 1st success \\
+    \item $\poisson{\lambda}$: Expected number of occurrences of some 
+event across some interval
+\end{enumerate}
+
+\subsection{Expected Value}
+\begin{tcolorbox}[colback=blue!10!white]
+    \begin{definition}[\term{Expected Value}]
+        Given a discrete r.v. $X$, we define its \term{expected value} 
+(alt: mean, average, expectation) to be: \begin{align*}
+            \expected{X}=\sum_kk\cdot p_X(k),
+        \end{align*}
+        given that the sum converges absolutely 
+($\expected{X}=\sum_k|\,k\cdot p_X(k)\,|<\infty$).
+    \end{definition}
+\end{tcolorbox}
+
+~\\ \pstart
+\textbf{Expected Value \& Composition}: \begin{align*}
+    \expected{g(X)}=\sum_{k}g(k)\prob{X=k}
+\end{align*}
+
+\begin{theorem}[\term{Jensen's inequality}]
+    If $g:\mathbb{R}\to\mathbb{R}$ is convex, then: \begin{align*}
+        \expected{g(X)}\geq g(\expected{X}
+    \end{align*}
+\end{theorem}
+
+\pagebreak
+\subsection{Variance \& Standard Deviation}
+\begin{tcolorbox}
+    \begin{definition}[\term{Variance \& Standard Deviation}]
+        Given random variable $X$: \begin{enumerate}
+            \item[(i)]  Call $\expected{X^m}$ the $m^{th}$ moment of $X$.
+            \item[(ii)] Define the \term{variance} of $X$ as 
+$\variance{X}=\expected{(X-\mu)^2}$, where $\mu=\expected{X}$.
+            \item[(iii)] Define the \term{standard deviation} of $X$ as 
+$\sigma(X)=\sqrt{\variance{X}}$.
+        \end{enumerate}
+    \end{definition}
+\end{tcolorbox}
+
+~\\
+\titleul{Properties}: \begin{enumerate}
+    \item[(i)] $\variance{aX}=a^2\variance{X}$
+    \item[(ii)] $\variance{X}=\expected{X^2}-\expected{X}^2$
+\end{enumerate}
+
+\subsection{Conditional Expectation}
+\begin{tcolorbox}[colback=green!10!white]
+    \begin{definition}[\term{Conditional Expectation}]
+        If $X$ a random variable and $A$ an event with $\prob{A}>0$, 
+define the \term{conditional PMF} of $X$ given $A$: \begin{align*}
+            p_{\cond{X}{A}}=\prob{\cond{X=k}{A}}
+        \end{align*}
+    
+        Similarly, we define the \term{conditional expectation} of $X$ 
+given $A$: \begin{align*}
+            \expected{\cond{X}{A}}=\sum_k k\cdot p_{\cond{X}{A}}(k),
+        \end{align*}
+        provided the sum converges absolutely.
+    \end{definition}
+\end{tcolorbox}
+
+\begin{definition}[\term{Partition Theorem}]
+    Given r.v. $X$ with $\expected{|X|}<\infty$ and partition $\{B_j\}$ of 
+$\Omega$ with each $\prob{B_j}\geq0$, we have: \begin{align*}
+        \expected{X}=\sum_j\expected{\cond{X}{B_j}}\prob{B_j}.
+    \end{align*}
+    In particular, the expectations $\expected{\cond{X}{B_j}}$ exist.
+\end{definition}
+
+\pagebreak
+\section{Multiple Discrete Random Variables}
+\begin{tcolorbox}[colback=blue!80!green!10!white]
+    \begin{definition}[\term{Joint PMF}]
+        Given two random variables $X,Y$, the \term{joint PMF of X and Y} 
+is the function $p_{X,Y}$ defined by: \begin{align*}
+            p_{X,Y}(k,l)=\prob{X=k\;\&\;Y=l}
+        \end{align*}
+    \end{definition}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=red!60!yellow!15!white]
+    \begin{definition}[\term{Independence}]
+        We say random variables $X,Y$ are \term{independent} if, for 
+\ul{any} choice of $k,l$, the events $\{X=k\}$ and $\{Y=l\}$ are 
+independent, i.e.: \begin{align*}
+            \prob{X=k\;\&\;Y=l}=\prob{X=k}\prob{Y=l}
+        \end{align*}
+    \end{definition}    
+\end{tcolorbox}
+
+\vspace{5pt}
+\titleul{Independence of Multiple Variables}
+\begin{itemize}
+    \item We say random variables $X_1,X_2,\hdots$ are \term{independent} 
+if, for any choice of $k_i$'s for $i\in\mathbb{N}$, the events 
+$\{X_i=k_i\}$ are independent.
+    \item If two random variables $X,Y$ are independent and have 
+expectation, then the variable $XY$ has finite expectation 
+$\expected{XY}=\expected{X}\expected{Y}$.
+\end{itemize}
+
+\newp
+\titleul{Covariance}
+\begin{definition}[\term{Covariance}]
+    Given two r.v.s $X$ and $Y$, the \term{covariance} of $X$ and $Y$ is: 
+\begin{align*}
+        \covariance{X}{Y}=\expected{(X-\expected{X})(Y-\expected{Y})}
+    \end{align*}
+\end{definition}
+
+\newp
+In particular: $\covariance{X}{Y}=\expected{XY}-\expected{X}\expected{Y}$
+
+\pagebreak
+\section{Continuous Random Variables}
+\begin{definition}[\term{Real-Valued Random Variable}]
+    A real-valued random variable on probability space 
+($\Omega,\mathcal{F},\mathbb{P}$) is a function $X:\Omega\to\mathbb{R}$ 
+that is measurable, i.e.: for all $x\in\mathbb{R}$, $\{X\leq 
+x\}\in\mathcal{F}$.
+\end{definition}
+
+\subsection{Cumulative Distribution Functions}
+\begin{tcolorbox}[colback=blue!70!green!15!white]
+    \begin{definition}[\term{Cumulative Distribution Function}]
+        Given real-valued random variable $X$, its \term{cumulative 
+distribution function} [\textbf{CDF}] is the function 
+$F_x:\mathbb{R}\to[0,1]$ defined by: \begin{align*}
+            F_X(x)=\prob{X\leq x}
+        \end{align*}
+    \end{definition}
+\end{tcolorbox}
+
+\newp
+\titleul{CDFs}
+\begin{itemize}
+    \item CDFs are always strictly non-decreasing
+    \item CDFs may be discrete, continuous, or neither discrete nor 
+continuous
+    \item CDFs are ``cadlag'': continuous from the left, limit from the 
+right: \begin{itemize}
+        \item $\lim_{y\uparrow x}F_X(y)=\prob{X\leq x}$
+        \item $\lim_{y\downarrow x}F_X(y)=F_X(x)$
+    \end{itemize}
+\end{itemize}
+
+\subsection{Continuous Random Variables}
+\begin{tcolorbox}[colback=blue!50!green!15!white]
+    \begin{definition}[\term{Continuous Random Variables}]
+        A random variable $X:\Omega\to\mathbb{R}$ is called 
+\term{continuous} if $\exists$ \ul{integrable} function 
+$f_X:\mathbb{R}\to\mathbb{R}$ such that: \begin{align*}
+            F_X(x)=\int_{-\infty}^xf_X(x')dx'
+        \end{align*}
+        The function $f_X$ is called the \term{probability density 
+function} [\textbf{PDF}] of $X$.
+    \end{definition}
+\end{tcolorbox}
+
+\begin{definition}[\term{Absolute Continuity}]
+    A function $F$ is called \term{absolutely continuous} if, for every 
+$\epsilon>0$, $\exists\;\delta>0$ s.t. for any set of intervals 
+$((a_i,b_i))_i$ with $|b_1-a_1|+\hdots+|b_n-a_n|<\delta$, then: 
+\begin{align*}
+        \sum_{i=1}^n|F(b_i)-F(a_i)|<\epsilon
+    \end{align*}
+\end{definition}
+
+\newp
+\titleul{Continuous Random Variables}
+\begin{itemize}
+    \item It is true that for any continuous R.V. $X$, its CDF $F_X$ is 
+continuous; however, it is not true that every continuous CDF $F_X$ admits 
+a probability density \begin{itemize}
+        \item Only absolutely continuous CDFs admit a probability density
+    \end{itemize}
+    \item If $X:\Omega\to\mathbb{R}$ is a continuous r.v., then 
+$\forall\;a\leq b$: \begin{align*}
+        \prob{a<X<b}=\prob{a\leq X\leq b}=\int_a^bf_X(x)dx
+    \end{align*} \begin{itemize}
+        \item[($\ast$)] Corollary: $\prob{X=a}=0\;\forall\;a\in\mathbb{R}$
+    \end{itemize}
+\end{itemize}
+
+\subsection{Continuous Probability Distributions}
+\begin{tcolorbox}[colback=pink!25!white]
+    \begin{definition}[\term{Gamma Function}]
+        For $z>0$, the \term{gamma function} $\Gamma(z)$ is defined by: 
+\begin{align*}
+            \Gamma(z)=\int_0^\infty x^{z-1}e^{-x}dx
+        \end{align*}
+    \end{definition}
+
+    ($\ast$) \textit{Note}: \ul{$\Gamma(s+1)=s\Gamma(s)$}; for 
+$n\in\mathbb{N}$, $\Gamma(n+1)=n!$
+\end{tcolorbox}
+
+\[\def\arraystretch{3}
+\begin{array}{|c|c|c|c|c|}
+    \hline \textbf{Distribution} & \textbf{Parameters} & \textbf{PDF} & 
+\expected{X} & \variance{X} \\ \hline
+
+    \uniform{[a,b]} & a\leq b & f_X(x)=\begin{cases}
+        \frac{1}{b-a} & a\leq x\leq b \\
+        0 & \text{otherwise}
+    \end{cases} & \frac{a+b}{2} & \frac{1}{12}(b-a)^2 \\ \hline
+
+    \normal{\mu}{\sigma^2} & \mu;\,\sigma\geq0 & 
+f_X(x)=\frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(x-\mu)^2}{2\sigma^2}} & \mu 
+& \sigma^2 \\ \hline
+
+    \text{Exponential}(\lambda) & \lambda>0 & f_X(x)=\begin{cases}
+        \lambda e^{-\lambda x} & x\geq 0 \\
+        0 & \text{otherwise}
+    \end{cases} & \frac{1}{\lambda} & \frac{1}{\lambda^2} \\ \hline
+
+    \Gamma(k,\lambda) & k,\lambda>0 &
+    f_x(x)=\begin{cases}
+        \frac{1}{\Gamma(k)}\lambda^kx^{k-1}e^{-\lambda x} & x\geq 0 \\ 0 & 
+\text{otherwise}
+    \end{cases} & 
+    \frac{k}{\lambda} & \frac{k}{\lambda^2} \\ \hline
+
+    \text{Cauchy} & \text{None} & 
+    f_X(x)=\frac{1}{\pi(1+x^2} & \text{None} & \text{None} \\ \hline
+
+\end{array}\]
+
+\newp
+\titleul{Additional Distributions}: 
+\begin{itemize}
+    \item $W\sim\text{LogNormal}(\mu,\sigma^2)$ if 
+$\ln(W)\sim\normal{\mu}{\sigma^2}$
+    \item If $X_1,\hdots,X_n\sim\text{Exp}(\lambda)$ are independent, then 
+$\sum_{i=1}^nX_i\sim\text{Erlang}(n,\lambda)=\Gamma(n,\lambda)$
+    \item If $X_1,\hdots,X_n\sim\normal{0}{1}$ independent, then 
+$\sum_{i=1}^n X_i\sim\chi_n^2=\Gamma(\frac{n}{2},\frac{1}{2})$
+\end{itemize}
+
+\subsection{Expectation for Continuous Random Variables}
+\begin{tcolorbox}[colback=blue!5!white]
+    \begin{definition}[\term{Expectation}]
+        Given a continuous random variable $X$, we define its 
+\term{expectation} to be: \begin{align*}
+            \expected{X}=\int_{-\infty}^\infty x\cdot f_X(x)dx
+        \end{align*}
+        provided the integral is absolutely convergent.
+    \end{definition}
+\end{tcolorbox}
+
+\newp
+\titleul{Expectation for Continuous Random Variables}
+
+\newp
+Given a \ul{continuous} function $g$ and continuous random variable $X$: 
+\begin{itemize}
+        \item $g\circ X$ is a random variable, i.e. $g\circ X$ is 
+measurable
+        \item $g\circ X$ is not necessarily a continuous random variable
+        \item $g\circ X$ has expectation (if it exists) given by: 
+\begin{align*}
+        \expected{g(X)}=\int_{-\infty}^\infty g(x)f_X(x)dx
+    \end{align*}
+    \end{itemize}
+
+
+\subsection{($\ast$) Generalized Quantile Functions}
+\begin{definition}[\term{Generalized Quantile Function}]
+    Given a CDF $F$, the \term{generalized quantile function} associated 
+to $F$ is the function $Q:(0,1)\to\mathbb{R}$ defined by: \begin{align*}
+        Q(p)=\inf\{x:F(x)\geq p\}
+    \end{align*}
+\end{definition}
+
+\newp
+\titleul{Generalized Quantile Functions}
+\begin{itemize}
+    \item If $F$ is invertible, then $Q=F^{-1}$
+    \item $Q(p)\leq x\,\Leftrightarrow\,F(x)\geq p$
+\end{itemize}
+
+\pagebreak
+\section{Multiple Continuous Random Variables}
+\subsection{Joint CDF \& Independence}
+\begin{tcolorbox}[colback=blue!50!green!15!white]
+    \begin{definition}[\term{Joint CDF}]
+        Given 2 random variables $X,Y:\Omega\to\mathbb{R}$, the 
+\term{joint CDF} of $X$ and $Y$ is the function 
+\ul{$F_{X,Y}:\mathbb{R}^2\to[0,1]$} defined by: \begin{gather*}
+            F_{X,Y}(x,y)=\prob{X\leq x\,\&\,Y\leq y} \\
+            \Updownarrow \\
+            F_{X,Y}(x,y)=\prob{\{\omega:X(\omega)\leq 
+x\}\cap\{\omega:Y(\omega)\leq y\}}
+        \end{gather*}
+    \end{definition}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=red!60!yellow!15!white]
+    \begin{definition}[\term{Independence}]
+        We say that two random variables $X$, $Y$ are \term{independent} 
+if, $\forall\; x,y\in\mathbb{R}$: \begin{gather*}
+            \prob{X\leq x\,\&\,Y\leq y}=\prob{X\leq x}\prob{Y\leq y}\\
+            \Updownarrow\\
+            F_{X,Y}(x,y)=F_X(x)F_Y(y)
+        \end{gather*}
+    \end{definition}
+\end{tcolorbox}
+
+\subsection{Joint Continuity}
+\begin{tcolorbox}[colback=red!50!blue!10!white]
+    \begin{definition}[\term{Joint Continuity}]
+        We say that two random variables $X,Y$ are \term{jointly 
+continuous} if there is an \ul{integrable function 
+$f_{X,Y}:\mathbb{R}^2\to[0,1]$}: \begin{align*}            
+F_{X,Y}(x,y)=\int_{-\infty}^x\int_{-\infty}^yf_{X,Y}(x',y')dy'dx'
+        \end{align*}
+        The function $f_{X,Y}$, if it exists, is called the \term{joint 
+PDF} of $X$ and $Y$.
+    \end{definition}
+\end{tcolorbox}
+
+\newp
+\titleul{Joint Continuity}
+\begin{itemize}
+    \item If $X$, $Y$ are jointly continuous, then they are individually 
+continuous.
+    \item If $X$, $Y$ are jointly continuous, then we can find the 
+\term{marginal distribution} of $X$ (and likewise for $Y$) as: 
+\begin{align*}
+        f_X(x)=\int_{-\infty}^\infty f_{X,Y}(x,y)dy
+    \end{align*}
+    \item If two variables $X,Y$ are individiually continuous and 
+independent, then they are jointly continuous with joint PDF 
+$f_{X,Y}(x,y)=f_X(x)f_Y(y)$
+    \item If $X,Y$ are jointly continuous, then 
+$\expected{g(X,Y)}=\int_{-\infty}^\infty\int_{-\infty}^\infty 
+f_{X,Y}(x,y)dxdy$.
+\end{itemize}
+
+\subsection{Conditional Density Functions}
+\begin{tcolorbox}[colback=blue!60!green!15!white]
+\begin{definition}[\term{Conditional CDF}]
+    Given a continuous random variable $X$ and an event $A$ with 
+$\prob{A}>0$, the \term{conditional CDF} of $X$ given $A$ is: 
+\begin{align*}
+        \prob{\cond{X\leq x}{A}}=\frac{\prob{X\leq x\,\&\,A}}{\prob{A}}
+    \end{align*}
+\end{definition}
+
+\begin{definition}[\term{Conditional PDF}]
+    Given continuous random variables $X,Y$, the \term{conditional PDF} of 
+$Y$ given $X$ is: \begin{align*}
+        f_{\cond{Y}{X}}(\cond{y}{x})=\frac{f_{X,Y}(x,y)}{f_X(x)}
+    \end{align*}
+\end{definition}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=blue!8!white]
+    \begin{definition}[\term{Conditional Expectation}]
+        The \term{conditional expectation} of $Y$ given $X$ is: 
+\begin{align*}
+            \expected{\cond{Y}{X=x}}=\int_{-\infty}^\infty 
+yf_\cond{Y}{X}(\cond{y}{x})dy
+        \end{align*}
+    \end{definition}
+\end{tcolorbox}
+
+\vspace{2pt}
+\begin{theorem}
+    Given continuous random variables $X,Y$: \begin{enumerate}
+        \item \textbf{Law of Total Probability}: $f_Y(y)=\int_X 
+f_{\cond{Y}{X}}(\cond{y}{x})f_X(x)dx$
+        \item \textbf{Law of Total Expectation}: $\expected{Y}=\int_X 
+\expected{\cond{Y}{X=x}}f_X(x)dx$
+    \end{enumerate}
+\end{theorem}
+
+\newp
+\titleul{Conditional Density \& Expectation}
+\begin{itemize}
+    \item $\expected{\cond{g(Y)}{X=x}}=\int_X 
+g(y)f_{\cond{Y}{X}}(\cond{y}{x})dx$
+    \item 
+$\expected{g(Y)h(X)}=\int_X\expected{\cond{g(Y)}{X=x}}h(x)f_X(x)dx$
+    \item Two jointly continuous random variables $X,Y$ are independent 
+iff $f_{\cond{Y}{X}}(\cond{y}{x})=f_Y(y)$ for all but a negligible set 
+$x\in E$
+\end{itemize}
+
+\subsection{Multivariate Normal Distribution}
+\begin{definition}[\term{Positive-Definite}]
+    A real matrix $\Sigma$ is called \term{positive-definite} if it is 
+square, symmetric, and has 
+$\forall\;\Vec{\xi}\in\mathbb{R}^n\setminus\{\Vec{0}\}$: \begin{align*}
+        \Vec{\xi}\bullet\Sigma\,\Vec{\xi}>0
+    \end{align*}
+\end{definition}
+
+\begin{theorem}
+    For any positive-definite matrix $\Sigma$, $\exists$ invertible 
+positive-definite matrix $B$ s.t.: \begin{align*}
+        \Sigma=BB^T
+    \end{align*}
+\end{theorem}
+
+\begin{tcolorbox}[colback=purple!40!pink!20!white]
+    \begin{definition}[\term{Multivariate Normal Distribution}]
+        We say that random variables $X_1,\hdots,X_n$ are \term{jointly 
+normal} if there exist: \begin{enumerate}
+            \item A positive-definite matrix $\Sigma$ (called the 
+\term{covariance matrix}) and
+            \item A vector $\Vec{\mu}\in\mathbb{R}^n$ (called the 
+\term{mean})
+        \end{enumerate} such that 
+$\Vec{X}=\langle\Vec{X_1},\hdots,\Vec{X_n}\rangle$ has PDF given by: 
+\begin{align*}            
+f_{\Vec{X}}(\Vec{x})=\frac{1}{\sqrt{\det(2\pi\Sigma)}}\exp\left(-\frac{1}{2}(\Vec{x}-\Vec{\mu})\bullet\Sigma^{-1}(\Vec{x}-\Vec{\mu})\right)
+        \end{align*}
+    \end{definition}
+\end{tcolorbox}
+
+\newp
+($\ast$) \textit{Notation}: Say that: $\int 
+f(\Vec{x})d\Vec{x}=\int\hdots\int f(\Vec{x})dx_n\hdots dx_1$, where 
+$\Vec{x}=\langle x_1,\hdots,x_n\rangle$
+
+\begin{theorem}
+    Given $\Vec{X},\Sigma,\mu$ as above: \begin{enumerate}
+        \item $\int f_{\Vec{X}}(\Vec{x})d\Vec{x}=1$
+        \item \ul{Mean}: $\int 
+\Vec{x}f_{\Vec{X}}(\Vec{x})d\Vec{x}=\Vec{\mu}$
+        \item \ul{Covariance}: 
+$\covariance{X_i}{X_j}=\int(\Vec{x}_i-\Vec{\mu}_i)(\Vec{x}_j-\Vec{\mu}_j)f_{\Vec{X}}(\Vec{x})d\Vec{x}=\Sigma_{ij}$
+    \end{enumerate}
+\end{theorem}
+
+\end{document}
+

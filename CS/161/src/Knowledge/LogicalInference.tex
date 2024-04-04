@@ -1,0 +1,167 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{colortbl}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+\usepackage[explicit]{titlesec}
+\usepackage{ulem}
+
+\graphicspath{ {./../Images/Notes/} }
+
+\title{CS161: Fundamentals of Artificial Intelligence}
+\author{Stanley Wei}
+\date{Prof. van den Broeck $\vert$ Winter 2024}
+
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{#1\hrule\vspace*{-14pt}}
+
+\titleformat{\subsubsection}
+  {\normalfont\bfseries}{}{0pt}{\uline{#1}}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+
+\theoremstyle{remark}
+\newtheorem*{example}{Ex}
+\newtheorem*{note}{($\ast$) Note}
+
+\newcommand{\pstart}[0]{\noindent}
+\newcommand{\newp}[0]{~\\ \pstart}
+\newcommand{\term}[1]{\noindent\textbf{\textit{#1}}}
+\newcommand{\titleul}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+\newcommand{\resetcases}[0]{\setcounter{case}{0}}
+
+\newcommand{\prob}[1]{\text{Pr}(#1)}
+\newcommand{\cond}[2]{#1\,\vert\,#2}
+
+\begin{document}
+\term{Logical inference} is the process of checking if a knowledge base $KB$ entails a sentence $\alpha$. 
+
+~\\ \pstart
+Three strategies for logical inference: \begin{enumerate}
+    \item \term{Enumerating models}: Checking if $M(KB)\subseteq M(\alpha)$
+    \item \term{Deduction}: Using known logical patterns to try and \textit{deduce} $\alpha$ from the $KB$
+    \item \term{Refutation}: Testing if assuming $KB\land\neg\alpha\implies UNSAT$
+\end{enumerate} 
+
+\subsection{Enumerating Models}
+\term{Enumerating Models}: To check if $M(KB)\subseteq M(\alpha)$, build a truth table \& compare values of $KB$, $\alpha$ in each row [world]. \begin{itemize}
+    \item If set of worlds satisfying $KB$ is subset of set of worlds satisfying $\alpha$ (every world with $\omega\models KB$ has $\omega\models\alpha$), then $KB\models\alpha$
+    \item[($\ast$)] Drawback: Computationally expensive (exponential)
+\end{itemize}
+
+\subsection{Deduction}
+\term{Deduction}: We can \textit{deduce} $\alpha$ from the $KB$ [$KB\vdash\alpha$] using \term{deduction rules}. \begin{itemize}
+    \item Most efficient if the length of the proof is small
+\end{itemize}
+
+~\\ \pstart
+\term{Deduction rules}: Logical statements that if certain patterns pattern$_1,\hdots,$ pattern$_n$ exist and hold, then a pattern$_{n+1}$ holds ($\frac{p_1,\hdots,p_n}{p_{n+1}}$): \begin{itemize}
+    \item \textbf{Modus ponens}: If $\alpha\implies\beta$ and $\alpha$ holds, then $\beta$ holds [$\frac{\alpha,\alpha\implies\beta} {\beta}$]
+    \item \textbf{Double negation}: If $\neg\neg\alpha$ holds, then $\alpha$ holds (and vice versa)
+    \item \textbf{Or-introduction}: If $\alpha$ and $\beta$, then $\alpha\lor\beta$ holds
+    \item \textbf{Bi-directional implication}: A bidrectional implication $\alpha\Longleftrightarrow\beta$ is equivalent to two unidirectional implications $\alpha\implies\beta$, $\beta\implies\alpha$
+    \item \textbf{Contrapositive rule}: An implication $\alpha\implies\beta$ is logically equivalent to the reverse implication $\neg\beta\implies\neg\alpha$.
+    \item \term{DeMorgan's Laws} relate to the negation of conjunctions/disjunctions: \begin{itemize}
+        \item Negation of disjunction: $\neg(\alpha\lor\beta)\implies\neg\alpha\land\neg\beta$
+        \item Negation of conjunction: $\neg(\alpha\land\beta)\implies\neg\alpha\lor\neg\beta$
+    \end{itemize}
+\end{itemize}
+
+\newp
+If we can use deduction rules to go from $KB$ to $\alpha$, have shown that $\alpha$ is entailed by the $KB$ \begin{itemize}
+    \item[($\ast$)] Drawback: Have many rules, need to pick the right one [in humans: by intuition; machines: brute force]
+\end{itemize}
+
+\newp
+For deduction to work, define various properties of deductive rules: \begin{itemize}
+    \item \ul{Need} \term{soundness}: If $KB\vdash_R\alpha$, then $KB\models\alpha$. \begin{itemize}
+        \item[($\ast$)] Ex. (Not sound): $A,A\implies B$ says $\neg B$
+    \end{itemize}
+    \item \ul{Want} \term{completeness}: If $KB\models\alpha$, then $KB\vdash_R\alpha$  \begin{itemize}
+        \item[($\ast$)] Ex. (Sound, not complete): modus ponens $A,A\implies B$ says $B$ [ex: if $KB=A\cap B$ and $\alpha=B$, modus ponens does not give ]
+        \item[($\ast$)] Ex. (Complete, not sound): $\frac{\;\;\;~}{\alpha}$
+    \end{itemize}
+\end{itemize}
+
+
+\subsection{Refutation}
+Say a rule is \term{refutation-complete} if: $KB\models False$ $\implies$ $KB\vdash False$. \begin{itemize}
+    \item Weaker version of completeness
+    \item If rule sound and refutation-complete, the $KB\models$ False iff $KB\vdash_R$ False [via entailment-to-SAT] \begin{itemize}
+        \item Can check if $KB\vdash_R$ to check if $K\models$ True
+    \end{itemize}
+\end{itemize}
+
+\newp
+$\Rightarrow$ \term{Proof by refutation}: To determine if $KB\models\alpha$, test if $KB\land\neg\alpha\implies$ False/UNSAT.\begin{itemize}
+    \item How to test: from $KB$, generate $KB'=KB\land\neg\alpha$; convert to CNF, test if valid
+\end{itemize}
+
+\newp
+New rule: \term{resolution} - $\frac{\alpha\lor e,\,\neg e\lor\gamma}{\alpha\lor\gamma}$ \begin{itemize}
+    \item Sound, not complete: $KB= A\lor B,\alpha=A\lor B\lor C$
+    \item Is refutation-complete if $KB$ expressed in CNF \begin{itemize}
+        \item Resolution works on clauses/disjunctions
+    \end{itemize}
+\end{itemize}
+
+\newp
+\term{Resolution algorithm}: Take $KB\land\neg\alpha$, keep applying Resolution, see if $KB\land\neg\alpha\vdash$ False (if so, implies $KB\land\neg\alpha\models$ False, therefore $KB\models\alpha$) \begin{itemize}
+    \item If $KB$ runs out of rules (we cannot prove False; $KB\land\neg\alpha\not\vdash$ False), then per refutation-completeness, $KB\land\neg\alpha\not\models$ False; then $KB\not\models\alpha$
+\end{itemize}
+
+\subsection{DPLL}
+Alternative approach: \term{SAT solving/DPLL Search} uses the constraint satisfaction algorithm (as seen previously) to perform refutation \begin{enumerate}
+    \item Take individual literals/variables $A,B,C,\hdots$ as variables in CSP (possible values: True, False)
+    \item Take the set of CNF clauses as a set of CSP constraints
+    \item Use CSP to check if there is a set of assignments that satisfies $KB\land\neg\alpha$ [refutation] 
+
+    \item[($\ast$)] Basic DPLL algorithm (SAT($F$)) - Given a set of clauses $F$: \begin{itemize}
+            \item If $F=$ \{False\}, return 0
+            \item If $F=$ \{True\}, return 1
+            \item Else, return $SAT(F_{x=0})\lor SAT(F_{x=1})$
+        \end{itemize}
+\end{enumerate}
+
+\newp
+Want to do constraint propagation (similar to forward checking/arc consistency)
+
+\vspace{4pt}\pstart
+$\Rightarrow$ \term{Unit resolution/unit propagation}: If $F$ has a sentence $\alpha$ [single variable] and a sentence $\neg\alpha\lor\beta$, can infer the sentence $\beta$ \begin{itemize}
+        \item Either removes a clause, or removes literal from a clause [simplifies clause]
+        \item[$\ast$] Specialized form of arc consistency/forward checking
+    \end{itemize}
+
+\newp
+($\ast$) \textit{DPLL Optimizations}: \begin{itemize}
+    \item If a conflict clause (a simple clause entailed by the original $KB$) is found, can stop early and restart the search, incorporating that clause into the $KB$
+    \item \textit{Backjumping}: If a failure was caused by a variable assignment that was made 10 choices ago, backtrack 10 levels in search tree
+    \item If the CNF is found to have separate components, can solve each component separately
+    \item \textit{Pure literal}: If a variable $X$ only appears as positive literal (i.e. only as $X$, never as $\neg X$), can immediately set $X$ to be True \begin{itemize}
+        \item If there is a solution, there exists a solution with $X$ = True; setting $X$ to true from the start makes problem easier (eliminates clauses with $X$)
+    \end{itemize}
+    \item Can use heuristics to determine variable, value assignments
+    \item Can convert the CSP into a graph to find symmetries \begin{itemize}
+        \item Helps to avoid evaluating symmetric solutions
+    \end{itemize}
+    \item For a very long clause, can designate two variables inside of it as ``special'' and only update the clause value when one of two specials is assigned \begin{itemize}
+        \item Avoids computational cost of re-evaluating clause for every assignment
+    \end{itemize}
+\end{itemize}
+
+\newp
+Can also use local search for faster SAT-solving (rather than full backtracking search) \begin{itemize}
+    \item \textit{Issue}: If local search fails to find satisfying assignment, then either none exists, or one simply hasn't been found \begin{itemize}
+        \item Can only prove $KB\not\models\alpha$, if a SAT assignment is found; could never prove $KB\models\alpha$ without somehow knowing that all states have been seen
+    \end{itemize}
+\end{itemize}
+
+\end{document}

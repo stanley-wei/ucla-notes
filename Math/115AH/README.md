@@ -8,3 +8,7 @@ I've included an additional typeset PDF (shared by a classmate) containing notes
 
 Greene's Notes (+ handwriting sample): 
 https://www.math.ucla.edu/~greene/BootCamp2009.html
+
+---
+
+"When in doubt, let B be a basis."
