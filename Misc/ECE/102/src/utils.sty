@@ -1,0 +1,91 @@
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{empheq}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage[outputdir=../]{minted}
+\usepackage{soul}
+\usepackage{subcaption}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+\usepackage[explicit]{titlesec}
+\usepackage{ulem}
+
+\graphicspath{ {./../Images/Notes/} }
+
+\title{ECE 102}
+\author{Stanley Wei}
+\date{Kao $\vert$ Fall 2024}
+
+% General Formatting
+\newtcbox{\emphbox}[1][]{%
+    nobeforeafter, math upper, tcbox raise base,
+    enhanced, colframe=black,
+    colback=white, boxrule=1pt,
+    #1}
+    
+\newenvironment{whitebox}{\begin{tcolorbox}[colback=white]}{\end{tcolorbox}}
+\newenvironment{defnbox}{\begin{tcolorbox}[colback=blue!3!white]\begin{definition}}{\end{definition}\end{tcolorbox}}
+\newenvironment{thmbox}{\begin{tcolorbox}[colback=blue!3!white]\begin{theorem}}{\end{theorem}\end{tcolorbox}}
+
+
+\NewDocumentEnvironment{eqnbox}{b}{}{
+  \begin{empheq}[box=\emphbox]{align*}
+    #1
+  \end{empheq}
+}
+
+\usemintedstyle{tango}
+
+% Math Organization
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+\newtheorem*{observation}{Observation}
+\newtheorem*{theorem}{Theorem}
+\newtheorem*{corollary}{Corollary}
+\newtheorem*{prop}{Prop}
+\newtheorem*{recall}{Recall}
+
+\theoremstyle{remark}
+\newtheorem*{example}{Ex}
+\newtheorem*{lemma}{Lemma}
+\newtheorem*{note}{($\ast$) Note}
+
+\newcommand{\pstart}[0]{\noindent}
+\newcommand{\newp}[0]{\vspace{8pt}\pstart}
+\newcommand{\term}[1]{\textit{\textbf{#1}}}
+\newcommand{\ulbf}[1]{\textbf{\ul{#1}}}
+\newcommand{\bfit}[1]{\textbf{\textit{#1}}}
+
+\newcommand{\titleul}[1]{\newp\ulbf{#1}\vspace{7pt}~\\}
+\newcommand{\termul}[1]{\term{\ul{#1}}}
+\newcommand{\ctrrule}[2]{\begin{center}\rule{#1}{#2}\end{center}}
+
+% Notable Fields
+\newcommand{\naturals}[0]{\mathbb{N}}
+\newcommand{\integers}[0]{\mathbb{Z}}
+\newcommand{\reals}[0]{\mathbb{R}}
+\newcommand{\complex}[0]{\mathbb{C}}
+
+% Math Operators
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\diag}[1]{\text{diag}(#1)}
+\newcommand{\grad}[0]{\nabla}
+\newcommand{\inner}[2]{\left<#1,\;#2\right>}
+\newcommand{\norm}[1]{\left|\left|#1\right|\right|}
+\newcommand{\set}[1]{\left\{#1\right\}}
+
+% Terminology & Symbols
+\newcommand{\imag}[1]{\text{Im}\left(#1\right)}
+\newcommand{\real}[1]{\text{Re}\left(#1\right)}
+
+\newcommand{\fourier}[1]{\mathcal{F}[#1]}
+\newcommand{\laplace}[0]{\mathcal{L}}
+
+
+% Signals
+\newcommand{\rect}[1]{\text{rect}\left(#1\right)}
+\newcommand{\rectd}[1]{\text{rect}_\Delta\left(#1\right)}
+\newcommand{\sinc}[0]{\text{sinc}}

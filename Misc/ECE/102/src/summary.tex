@@ -1,0 +1,464 @@
+\documentclass[12pt]{extarticle}
+\include{utils.sty}
+\graphicspath{ {Notes/Images} }
+
+% \usepackage[lmargin=0.3in,rmargin=0.3in,bmargin=0.3in,tmargin=0.3in]{geometry} % <- Shrunken sizing
+\usepackage[lmargin=0.7in,rmargin=0.7in,tmargin=0.7in,bmargin=0.7in]{geometry}
+\pagenumbering{gobble}
+
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{#1\hrule\vspace*{-14pt}}
+
+
+\begin{document}
+
+% \pstart Stanley Wei
+
+\begin{center}
+    \begin{Large}
+        \textbf{ECE 102: Systems \& Signals}
+    \end{Large}
+    
+    \begin{large}
+        \vspace{8pt}
+        Prof. J. Kao $\vert$ Fall 2024
+    \end{large}
+\end{center}
+\tableofcontents
+
+
+\pagebreak
+\section{Signals}
+Continuous vs. discrete signals
+
+~\\ \newp
+\ulbf{Operations on Signals}: \begin{enumerate}
+    \item \term{Amplitude scaling}: $x(t)\mapsto ax(t)$ \begin{enumerate}
+        \item[(i)] $0<\abs{a}<1\implies$ ``\textit{attenuation}'', $\abs{a}>1\implies$ ``\textit{amplification}''
+        \item[(ii)] $a<0\implies$ ``inversion''
+    \end{enumerate}
+    \item \term{Time scaling}: $x(t)\mapsto x(at)$ \begin{enumerate}
+        \item[(i)] $0<\abs{a}<1\implies$ ``\textit{expansion}'',  $\abs{a}>1\implies$ ``\textit{compression}''
+        \item[(ii)] $a<0\implies$ ``\textit{reversal}''
+    \end{enumerate}
+    \item \term{Time shifting}: $x(t)\mapsto x(t+t_0)$ \begin{enumerate}
+        \item[(i)] $x(t-t_0)\implies$ ``\textit{delayed}''; $x(t+t_0)\implies$ ``\textit{advanced}''
+    \end{enumerate}
+    \item[($\ast$)] Order of operations: reverse PEMDAS
+\end{enumerate}
+
+~\\ \newp
+\ulbf{Classes of Signals}: \begin{itemize}
+    \item \term{Even signals} $x(t)=x(-t)\;\forall\;t$, e.g. $\sin(t)$; \term{odd signals} $x(t)=-x(-t)\;\forall\;t$, e.g. $\cos(t)$ \begin{itemize}
+        \item Else, antisymmetric; can be written as sum of even \& odd $x_{e/o}(t)=\frac{1}{2}(x(t)+/-x(-t))$
+    \end{itemize}
+    \item \term{Periodic signals}: $\exists\;T_0>0$ s.t. $x(t+T_0)=x(t)\;\forall\;t$ \begin{itemize}
+        \item Sum of two periodic signals with periods $T_1,T_2$ has period $\text{lcm}(T_1,T_2)$ if both rational; if one rational and one irrational, then not periodic
+        \item \textit{Periodic extension}: can take a time-limited/aperiodic signal and repeat it
+    \end{itemize}
+    \item \term{Causal signals}: nonzero only for $t\geq0$; \textit{anticausal}: nonzero only for $t\leq0$; \textit{noncausal}: nonzero for some $t<0$
+\end{itemize}
+
+\newp
+\textbf{Sinusoids}: $x(t)=A\cos(\omega t-\theta)$ \begin{itemize}
+    \item Variables: angular frequency $\omega=\frac{2\pi}{T}$, amplitude $A$, phase shift $\theta$
+    \item Trigonometry rules: \begin{itemize}
+        \item $\sin\theta=\cos(\theta-\pi/2)$
+        \item $\sin(a+b)=\sin(a)\cos(b)+\cos(a)\sin(b)$
+        \item $\cos(a+b)=\cos(a)\cos(b)-\sin(a)-\sin(b)$
+        \item $\sin^2(\theta)=(1-\cos(2\theta))/2$
+        \item $\cos^2(\theta)=(1+\cos(2\theta))/2$
+    \end{itemize}
+\end{itemize}
+
+\newp
+\textbf{Signal energy \& power}: A signal is either energy, power, or neither \begin{enumerate}
+    \item If $0<E<\infty$, $x(t)$ called an \term{energy signal}: \begin{align*}
+        E=\lim_{T\to\infty}\int_{-T}^T\abs{x(t)}^2dt
+    \end{align*}
+    \item If $0<P<\infty$, $x(t)$ called a \term{power signal}: \begin{align*}
+        P=\lim_{T\to\infty}\frac{1}{2T}\int_{-T}^T\abs{x(t)}^2dt
+    \end{align*}
+\end{enumerate}
+
+\newp
+\textbf{Complex signals}: $z(t)=x(t)+jy(t)$ [$x=\Re(z),y\Im(z)$ real signals] \begin{itemize}
+    \item \term{Euler's formula}: $e^{j\phi}=\cos\phi+j\sin\phi$
+    \item Phasor representation: $z=x+jy=r\cdot e^{j\phi}$ [$r=\sqrt{x^2+y^2},\;\phi=\arctan(\frac{y}{x})$]
+    \item Complex relations: complex conjugate $z=x+jy\implies z^\ast=x-jy$ \begin{itemize}
+        \item Modulus/magnitude: $\abs{z^2}=zz^\ast$; inverse: $-j=\frac{1}{j}$
+    \end{itemize}
+    \item Important relations: \begin{itemize}
+        \item $\cos\theta=\frac{1}{2}[e^{j\theta}+e^{-j\theta}]$; \quad$\sin\theta=\frac{1}{2j}[e^{j\theta}-e^{-j\theta}]$
+    \end{itemize}
+\end{itemize}
+
+
+\begin{whitebox}
+    \ulbf{Signal Models}
+    \begin{enumerate}
+        \item Real sinusoid/cosine: $x(t)=A\cos(\omega t-\theta)$
+        \item Complex sinusoid: $x(t)=Ae^{j(\omega t+\theta)}=A\cos(\omega t+\theta)+jA\sin(\omega t+\theta)$ \begin{itemize}
+            \item Real part drawn as solid line; imaginary part as dotted line (shifted $\pi/2$ from real)
+        \end{itemize}
+        \item Exponential signal: $x(t)=e^{\sigma t}$ [$\sigma>/<0\implies$ exponential growth/decay]
+        \item Damped/growing sinusoid: $x(t)=e^{\sigma t}\cos(\omega t+\theta)$
+        \item Complex exponential: $x(t)=e^{(\sigma+j\omega)t}=e^{\sigma t}e^{j\omega t}$ \begin{itemize}
+            \item Can plot $\sigma,\omega$ on $x$ \& $y$ axes; rep. rates of growth/decay, oscillation
+        \end{itemize}
+        \item \term{Unit heavyside/step function}: $u(t)=1_{t\geq0}+0\cdot1_{t<0}$ 
+        \item \term{Unit rectangle} - two definitions: \begin{align*}
+            \text{rect}(t)=\begin{cases}
+                1 & \abs{t}\leq\frac{1}{2} \\ 0 & \text{otherwise}
+            \end{cases};\qquad\text{rect}_{\Delta}(t)=\begin{cases}
+                \frac{1}{\Delta} & \abs{t}\leq\frac{\Delta}{2} \\ 0 & \text{otherwise}
+            \end{cases}
+        \end{align*} \begin{itemize}
+            \item Has area 1 for all $\Delta$
+        \end{itemize}
+        \item \term{Unit ramp/relu}: $r(t)=t\cdot 1_{t\geq0}+0\cdot1_{t<0}=t\cdot u(t)$
+        \item \term{Unit triangle} [area 1]: \begin{align*}
+            \Delta(t)=\begin{cases}
+                1-\abs{t} & \abs{t}<1 \\ 0 & \text{else}
+            \end{cases}
+        \end{align*}
+        \item \term{Dirac function/delta}: $\delta(t)=\infty\cdot 1_{t=0}+0\cdot1_{t\neq0}$
+    \end{enumerate}
+\end{whitebox}
+
+\newp
+\ulbf{Dirac Delta} \begin{itemize}
+    \item Has area 1; intuitively, $\delta(t)=\lim_{\Delta\to0}\text{rect}_{\Delta}(t)$
+    \item Properties: \begin{enumerate}
+        \item \term{Impulse sampling property}: $x(t)\cdot\delta(t)=x(0)\cdot\delta(t)$ [area $x(0)$] \begin{itemize}
+            \item Shifting: $x(t)\delta(t-T)=x(T)\delta(t-T)$
+        \end{itemize}
+        \item \term{Impulse sifting property}: $\int_{-\infty}^\infty x(t)\delta(t)dt=x(0)$ \begin{itemize}
+            \item Can integrate from $-\infty$ to $0^{-}$ [doesn't include delta] or $0^{+}$ [includes delta]
+        \end{itemize}
+        \item Impulse \& unit step: $\int_{-\infty}^t\delta(\tau)d\tau=u(t)$; $\frac{du(t)}{dt}=\delta(t)$
+        \item Scaling: $\delta(bt)=\frac{1}{b}\delta(t)$
+    \end{enumerate}
+    \item Graphing: Draw as an arrow at $t=0$ [or $t=T$], write area if area is $x(0)$
+\end{itemize}
+
+
+\pagebreak
+\section{Systems}
+\textit{Systems} transform input signals $x(t)$ into output signals $y(t)$ \begin{enumerate}
+    \item Scaling system: $x(t)\mapsto y(t)=ax(t)$; draw as triangle with an $a$
+    \item Differentiator: $x(t)\mapsto x'(t)$; rectangle with $\frac{d}{dt}$
+    \item Integrator: $x(t)\mapsto \int_a^tx(\tau)d\tau$ [$a=0$ or $\infty$]; rectangle with $\int$
+    \item Squarer: $x(t)\mapsto x(t)^2$; rectangle with $(\cdot)^2$
+    \item Systems with multiple inputs: \begin{itemize}
+        \item Summing system: $x_1,x_2\mapsto x_1+x_2$; circle with $+$
+        \item Difference: Draw + next to $x_1$, - next to $x_2$
+        \item Multiplier: circle with $\times$
+    \end{itemize}
+\end{enumerate}
+
+\newp
+\begin{whitebox}
+    \ulbf{System Properties} \begin{itemize}
+        \item System called \term{BIBO stable} if a bounded input results in a bounded output \begin{itemize}
+            \item Bounded signal: $\exists\;M$ constant s.t. $\abs{x(t)}\leq M_x<\infty\;\forall\;t$
+        \end{itemize}
+        \item System called \term{causal} if it only uses values of input signal $x(t)$ for $t\leq0$
+        \item System called \term{time-invariant} if $[\mathcal{S}(x(t-\alpha))](t)=[\mathcal{S}(x(t))](t-\alpha)$
+        \item System is called \term{linear} if the following hold: \begin{enumerate}
+            \item \term{Homogeneity/scaling}: For any signal $x$ and scalar $a$, $S(ax)=aS(x)$
+            \item \term{Superposition/additivity}: For any signals $x_1$ and $x_2$, $S(x_1+x_2)=S(x_1)+S(x_2)$
+        \end{enumerate}
+        \item System called \term{LTI} if it is both linear and time-invariant \begin{itemize}
+            \item Can freely swap order of LTI systems
+            \item Note: differentiation is an LTI system
+        \end{itemize}
+        \item System has \term{memory} if its output depends on past or future values of the input; otherwise, called \term{memoryless}
+        \item System called \term{invertible} if $\exists\;\mathcal{S}^{inv}$ s.t. $x(t)=\mathcal{S}^{inv}(\mathcal{S}(x(t)))$
+    \end{itemize}
+\end{whitebox}
+
+
+\pagebreak
+\section{Impulse Response}
+Can define responses of a system $H$ to several different signals: \begin{enumerate}
+    \item \term{Zero response}: $H(0)$
+    \item \term{Impulse response}: $h(t)=H(\delta(t))$
+    \item \term{Step response}: $H(u(t))$ \begin{itemize}
+        \item Note: $\frac{d}{dt}H(u(t))=H(\delta(t))$
+    \end{itemize}
+\end{enumerate}
+
+\newp
+Define the \term{convolution integral}: \begin{eqnbox}
+    f*g=\int_{-\infty}^\infty f(\tau)g(t-\tau)d\tau
+\end{eqnbox}
+$\implies$ for any LTI system $H$ with impulse response $h(t)=H(\delta(t))$, input signal $x(t)$: \begin{eqnbox}
+    y(t)=(x*h)(t)=\int_{-\infty}^\infty x(\tau)h(t-\tau)d\tau)
+\end{eqnbox}
+
+\begin{whitebox}
+    \ulbf{Properties of Convolution}: \begin{enumerate}
+        \item \textbf{Commutativity}: $(x*h)(t)=(h*x)(t)$ \quad[via change of vars $\gamma=t-\tau$]
+        \item \textbf{Associativity}: $(f*(g*h))(t)=((f*g)*h)(t)$ \quad[via swapping order of integration]
+        \item \textbf{Distributivity}: $f*(g+h)=f*g+f*h$
+        \item \textbf{LTI}: Convolution systems are \ul{linear \& time-invariant} \begin{itemize}
+            \item Cascade/composition: $y=(x*f)*g=x*h$ [$h=f*g$]
+            \item $h(t)=\frac{d}{dt}s(t)$
+        \end{itemize}
+    \end{enumerate}
+\end{whitebox}
+
+\newp
+\textbf{Other properties}: \begin{itemize}
+    \item[($\ast$)] BIBO stability: $H$ is BIBO-stable $\Longleftrightarrow$ $h(t)$ is absolutely integrable ($\int_{-\infty}^\infty\abs{h(t)}dt\in\reals$ finite)
+    \item[($\ast$)] Delay element of convolution: $x(t)*\delta(t)=x(t)$; $x(t)*\delta(t-t_d)=x(t-t_d)$
+    \item[($\ast$)] Causal systems: $h(t)=0$ for $t<0$
+    \item[($\ast$)] Integrating via convolution: $x(t)*u(t)=\int_{-\infty}^tx(t)dt$
+\end{itemize}
+
+
+\pagebreak
+\section{Fourier Series}
+Let $f(t)$ cts. periodic signal with fundamental period $T_0\implies$ can write as: \begin{eqnbox}
+    f(t)=\sum_{k=-\infty}^\infty c_ke^{jk\omega_0t}
+\end{eqnbox}
+where $\omega_0=\frac{2\pi}{T_0}$, and $c_k$ are Fourier coefficients of $f(t)$ given by: \begin{eqnbox}
+    c_k=\frac{1}{T_0}\int_{\tau}^{\tau+T_0}f(t)e^{-jk\omega_0t}dt
+\end{eqnbox} \begin{itemize}
+    \item For non-continuous signals, equality for $f(t)$ fails at discontinuities
+    \item $c_0$ is the time-averaged mean of signal
+\end{itemize}
+
+\newp
+A signal $x(t)$ is an \term{eigenfunction} of system $\mathcal{S}$ if $\mathcal{S}(x(t))=ax(t)$ for some constant eigenval. $a\in\complex$. \begin{itemize}
+    \item Complex exponentials $e^{j\omega t}$ are eigenfunctions of LTI systems: $a=re^{j\theta}\implies ax(t)=re^{j(\omega t+\theta)}$
+    \item Disprove: via example, or looking at $y(t)$
+\end{itemize}
+
+\newp
+Amplitude \& phase: can plot $A/\phi$ vs. $\omega$, corresponding to signal's Fourier series at that $\omega$ \begin{itemize}
+    \item Signal perfectly determined by amplitude, pphase spectrums
+\end{itemize}
+
+\newp
+Note: sinc$(t)=\frac{\sin(\pi t)}{t}$
+
+~\\ \newp
+\ulbf{Fourier Symmetries}: \begin{itemize}
+    \item $f(t)$ real $\implies$ $c_k^\ast=c_{-k}:$ \quad$\Re(c_k)=\Re(c_{-k})$, $\Im(c_k)=-\Im(c_{-k})$
+    \item $\abs{c_k}=\abs{c_{-k}}$
+    \item $\angle c_k=-\angle c_{-k}$ $\left[\angle c_k=\arctan(\frac{\Im(c_k)}{\Re(c_k)})\right]$
+    \item Also: \begin{itemize}
+        \item $x(t)$ even \& real $\implies$ $c_k$ are real
+        \item $x(t)$ odd \& real $\implies$ $c_k$ are imaginary
+    \end{itemize}
+\end{itemize}
+
+\newp
+\term{Parseval's theorem}: Let $x(t)=\sum_{k=-\infty}^\infty c_ke^{jk\omega_0t}$, then power $P=\sum_{k=-\infty}^\infty\abs{c_k^2}$
+
+\pagebreak
+\section{Fourier Transforms}
+\ulbf{Fourier Transform \& Inverse FT of a signal $f(t)$} [$t\to\omega\Leftrightarrow\omega\to t$]: \begin{eqnbox}
+    F(j\omega)=\int_{-\infty}^\infty f(t)e^{-j\omega t}dt\quad\Longleftrightarrow\quad f(t)=\frac{1}{2\pi}\int_{-\infty}^\infty F(j\omega)e^{j\omega t}d\omega
+\end{eqnbox}
+
+\pstart
+\textbf{Existence of the FT}: Sufficient (but not necessary) condition: \begin{eqnbox}
+    \int_{-\infty}^\infty\abs{f(t)}dt<\infty
+\end{eqnbox}
+\begin{whitebox}
+    \ulbf{Fourier Properties}: \begin{enumerate}
+        \item \textbf{LTI}: The Fourier transform system $\fourier{\cdot}$ is LTI
+        \item \textbf{Complex conjugate}: $f^\ast(t)\Longleftrightarrow F^\ast(-j\omega)$
+        \item \textbf{Time scaling}: $\fourier{f(at)}=\frac{1}{\abs{a}}F\left(j\frac{\omega}{a}\right)$
+        \item \textbf{Time shifting}: $\fourier{f(t-\tau)}=e^{-j\omega\tau}\fourier{f(t)}$
+        \item \textbf{Duality}: $\fourier{F(t)}=2\pi f(-j\omega)$
+        \item \textbf{Convolution theorem}: For two arbitrary signals $f_1(t),f_2(t)$: \begin{eqnbox}
+            \fourier{(f_1*f_2)(t)}=F_1(j\omega)F_2(j\omega)
+        \end{eqnbox}
+        \item \textbf{Parseval's Theorem}: $\int_{-\infty}^\infty\abs{f(t)}^2dt=\frac{1}{2\pi}\int_{-\infty}^\infty\abs{F(j\omega}^2d\omega$
+        \item \textbf{Derivative}: $\fourier{f'(t)}=j\omega F(j\omega)$ \begin{itemize}
+            \item Dual: $(-jt)f(t)=F'(j\omega)$
+        \end{itemize}
+        \item \textbf{Modulation}: $\fourier{f(t)e^{j\omega_0t}}=F(j(\omega-\omega_0))$ \begin{itemize}
+            \item $\fourier{f(t)\cos(\omega_0t)}=\frac{1}{2}(F(j(\omega-\omega_0))+F(j(\omega+\omega_0)))$
+            \item $\fourier{f(t)\sin(\omega_0t)}=\frac{1}{2j}(F(j(\omega-\omega_0))-F(j(\omega+\omega_0)))$
+        \end{itemize}
+    \end{enumerate}
+\end{whitebox}
+
+\newp
+\ulbf{FT Symmetries/Properties}: \begin{itemize}
+    \item For any $f(t)$ real/imag/complex: $f(t)$ even $\implies$ $F(j\omega)$ even [same for odd] \begin{itemize}
+        \item Even $\implies$ mag., phase even;
+    \end{itemize}
+    \item Real signals have Hermitian FT (Hermitian symmetry): $f(t)$ real $\implies$ $F(-j\omega)=F^\ast(j\omega)$ \begin{itemize}
+        \item $\abs{X(j\omega)}$ even; $\angle X(j\omega)=-\angle X(-j\omega)$
+    \end{itemize}
+    \item Imaginary signals have anti-Hermitian FT: $f(t)$ imaginary $\implies$ $F(-j\omega)=-F^\ast(j\omega)$
+    \item Complex signals have neither Hermitian nor anti-Hermitian FT
+\end{itemize}
+
+\iffalse
+\begin{minipage}[t]{\textwidth}
+    \centering
+    \includegraphics[width=0.7\linewidth]{ft_pairs.png}
+\end{minipage}
+\fi
+
+\pagebreak
+\section{Frequency Response}
+\term{Frequency response}: Fourier transform of impulse response $\underline{h(t)\Longleftrightarrow H(j\omega)}$ \begin{eqnbox}
+    y(t)=h(t)*x(t)\Longleftrightarrow Y(j\omega)=H(j\omega)X(j\omega)
+\end{eqnbox}
+\begin{itemize}
+    \item $H(j\omega)$ also called \term{transfer function}: characterizes how input changed at every frequency
+\end{itemize}
+
+\newp
+\ulbf{Filters} \begin{enumerate}
+    \item \textbf{Low-pass filters}: $=0\;\forall\;\omega\not\in[-\omega_c,\omega_c]$ [=1]
+
+    \textit{Ideal low-pass}: [not causal, infinitely long $h(t)$] \begin{align*}
+        H(j\omega)=\rect{\omega/(2\omega_c)}\Longleftrightarrow h(t)=\frac{\omega_c}{\pi}\sinc\left(\frac{\omega_ct}{\pi}\right)
+    \end{align*}
+    \item \textbf{High-pass filters}: $=0\;\forall\;\omega\in[-\omega_c,\omega_c]$ [=1]
+
+    \textit{Ideal high-pass}: \begin{align*}
+        H(j\omega)=1-\rect{\omega/(2\omega_c)}\Longleftrightarrow h(t)=\delta(t)-\frac{\omega_c}{\pi}\sinc\left(\frac{\omega_ct}{\pi}\right)
+    \end{align*}
+    \item \textbf{Band-pass filters}: $=0\;\forall\;\omega\not\in[\pm\omega_0-\omega_c,\pm\omega_0+\omega_c]$ [=1]
+
+    \textit{Ideal band-pass:} \begin{align*}
+        H(j\omega)=\rect{(\omega+\omega_0)/(2\omega_c)}+\rect{(\omega-\omega_0)/(2\omega_c)}\Longleftrightarrow h(t)=2\cos(\omega_0t)\cdot\left[\frac{\omega_c}{\pi}\sinc\left(\frac{\omega_ct}{\pi}\right)\right]
+    \end{align*}
+\end{enumerate}
+\newp
+Causal filters: can truncate \& shift [disortionless]
+
+\newp
+\term{Distortionless (LTI) system}: Output is only a shifted/scaled version of the input $y(t)=Kx(t-t_d)$ \begin{itemize}
+    \item \textit{Frequency response}: $Y(j\omega)=Ke^{-j\omega t_d}\cdot X(j\omega)\implies H(j\omega)=Ke^{-j\omega t_d}$ 
+    
+    (Namely: $\abs{H(j\omega)}=K$, $\angle H(j\omega)=-\omega t_d$)
+\end{itemize}
+
+\newp
+\term{Group delay} - indicates how much a signal will be delayed (constant for LTI) \begin{align*}
+    t_d(\omega)=-\frac{d}{d\omega}\angle H(j\omega)
+\end{align*}
+
+\pagebreak
+\section{Sampling}
+\underline{\textbf{Impulse train (\& FT)} [$\omega_0=2\pi/T$]}: \begin{eqnbox}
+    \delta_T(t)=\sum_{k=-\infty}^\infty\delta(t-kT)\quad\Longleftrightarrow\quad F(j\omega)=\omega_0\sum_{k=-\infty}^\infty\delta\left(x-k\omega_0\right)
+\end{eqnbox}
+\ulbf{Impulse train sampling}: \begin{eqnbox}
+    f(t)\delta_T(t)=\sum_{k=-\infty}^\infty f(kT)\cdot\delta(t-kT)\quad\Longleftrightarrow\quad \Tilde{F}(j\omega)=\frac{1}{T}\sum_{k=-\infty}^\infty F(j(\omega-k\omega_0))
+\end{eqnbox}
+
+\pstart
+\ulbf{Nyquist Sampling Theorem} \\[6pt]
+Find $B=\frac{1}{2\pi}\abs{\omega_{\max}}$ [maximum frequency in Hz] $\implies$ to perfectly recover a signal, require: \begin{eqnbox}
+    \omega_0\geq4\pi B\;[=2\omega_{\max}]\Longleftrightarrow\frac{1}{T}=f_{sample}\geq 2B\quad\text{[\textit{Nyquist rate}]}
+\end{eqnbox} \begin{itemize}
+    \item $\omega_{\max}$: largest $\abs{\omega}$ with $F(\pm j\omega)\neq0$
+    \item \textit{Nyquist interval}: $T=1/(2B)$
+    \item To recover signal: find $\Tilde{F}(j\omega)=\frac{1}{T}\sum_{k=-\infty}^\infty F(j(\omega-k\omega_0))$ \& use LPF to find central copy
+    \item $\omega_0<4\pi B\implies$ \ulbf{aliasing}: modulated copies start to overlap \begin{itemize}
+        \item Taking LPF will reconstruct a different, lower-frequency signal
+        \item \textit{Anti-aliasing filter}: Use a LPF on signal beore sampling to reduce aliasing (causes distortion)
+    \end{itemize}
+\end{itemize}
+\newp
+\ulbf{Interpolation}
+\begin{enumerate}
+    \item Zero-order hold: At each $t$, take the value of the last-measured signal/sample
+    \item Linear interpolation: Connect sampled points with a line
+    \item Perfect interpolation: Returns the function exactly
+
+    Under Nyquist rate $\implies$ use \textbf{Whittaker-Shannon interpolation formula} [IFT of $\Tilde{F}(j\omega)H_{\text{LPF}}$]: \begin{eqnbox}
+        f(t)=\sum_{k=-\infty}^\infty f(kT)\;\sinc(2Bt-k)
+    \end{eqnbox}
+\end{enumerate}
+
+\pagebreak
+\section{The Laplace Transform}
+\underline{\textbf{Unilateral Laplace Transform} for a causal signal $f(t)u(t)$}: \begin{eqnbox}
+    F(s)=\int_{0^-}^\infty f(t)e^{-st}dt
+\end{eqnbox}
+\begin{itemize}
+    \item \textbf{Region of convergence/ROC}: Range of values $(\sigma,\omega)$ [$s=\sigma+j\omega$] for which $F(s)$ converges
+\end{itemize}
+\begin{whitebox}
+    \ulbf{Laplace Transform Properties}
+    \begin{enumerate}
+        \item The Laplace transform $\laplace[\cdot]$ is \textbf{linear}
+        \item \textbf{Time scaling} [$a>0$]: $\laplace[f(at)]=\frac{1}{a}F\left(\frac{s}{a}\right)$
+        \item \textbf{Time shift} [$T>0$]: $\laplace[f(t-T)]=e^{-sT}F(s)$
+        \item \textbf{Frequency shift}: $\laplace[f(t)e^{s_0t}]=F(s-s_0)$
+        \item \textbf{Convolution Theorem}: $\laplace[f_1(t)*f_2(t)]=F_1(s)F_2(s)$
+        \item \textbf{Integration}: $\laplace\left[\int_0^t f(\tau)d\tau\right]=\frac{1}{s}F(s)$
+        \item \textbf{Derivative}: $\laplace[f'(t)]=sF(s)-f(0)$
+        \item \textbf{Multiplication by $t$}: $\laplace[tf(t)]=-F'(s)$
+    \end{enumerate}
+\end{whitebox}
+\textbf{Fourier \& Laplace transforms}: For cases where ROC includes $s=j\omega$ axis: \begin{eqnbox}
+    F(j\omega)=F(s)\vert_{s=j\omega}
+\end{eqnbox}
+
+\pstart
+\textbf{Laplace transform \& Diff. Eqs.}: Differentiating a signal multiplies LT by $s$; integrating multiplies by $1/s$ \begin{itemize}
+    \item Differential equations in time domain $\Leftrightarrow$ algebraic equations in Laplace domain
+\end{itemize}
+
+\newp
+\ulbf{Partial Fraction Expansion} \\[6pt]
+Can find poles $\lambda_1,\hdots,\lambda_n$ of $F(s)$ \& residues $r_1,\hdots,r_n$ s.t.: \begin{eqnbox}
+    F(s)=\frac{b(s)}{a(s)}=\frac{b_ms^m+\hdots+b_1s+b_0}{a_ns^n+\hdots+a_1s+a}\implies F(s)=\frac{r_1}{s-\lambda_1}+\hdots+\frac{r_n}{s-\lambda_n}
+\end{eqnbox}
+\begin{itemize}
+    \item Inverse Laplace transform [for $t\geq0$]: \begin{eqnbox}
+        f(t)=\laplace^{-1}[F(s)]=\laplace^{-1}\left[\frac{r_1}{s-\lambda_1}+\hdots+\frac{r_n}{s-\lambda_n}\right]=r_1e^{-\lambda_1t}+\hdots+r_ne^{-\lambda_nt}
+    \end{eqnbox}
+    \item \textbf{Repeated roots}: \begin{gather*}
+        \text{$(s-\lambda^k)$ a root}\implies\text{Include a term }\frac{r_{1,i}}{(s-\lambda)^i}\text{ for each $i=1,\hdots,k$} \\
+        \longrightarrow\quad\laplace^{-1}\left[\frac{r}{(s-\lambda)^k}\right]=\frac{r}{(k-1)!}t^{k-1}e^{\lambda t}
+    \end{gather*}
+\end{itemize}
+
+\newp
+\ulbf{Finding Partial Fraction Expansions} \\[6pt]
+(i) \textbf{Cover-up procedure} [primary method]: \begin{eqnbox}
+    r_k=(s-\lambda_k)F(s)\bigg\vert_{s=\lambda_k}
+\end{eqnbox}
+\begin{itemize}
+    \item \textbf{Repeated roots}: $r_{1,k}$ via cover-up (multiplying by $(s-\lambda)^k$); for $r_{1,k-j}$ [$j\neq0$]: \begin{eqnbox}
+        r_{1,k-j}=\frac{1}{j!}\frac{d^j}{ds^j}(F(s)(s-\lambda)^k)\bigg\vert_{s=\lambda}
+    \end{eqnbox}
+\end{itemize}
+
+\pstart
+(ii) \textbf{L'Hopital's Rule}: Can use that \begin{eqnbox}
+    F(s)=\frac{b(s)}{a(s)}\implies r_k=\frac{b(\lambda_k)}{a'(\lambda_k}
+\end{eqnbox}
+
+\pstart
+(iii) \textbf{Quadratic Factors}: Take partial fraction expansion directly \begin{eqnbox}
+    F(s)=\frac{r_1s+r_2}{as^2+bs+c}\implies\text{ ILT via $e^{-at}\cos(\omega t)$ Laplace pair}
+\end{eqnbox}
+
+\newp
+($\ast$) \textbf{Nonproper Rational Functions} [Degree $m$ of numerator $\geq$ degree $n$ of denominator] \\[8pt]
+Split into polynomial $+$ proper rational function: \begin{eqnbox}
+    F(s)=\underbrace{\frac{b(s)}{a(s)}}_{\text{nonproper}}\longrightarrow F(s)=\underbrace{c(s)}_{\text{polynom.}}+\underbrace{\frac{d(s)}{a(s)}}_{\text{proper}}
+\end{eqnbox}
+\begin{itemize}
+    \item $d(s)/a(s)$ proper $\to$ use partial fraction expansion
+    \item Obtain $c(s)$ via polynomial long division [stop when order of subtracted $<$ order of denominator] \begin{align*}
+        \text{ILT of $c(s)$: }\underline{c(s)=c_0+c_1s+\hdots+c_{m-n}s^{m-n}\Longleftrightarrow c_0\delta(t)+c_1\delta^{(1)}(t)+\hdots+c_{m-n}\delta^{(m-n)}(t)}
+    \end{align*}
+\end{itemize}
+
+\end{document}

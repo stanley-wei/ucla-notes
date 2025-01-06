@@ -1,0 +1,69 @@
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{empheq}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subcaption}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+\usepackage[explicit]{titlesec}
+\usepackage{ulem}
+
+\newtcbox{\emphbox}[1][]{%
+    nobeforeafter, math upper, tcbox raise base,
+    enhanced, colframe=black,
+    colback=white, boxrule=1pt,
+    #1}
+
+\NewDocumentEnvironment{eqnbox}{b}{}{
+  \begin{empheq}[box=\emphbox]{equation*}
+    #1
+  \end{empheq}
+}
+
+\newenvironment{whitebox}{\begin{tcolorbox}[colback=white]}{\end{tcolorbox}}
+
+\theoremstyle{definition}
+\newtheorem*{corollary}{Corollary}
+\newtheorem*{definition}{Definition}
+\newtheorem*{lemma}{Lemma}
+\newtheorem*{prop}{Prop}
+\newtheorem*{recall}{Recall}
+\newtheorem*{theorem}{Theorem}
+\newtheorem*{thm}{Thm}
+
+\theoremstyle{remark}
+\newtheorem*{note}{Note}
+\newtheorem*{notation}{Notation}
+
+\newcommand{\pstart}[0]{\noindent}
+\newcommand{\newp}[0]{\vspace{8pt}\pstart}
+\newcommand{\term}[1]{\textit{\textbf{#1}}}
+\newcommand{\ulbf}[1]{\textbf{\ul{#1}}}
+
+\newcommand{\titleul}[1]{\newp\ulbf{#1}\vspace{7pt}~\\}
+\newcommand{\ctrrule}[2]{\begin{center}\rule{#1}{#2}\end{center}}
+
+% Notable Fields
+\newcommand{\naturals}[0]{\mathbb{N}}
+\newcommand{\integers}[0]{\mathbb{Z}}
+\newcommand{\reals}[0]{\mathbb{R}}
+\newcommand{\complex}[0]{\mathbb{C}}
+
+\newcommand{\image}[0]{\text{im}}
+\newcommand{\Jac}[0]{\text{Jac}}
+\newcommand{\rank}[0]{\text{rank}}
+
+% Misc
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\grad}[0]{\nabla}
+\newcommand{\indicator}[1]{1_{#1}}
+\newcommand{\loh}[1]{o\left(#1\right)}
+\newcommand{\Loh}[1]{O\left(#1\right)}
+\newcommand{\norm}[1]{\left|\left|#1\right|\right|}
+\newcommand{\set}[1]{\left\{#1\right\}}
+\newcommand{\vect}[1]{\left<#1\right>}
+\newcommand{\vspan}[1]{\text{span}\left\{#1\right\}}

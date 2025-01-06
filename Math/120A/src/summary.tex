@@ -1,0 +1,538 @@
+\documentclass[13pt]{extarticle}
+
+\include{utils.sty}
+% \usepackage[lmargin=0.3in,rmargin=0.3in,bmargin=0.3in,tmargin=0.3in]{geometry} % <- Shrunken sizing
+\usepackage[lmargin=0.7in,rmargin=0.7in,tmargin=0.7in,bmargin=0.7in]{geometry}
+\pagenumbering{gobble}
+
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{#1\hrule\vspace*{-14pt}}
+
+
+\begin{document}
+
+% \pstart Stanley Wei
+
+\begin{center}
+    \begin{Large}
+        \textbf{Math 120A: Differential Geometry}
+    \end{Large}
+    
+    \begin{large}
+        \vspace{8pt}
+        Prof. K. Varvarezos $\vert$ Fall 2024
+    \end{large}
+\end{center}
+\tableofcontents
+
+\pagebreak
+\section{Curves and Parametrizations}
+\begin{tcolorbox}[colback=white]
+    \begin{definition}
+        A \term{parametrized curve} is a function $\gamma:I\to\reals^n$ (where $I$ is  a potentially unbounded interval $I\subseteq\reals$). \begin{itemize}
+            \item Say that $\gamma$ is \term{smooth} if $\gamma$ is (i) continuous and (ii) infinitely differentiable
+            \item Say that $\gamma$ is \term{regular} if its $1^{st}$ derivative is never-vanishing, i.e. $\dot\gamma\neq\Vec{0}\;\forall\;t\in I$
+        \end{itemize}
+    \end{definition}
+\end{tcolorbox}
+
+\vspace{1pt}
+\begin{definition}
+    A set $C\subseteq\reals^n$ is called a \term{(smooth) curve} if it is (locally) the image of a smooth, regular parametrized curve. \begin{itemize}
+        \item Smoothness is a \ul{local} property!
+        \item Can still have multiple connected components, discontinuities
+    \end{itemize}
+\end{definition}
+
+\newp
+\subsection{Tangents to Curves}
+Let $\gamma:(a,b)\to\reals^n$ be a smooth parametrized curve: \\[-6pt] \begin{itemize}
+    \item The vector $\dot\gamma(t)=\frac{d}{dt}\gamma(t)$ is tangent to the curve $C=\image(\gamma)$ at point $\gamma(t)$
+    \item The \term{speed} at time $t$ is given by $\norm{\dot\gamma(t)}$
+    \item The \term{arc length} of $\gamma$ is given by: \begin{eqnbox}
+        l(\gamma)=\int_a^b\norm{\dot\gamma(t)}dt
+    \end{eqnbox}
+\end{itemize}
+
+\begin{prop}
+    If a parametrized curve $\gamma$ is \term{constant speed} (i.e. $\norm{\dot\gamma(t)}=c\;\forall\;t\in I$ for some $c\in\reals$), then $\dot\gamma(t)\perp\ddot\gamma(t)\;\forall\;t\in I$.
+\end{prop}
+
+\newp
+\subsection{Reparametrization}
+\begin{prop}
+    Let $\gamma_1:(a_1,b_1)\to\reals^n, \gamma_2:(a_2,b_2)\to\reals^n$ be smooth and regular parametrizations of the same curve $C$. Then for each $t\in(a_1,b_1)$, $\exists$ intervals $(c_1,d_1)\subseteq(a_1,b_1),$ and $(c_2,d_2)\subseteq(a_2,b_2)$ [with $t\in(c_1,d_1)$] and a smooth bijection [with smooth inverse] $\rho:(c_1,d_1)\to(c_2,d_2)$ s.t. \begin{align*}
+        \implies\text{$\underline{\gamma_1=\gamma_2\circ\rho}$ on the interval $(c_1,d_1)$}
+    \end{align*}
+\end{prop}
+
+\newp
+\subsection{Level Sets}
+\begin{tcolorbox}[colback=white]
+    \begin{definition}
+        Let $f$ be a (smooth) function $f:\reals^n\to\reals$, $c\in\reals$; then the \term{level set} of $f$ at height $c$ is defined by: \begin{eqnbox}
+            f^{-1}(c)=\set{x\in\reals^n:f(x)=c}
+        \end{eqnbox}
+    \end{definition}
+
+    \begin{center}
+        \vspace{3pt}
+        \rule{14cm}{0.4pt}
+    \end{center}
+
+    \begin{definition}
+        Given a function $f$ as described above: \begin{itemize}
+            \item A point $x\in\reals^n$ is called a \term{critical point} of $f$ if $\grad f(x)=0$
+            \item A scalar $c\in\reals$ is called a \term{critical value} of $f$ if $f(x)=c$ for some critical point $x\in\reals^n$; otherwise, $c$ is called a \term{regular value}
+        \end{itemize}
+    \end{definition}
+\end{tcolorbox}
+
+\begin{thm}
+    Let $f:\reals^n\to\reals$; then for any regular value $c\in\reals$ of $f$, $f^{-1}(c)$ is a (smooth) curve.
+\end{thm}
+
+
+\pagebreak
+\section{Vector Fields}
+\textbf{Notation}:
+\begin{itemize}
+    \item \textit{Base-pointed vectors}: Let $p,v\in\reals^n\to$ denote the vector $v$ based at point $p$ as $(p,v)$
+    \item Also denote the vector space of vectors $\reals^n$ based at $p$ as $\reals_p^n$ \begin{itemize}
+        \item Base point $p$ unchanged under addition, scalar multiplication
+    \end{itemize}
+\end{itemize}
+
+\newp
+\begin{tcolorbox}[colback=white]
+    \begin{definition}
+        Let $U\subseteq\reals^n$. A \term{(smooth) vector field} on $U$ is a smooth function $X:U\to U\times\reals^n$ such that $\forall\;p\in U,X(p)=(p,v)$ for some $v\in\reals^n$.
+    \end{definition}
+\end{tcolorbox}
+\begin{note}
+    For any curve $C$ with parametrization $\gamma$, can define its \term{tangent vector field} $X:C\to C\times\reals^2$ by $X(\gamma(t))=(\gamma(t),\dot\gamma(t))$.
+\end{note}
+
+\pstart
+\begin{notation}
+    Given a parametrized curve $\gamma:(a,b)\to\reals^n$, a vector field along $\gamma$ is a function $X:(a,b)\to\reals^n\times\reals^n$ s.t. $X(t)=(\gamma(t),v(t))$ [for some smooth function $v:(a,b)\to\reals^n$]. \begin{itemize}
+        \item Can take derivatives of $X$ w.r.t. $t$: $\dot X(t)=(\gamma(t),\dot v(t))$
+    \end{itemize}
+\end{notation}
+
+\begin{definition}
+    Given a smooth function $f:\reals^n\to\reals$, the \term{gradient vector field} $\grad f$ of $f$ is defined by ($\forall\;p\in\reals^n$): \begin{eqnbox}
+        \grad f(p)=\left(p,\left(\frac{\partial f}{\partial x_1}(p),\hdots,\frac{\partial f}{\partial x_n}(p)\right)\right)
+    \end{eqnbox} \begin{itemize}
+        \item For any parametrization $\gamma$ of a level set $f^{-1}(c)$ [$c$ regular value] - $\grad f(\gamma(t))\perp\dot\gamma(t)$
+    \end{itemize}
+\end{definition}
+
+\newp
+\subsection{Integral Curves}
+\begin{definition}
+    Let $X:U\to U\times\reals^2$ be a (smooth) vector field. An \term{integral curve} of $X$ is a parametrization $\gamma:(a,b)\to U$ s.t. \begin{eqnbox}
+        X(\gamma(t))=(\gamma(t),\dot\gamma(t))\;\forall\;t\in(a,b)
+    \end{eqnbox} 
+\end{definition}
+
+~\\[-18pt]
+\begin{thm}
+    Given $X:U\to U\times\reals^2$ and $p\in U$, $\exists$ a ``maximal'' integral curve of $X$ through $p$ - $\gamma:(a,b)\to U$ s.t. (assuming WLOG that $a<0<b$): \begin{enumerate}
+        \item $\gamma(0)=p$
+        \item If $\beta:I\to U$ is another integral curve of $X$ with $\beta(0)=p$, then $I\subseteq(a,b)$ and $\beta(t)=\gamma(t)\;\forall\;t\in I$
+    \end{enumerate}
+\end{thm}
+
+\newp
+\subsection{Tangent Spaces}
+\begin{definition}
+    Let $C\subseteq\reals^n$ be a (smooth) curve, and let $p\in C$. A vector $(p,v)$ based at $p$ is said to be \term{tangent} to $C$ if $v=\dot\gamma(t)$ for some (smooth, not necessarily regular) parametrization $\gamma$ of $C$ with $\gamma(t)=p$. \\[-4pt]
+
+    $\rightarrow$ The \term{tangent space} of $C$ at $p$ is defined by: \begin{eqnbox}
+        T_pC=\set{(p,v):\text{$(p,v)$ is tangent to $C$}}
+    \end{eqnbox}
+\end{definition}
+
+\begin{prop}
+    Let $C$ be a smooth curve and $\gamma$ a (smooth, regular) parametrization of $C$ with $\gamma(t)=p$; then: \begin{eqnbox}
+        T_pC=\vspan{(p,\dot\gamma(t))}
+    \end{eqnbox}
+    In particular, $T_pC$ is a 1D subspace of $\reals_p^n$.
+\end{prop}
+
+\newp
+\subsection{Orientation}
+\begin{definition}
+    Let $\gamma:(a,b)\to\reals^n$ be a parametrized curve, and let $X(t)=(\gamma(t),v(t))$ be a vector field along $\gamma$. \begin{itemize}
+        \item $X$ is called a \term{unit vector field} if $\norm{v(t)}=1\;\forall\;t\in(a,b)$
+        \item $X$ is called a \term{normal vector field} if $v(t)$ is orthogonal to $\dot\gamma(t)\;\forall\;t\in(a,b)$
+    \end{itemize}
+\end{definition}
+
+\newp
+\textit{Obtaining orientation} [$\reals^2$]: \begin{enumerate}
+    \item If $C=f^{-1}(c)$ is a level set of a function $f$, take $\grad f/\norm{\grad f}$
+    \item If $\gamma$ parametrizes $C$, find $N(t)$ by rotating $\dot\gamma(t)$ CCW $\pi/2$ [$(x,y)\mapsto(-y,x)$]
+\end{enumerate}
+
+~\\[-28pt]
+\begin{tcolorbox}[colback=white]
+    \begin{definition}
+        Given a plane curve $C\subseteq\reals^2$, an \term{orientation} of $C$ is a choice of unit normal vector field along $C$.
+    \end{definition}
+\end{tcolorbox}
+
+~\\[-28pt]
+\begin{prop}
+    Let $C\subseteq\reals^2$ be a plane curve. If $C$ is connected, then $C$ has exactly 2 orientations.
+\end{prop}
+
+\begin{definition}
+    For a parametrized plane curve $\gamma:(a,b)\to\reals^2$, say that an orientation $N$ is \term{consistent} with the parametrization if $\forall\;t\in(a,b)$, $N(t)$ is the vector obtained by rotating the tangent direction $\frac{\dot\gamma(t)}{\norm{\dot\gamma(t)}}$ $\pi/2$ counterclockwise, i.e.: \begin{align*}
+        N(t)=\frac{(-\dot\gamma_2(t),\dot\gamma_1(t))}{\norm{\dot\gamma(t)}}
+    \end{align*}
+\end{definition}
+
+
+\pagebreak
+\section{Curvature}
+\begin{tcolorbox}[colback=white]
+    \begin{definition}
+        Let $C\subseteq\reals$ be a simple [i.e. non-self-intersecting] plane curve with orientation $N$. Then the curvature of $C$ at point $p\in C$ is given by: \begin{eqnbox}
+            \kappa(p)=\frac{\ddot\gamma(t)\cdot N(\gamma(t))}{\norm{\dot\gamma(t)}^2}
+        \end{eqnbox}
+        where $\gamma$ is any smooth, regular parametrization of $C$ and $t\in\reals$ s.t. $\gamma(t)=p$.
+    \end{definition}
+\end{tcolorbox}
+
+\begin{note}
+    \begin{itemize}
+        \item The curvature of a curve is independent of parametrization $\gamma$.
+        \item Inward/outward $\to$ +/-; sharp/shallow $\to$ high/low
+    \end{itemize}
+\end{note}
+
+\vspace{-4pt}
+\begin{definition}
+    Let $C\subseteq\reals^2$ be a curve with orientation $N$, and let $p\in C$ s.t. $\kappa(p)\neq0$; then the \term{circle of curvature/osculating circle} of $C$ at $p$ is the circle $C_O\subseteq\reals^2$ with: \begin{enumerate}
+        \item Center of curvature $p+\frac{1}{\kappa(p)}N(p)$
+        \item Radius of curvature $\frac{1}{\abs{\kappa(p)}}$
+        \item Orientation $N_O$ s.t. $N_O(p)=N(p)$
+    \end{enumerate}
+\end{definition}
+
+\newp
+\ulbf{Properties}
+\begin{enumerate}
+    \item $C_O$ is tangent to $C$ at point $p$
+    \item $C_O,C$ have the same curvature at $p$
+\end{enumerate}
+
+\newp
+\subsection{Frenet-Serret [2D]}
+\begin{definition}
+    Let $C\subseteq\reals^2$ be a curve with orientation $N$, $\gamma(t)$ a unit-speed parametriztion of $C$
+
+    \pstart
+    $\rightarrow$ define the \term{unit tangent vector} to $\gamma$ at time $t$ by: \begin{eqnbox}
+        T(t)=(\gamma(t),\dot\gamma(t))
+    \end{eqnbox}
+\end{definition}
+
+\begin{tcolorbox}[colback=white]
+    \ulbf{Frenet-Serret Formulas [2D]} \\[-24pt]
+
+    \begin{minipage}[t]{\textwidth}
+        \centering
+        \begin{minipage}[t]{0.3\textwidth}
+            \centering
+            \begin{empheq}[box=\emphbox]{align*}            
+                (1)&\; \dot T=\kappa N \\
+                (2)&\; \dot N=-\kappa T
+            \end{empheq}
+        \end{minipage}
+        \begin{minipage}[t]{0.1\textwidth}
+            \centering
+            \vspace{15pt}
+            \begin{gather*}
+                \Longleftrightarrow
+            \end{gather*}
+        \end{minipage}
+        \begin{minipage}[t]{0.4\textwidth}
+            \centering
+            \begin{eqnbox}
+                \begin{bmatrix}
+                    \dot T \\ \dot N
+                \end{bmatrix}=\begin{pmatrix}
+                    0 & \kappa \\ -\kappa & 0
+                \end{pmatrix}\begin{bmatrix}
+                    T \\ N
+                \end{bmatrix}
+            \end{eqnbox}
+        \end{minipage}
+    \end{minipage}
+\end{tcolorbox}
+
+\newp
+\subsection{Frenet-Serret [3D]}
+Let $\gamma$ be a unit-speed parametrization of a curve $C\subseteq\reals^3$: \begin{enumerate}
+    \item Define the \term{unit tangent vector} at $\gamma(t)$ by: \begin{eqnbox}
+        T(t)=(\gamma(t),\dot\gamma(t))
+    \end{eqnbox}
+    \item Define the \term{principal unit normal vector} of $\gamma(t)$ by: \begin{eqnbox}
+        N(\gamma(t))=\left(\gamma(t),\frac{\ddot\gamma(t)}{\norm{\ddot\gamma(t)}}\right)
+    \end{eqnbox}
+    \item Define the \term{binormal unit vector} of $\gamma(t)$ by: \begin{eqnbox}
+        B=T\times N
+    \end{eqnbox}
+\end{enumerate}
+
+\begin{tcolorbox}[colback=white]
+    \ulbf{Frenet-Serret Formulas [3D]} \\[-24pt]
+
+    \begin{minipage}[t]{\textwidth}
+        \centering
+        \begin{minipage}[t]{0.3\textwidth}
+            \centering
+            \begin{empheq}[box=\emphbox]{align*}            
+                (1)&\;\dot T=\kappa N \\
+                (2)&\;\dot N=-\kappa T+\tau B \\
+                (3)&\;\dot B=-\tau N
+            \end{empheq}
+        \end{minipage}
+        \begin{minipage}[t]{0.1\textwidth}
+            \centering
+            \vspace{24pt}
+            \begin{gather*}
+                \Longleftrightarrow\hspace{2pt}
+            \end{gather*}
+        \end{minipage}
+        \begin{minipage}[t]{0.4\textwidth}
+            \centering
+            \vspace{3pt}
+            \begin{eqnbox}
+                \begin{bmatrix}
+                    \dot T \\ \dot N \\ \dot B
+                \end{bmatrix}=\begin{pmatrix}
+                    0 & \kappa & 0 \\
+                    -\kappa & 0 & \tau \\
+                    0 & -\tau & 0
+                \end{pmatrix}\begin{bmatrix}
+                    T \\ N \\ B
+                \end{bmatrix}
+            \end{eqnbox}
+        \end{minipage}
+    \end{minipage}
+\end{tcolorbox}
+\newp
+\textbf{Consequence}: Any curve $C$ completely determined by its initial values + curvature \& torsion.
+
+
+\pagebreak
+\section{Surfaces}
+\begin{tcolorbox}[colback=white]
+    \begin{definition}
+        A \term{surface}/\term{2-manifold} is a set $S\subseteq\reals^n$ s.t. $\forall\;p\in S$, $S$ is locally parametrized in some neighborhood $U$ of $p$ by a smooth function $\phi:D_r^2\to U$ satisfying $\rank(\Jac(\phi))=2$.
+    \end{definition}
+\end{tcolorbox}
+
+\pstart
+\textbf{3 ways to obtain a surface}: \begin{enumerate}
+    \item As the image of a local parametrization $S=\image(\phi)$
+    \item As the graph of a function $f:\reals^2\to\reals$
+    \item As the level set of a smooth function $f:\reals^3\to\reals$
+\end{enumerate}
+
+\newp
+\textbf{2 notable classes of surfaces}: \begin{enumerate}
+    \item Given plane curve $C\subseteq\reals^2$, the \term{cylinder over $C$} is the set $A\subseteq\reals^3$ given by \begin{eqnbox}
+        A=\set{(x,y,z):(x,y)\in C}
+    \end{eqnbox} \begin{itemize}
+        \item $C$ smooth curve $\implies$ cylinder over $C$ is a smooth surface
+    \end{itemize}
+    \item Given $C\subseteq\reals^2$ curve lying above the x-axis, its \term{surface of revolution} is: \begin{eqnbox}
+        S=\set{(x,y,z):\left(x,\sqrt{y^2+z^2}\right)\in C}
+    \end{eqnbox}
+\end{enumerate}
+
+\newp
+\subsection{Tangent Spaces}
+\begin{tcolorbox}[colback=white]
+    \begin{definition}
+        $S\subseteq\reals^3$ a surface, $p\in S$ a point $\implies$ $(p,v)$ is \term{tangent to $S$} if $\exists$ smooth PC $\gamma:(a,b)\to S$ s.t. for some $t_0\in\reals$: \begin{eqnbox}
+            \gamma(t_0)=p\,\text{ and }\,\dot\gamma(t_0)=v
+        \end{eqnbox}
+        $\implies$ The \term{tangent space} of $S$ at $p$ is the set $T_pS\subseteq\reals^3_p$ [$\dim T_pS=2$] defined by: \begin{eqnbox}
+            T_pS=\set{(p,v):\text{$(p,v)$ is tangent to $S$}}
+        \end{eqnbox}
+    \end{definition}
+\end{tcolorbox}
+
+\subsection{Orientation for Surfaces}
+\begin{tcolorbox}[colback=white]
+    \begin{definition}
+        Let $S\subseteq\reals^n$ a surface and $p\in S$ $\implies$ the \term{tangent plane} of $S$ at $p$ is: \begin{eqnbox}
+            P=\set{p+v:(p,v)\in T_pS}
+        \end{eqnbox}
+    \end{definition}
+    
+    \begin{definition}
+        A vector $(p,v)$ is \term{orthogonal} to a surface $S$ if it is orthogonal to all vectors $(p,v_0)\in T_pS$
+    
+        \newp
+        $\implies$ Let $S\subseteq\reals^3$ a surface; then an \term{orientation} of $S$ is a choice of unit normal vector field $N:S\to S:\times\reals^3$ s.t. $\forall\;p\in S$: $N(p)\perp S,\norm{N(p)}=1$.
+    \end{definition}
+\end{tcolorbox}
+\begin{itemize}
+    \item Note: $S$ a connected surface $\implies$ $S$ has either 0 or 2 orientations
+\end{itemize}
+
+\newp
+\subsection{The Gauss Map}
+\begin{definition}
+    Given an oriented curve/surface $A\in\reals^n$ with orientation $N$, the associated \term{Gauss map} is the fuction $G:A\to S^{n-1}$ defined by: \begin{eqnbox}
+        N(p)=(p,G(p))\;\forall\;p\in A
+    \end{eqnbox} \begin{itemize}
+        \item Notation: $S^n$ is unit sphere in $\reals^{n+1}$
+    \end{itemize}
+\end{definition}
+
+\begin{definition}
+    Define the \term{spherical image} of $A$ as the image of the Gauss map of $A$ \begin{itemize}
+        \item \textbf{Thm}: If $A=f^{-1}(c)$ compact, then its Gauss map under orientation $N=\pm\frac{\grad f}{\norm{\grad f}}$ is surjective
+        \item \textit{Rec}: $A=f^{-1}(c)$ for $f$ smooth $\implies$ $A$ closed; $A\subseteq\reals^n$ compact $\Longleftrightarrow$ $A$ closed \& bounded [Heine-Borel]
+    \end{itemize}
+\end{definition}
+
+\newp
+\subsection{Curves on Surfaces}
+\begin{definition}
+    Let $S\subseteq\reals^3$ a surface, $P\subseteq\reals^3$, and $p\in S\cap P$ $\implies$ say $P$ is \term{orthogonal} to $S$ at $p$ if $\exists\;(p,v)\neq0$ orthogonal to $S$ and tangent to $P$
+\end{definition}
+
+
+\pagebreak
+\section{Curvatures of Surfaces}
+\begin{tcolorbox}[colback=white]
+    \begin{definition}
+        Let $f:\reals^n\to\reals$ smooth, and let $(p,v)\in\reals_p^n$ $\implies$ define \term{derivative of $f$ w.r.t. $(p,v)$} [linear] by (for $\gamma:(a,b)\to\reals^n$ PC w/ $\gamma(t_0)=p,\dot\gamma(t_0)=v$): \begin{eqnbox}
+            \grad_{(p,v)}f=\frac{d}{dt}(f\circ\gamma)(t_0)\;[=\grad f(p)\cdot v]
+        \end{eqnbox}
+        \& f or a vector field $X:U\to U\times\reals^n$: \begin{eqnbox}
+            \grad_{(p,v)}X=(X\;\dot\circ\;\gamma)(t_0)\;[=(p,\;(\grad X_1(p)\cdot v,\hdots,\grad X_n(p)\cdot v))]
+        \end{eqnbox}
+    \end{definition}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=white]
+    \begin{definition}
+        Let $S\subseteq\reals^3$ be smooth surface oriented by $N$, and let $p\in S$ $\implies$ define the \term{Weingarten map} of $f$ at $p$ by: \begin{eqnbox}
+            L_p(v)=-\grad_{(p,v)}N(p)
+        \end{eqnbox}
+    \end{definition}    
+\end{tcolorbox}
+
+\begin{itemize}
+    \item The Weingarten map is linear \& self-adjoint: $L_p(v)\cdot w=L_p(w)\cdot v$
+    \item For a curve $\gamma:(a,b)\to S$ on $S$ with $\gamma(t_0)=p,\dot\gamma(t_0)=v$: $\ddot\gamma\cdot N(p)=L_p(v)\cdot v$
+    \item Note: $\grad_{(p,v)}N$ only depends on values of $N$ on $S$
+\end{itemize}
+
+\newp
+\begin{tcolorbox}[colback=white]
+    \begin{definition}
+        Let $S\subseteq\reals^3$ surface oriented by $N$, and let $p\in S$, $(p,v)\in T_pS$ unit vector. Then the \term{normal curvature} of $S$ at $p$ in the direction $v$ is defined by: \begin{eqnbox}
+            k(p,v)=L_p(v)\cdot v
+        \end{eqnbox}
+    \end{definition}
+\end{tcolorbox}
+
+\pstart
+\textbf{Corollary}: Let $S\subseteq\reals^3$ oriented surface, $p\in S$, $P$ plane through $p$ orthogonal to $S$ at $p$; then $P\cap S$ is (near $p$) a smooth curve satisfying: \begin{eqnbox}
+    \kappa(p)=k(p,v)
+\end{eqnbox}
+
+\begin{whitebox}
+    \begin{definition}
+        Let $S\subseteq\reals^3$ surface oriented by $N$, and let $p\in S$. Let $\set{v_1,v_2}$ be an orthonormal basis (for $T_pS$) of eigenvectors of $L_p$ with eigenvalues $\lambda_1,\lambda_2$; then the principal curvatures of $S$ at $p$ are defined by: \begin{eqnbox}
+            k_1(p)=k(p,v_1)=\lambda_1;\quad k_2(p)=k(p,v_2)=\lambda_2
+        \end{eqnbox}
+    \end{definition}
+\end{whitebox}
+\begin{itemize}
+    \item The principal curvatures $k_1(p)\leq k_2(p)$ are the min \& max of the normal curvatures $k(p,v)$ at $p$: \begin{align*}
+        \underline{k_1(p)=\min_vk(p,v);\quad k_2(p)=\max_vk(p,v)}
+    \end{align*}
+\end{itemize}
+
+\begin{whitebox}
+    \begin{definition}
+        Let $S\subseteq\reals^3$ an oriented surface, and let $p\in S$. Then the \term{Gauss curvature} of $S$ at $p$ is given by: \begin{eqnbox}
+            K(p)=k_1(p)\cdot k_2(p)[=\det L_p]
+        \end{eqnbox}
+        Similarly, the \term{mean curvature} of $S$ at $p$ is defined by: \begin{eqnbox}
+            H(p)=\frac{1}{2}\left(k_1(p)+k_2(p)\right)
+        \end{eqnbox}
+    \end{definition}
+\end{whitebox}
+\begin{theorem}
+    Let $S\subseteq\reals^3$ a compact oriented surface; then $\exists\;p\in S$ such that either (i) $k(p,v)>0\forall\;v$, or (ii) $k(p,v)<0\;\forall\;v$.
+
+    \newp
+    [Equivalently: $K(p)>0$]
+\end{theorem}
+
+\begin{lemma}
+    Let $S\subseteq\reals^3$ oriented by $N$, and let $X:\reals^3\to\reals^3$ a VF s.t. $X/\norm{X}=N$. Let $p\in S$ \& $\set{v_1,v_2}$ any basis for $T_pS$; then: \begin{align*}
+        K(p)=\det\begin{pmatrix}
+            \grad_{(p,v_1)}X \\
+            \grad_{(p,v_2)}X \\
+            X(p)
+        \end{pmatrix}\cdot\frac{1}{\norm{X(p)}^2\det\begin{pmatrix}
+            v_1 \\ v_2 \\ X(p)
+        \end{pmatrix}}
+    \end{align*}
+\end{lemma}
+
+\newp
+\subsection{Fundamental Forms}
+\begin{definition}
+    Llet $V\subseteq\reals^n$ a subspace of $\reals^n$, and let $T:V\to V$ a self-adjoint linear map. Then the quadratic form associated with $T$ is the map $Q:V\to\reals$ given by: \begin{align*}
+        Q(v)=T(v)\cdot v
+    \end{align*}
+\end{definition}
+
+\begin{whitebox}
+    \begin{definition}
+        Let $S\subseteq\reals^3$, and let $p\in S$. Then the \term{fundamental forms} of $S$ at $p$ are: \begin{enumerate}
+            \item 1$^{st}$ fundamental form: $\ell_p:T_pS\to\reals$ defined by \begin{eqnbox}
+                \ell_p(v)=v\cdot v=\norm{v}^2
+            \end{eqnbox}
+            \item 2$^{nd}$ fundamental form: $\rho_p:T_pS\to\reals$ defined by: \begin{eqnbox}
+                \rho_p(v)=L_p(v)\cdot v
+            \end{eqnbox}
+        \end{enumerate}
+    \end{definition}
+\end{whitebox}
+
+\newp
+\textbf{Notice}: Let $(p,v)\in T_pS,v\neq0$; then: \begin{align*}
+    \underline{\rho_p(v)=\norm{v}^2k\left(p,\frac{v}{\norm{v}}\right)}
+\end{align*}
+In particular, have the following relationships: \begin{enumerate}
+    \item $\rho_p$ definite $\Longleftrightarrow$ $K(p)>0$
+    \item $\rho_p$ indefinite $\Longleftrightarrow$ $K(p)<0$
+    \item $\rho_p$ semi-definite $\Longleftrightarrow$ $K(p)=0$
+\end{enumerate}
+\newp
+[\textbf{Corollary}: Let $S\subseteq\reals^3$ a compact oriented surface; then $\exists\;\rho_p\in S$ with $\rho_p$ definite.]
+
+\newp
+\subsection{Isometries}
+\begin{definition}
+    Let $X_1,X_2\subseteq\reals^n$, and let $\phi:X_1\to X_2$ a diffeomorphism. We call $\phi$ an \term{isometry} if $\forall\;\gamma:(a,b)\to X_1$, the arc length of $\gamma$ is equivalent to the arc length of $\phi\circ\gamma$, i.e.: \begin{align*}
+        \underline{\int_a^b\norm{\dot\gamma(t)}dt=\int_a^b\norm{\phi\dot\circ\gamma(t)}dt}
+    \end{align*}
+\end{definition}
+
+\end{document}

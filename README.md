@@ -1,13 +1,11 @@
 My notes for the classes I've taken so far during my time at UCLA. Peruse at your own peril.
+[Majors: Computer Science, Applied Mathematics]
 
+**Classes**:
+*CS*: CS 31, CS 32, CS 33, CS 35L, CS 161, CS 163, CS 180
 
-Classes:
+*Math*: Math 32A, Math 32B, Math 33A, Math 33B, Math 61, Math 115AH, Math 120A, Math 131AH, Math 164, Math 170A
 
-CS: 31, 32, 33, 35L, 161, 180
+*Physics*: Physics 1B, Physics 1C
 
-Math: 32A, 32B, 33A, 33B, 61, 115AH, 131AH, 170A
-
-Physics: 1B, 1C
-
-Other: SOCIOL 10, PHYSCI 5, PSYCH 10
-
+*Other*: ECE 102, SOCIOL 10, PHYSCI 5, PSYCH 10

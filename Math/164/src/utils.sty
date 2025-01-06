@@ -1,0 +1,91 @@
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{empheq}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subcaption}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+\usepackage[explicit]{titlesec}
+\usepackage{ulem}
+
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{#1\hrule\vspace*{-14pt}}
+
+\newenvironment{whitebox}{\begin{tcolorbox}[colback=white]}{\end{tcolorbox}}
+\newenvironment{defnbox}{\begin{tcolorbox}[colback=blue!3!white]\begin{definition}}{\end{definition}\end{tcolorbox}}
+\newenvironment{thmbox}{\begin{tcolorbox}[colback=blue!3!white]\begin{theorem}}{\end{theorem}\end{tcolorbox}}
+
+
+\newtcbox{\emphbox}[1][]{%
+    nobeforeafter, math upper, tcbox raise base,
+    enhanced, colframe=black,
+    colback=white, boxrule=1pt,
+    #1}
+\NewDocumentEnvironment{eqnbox}{b}{}{
+  \begin{empheq}[box=\emphbox]{equation*}
+    #1
+  \end{empheq}
+}
+\NewDocumentEnvironment{alignbox}{b}{}{
+  \begin{empheq}[box=\emphbox]{align*}
+    #1
+  \end{empheq}
+}
+
+
+\theoremstyle{definition}
+\newtheorem*{corollary}{Corollary}
+\newtheorem*{definition}{Definition}
+\newtheorem*{lemma}{Lemma}
+\newtheorem*{prop}{Prop}
+\newtheorem*{recall}{Recall}
+\newtheorem*{theorem}{Theorem}
+\newtheorem*{thm}{Thm}
+
+\theoremstyle{remark}
+\newtheorem*{note}{Note}
+\newtheorem*{notation}{Notation}
+
+\newcommand{\pstart}[0]{\noindent}
+\newcommand{\newp}[0]{\vspace{8pt}\pstart}
+\newcommand{\term}[1]{\textit{\textbf{#1}}}
+\newcommand{\ulbf}[1]{\textbf{\ul{#1}}}
+
+\newcommand{\titleul}[1]{\newp\ulbf{#1}\vspace{7pt}~\\}
+\newcommand{\ctrrule}[2]{\begin{center}\rule{#1}{#2}\end{center}}
+
+
+% General Commands
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\mbold}[1]{\boldsymbol{#1}}
+\newcommand{\image}[1]{\text{Im}\left(#1\right)}
+\newcommand{\set}[1]{\left\{#1\right\}}
+\newcommand{\simplies}[0]{\;\Rightarrow\;}
+
+% Fields
+\newcommand{\reals}[0]{\mathbb{R}}
+\newcommand{\complex}[0]{\mathbb{C}}
+\newcommand{\naturals}[0]{\mathbb{N}}
+
+% Linear Algebra Commands
+\newcommand{\inner}[2]{\left<#1,#2\right>}
+\newcommand{\norm}[1]{\left|\left|#1\right|\right|}
+\newcommand{\rank}[1]{\text{rank}\left(#1\right)}
+\newcommand{\trace}[1]{\text{tr}(#1)}
+\newcommand{\vect}[1]{\left<#1\right>}
+\newcommand{\vspan}[1]{\text{span}\left\{#1\right\}}
+
+% Linear Algebra Environments
+\newenvironment{smallvect}{\left(\begin{smallmatrix}}{\end{smallmatrix}\right)}
+
+% Calculus Commands
+\newcommand{\grad}[0]{\nabla}
+
+% Misc Commands
+\newcommand{\vbf}[0]{\mbold{v}}
+\newcommand{\xbf}[0]{\mbold{x}}
+\newcommand{\ybf}[0]{\mbold{y}}
+\newcommand{\zbf}[0]{\mbold{z}}

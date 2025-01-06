@@ -1,0 +1,479 @@
+\documentclass[12pt]{extarticle}
+
+\include{Notes/utils.sty}
+\graphicspath{{Notes/Images}}
+
+% \usepackage[lmargin=0.3in,rmargin=0.3in,bmargin=0.3in,tmargin=0.3in]{geometry} % <- Shrunken sizing
+\usepackage[lmargin=0.7in,rmargin=0.7in,tmargin=0.7in,bmargin=0.7in]{geometry}
+\pagenumbering{gobble}
+
+\begin{document}
+
+% \pstart Stanley Wei
+
+\begin{center}
+    \begin{Large}
+        \textbf{Math 164: Optimization}
+    \end{Large}
+    
+    \begin{large}
+        \vspace{8pt}
+        Prof. W. Diepeveen $\vert$ Fall 2024
+    \end{large}
+\end{center}
+\tableofcontents
+
+
+\pagebreak
+\section{Review}
+\ulbf{Calculus}: \begin{enumerate}
+    \item Jacobian of $f:\reals^n\to\reals^m$: \begin{eqnbox}
+        \text{Jac}(f)=\begin{pmatrix}
+            \frac{\partial f_i}{\partial x_j}
+        \end{pmatrix}_{ij}
+    \end{eqnbox}
+    \item Hessian of $f:\reals^n\to\reals$: \begin{eqnbox}
+        \grad^2f=\begin{pmatrix}
+            \frac{\partial^2f}{\partial x_i\partial x_j}
+        \end{pmatrix}_{ij}
+    \end{eqnbox}
+    \item \term{Taylor expansion}: $f(y)=f(x)+\grad f(x)^T(y-x)+\frac{1}{2}(y-x)^T\grad^2f(x)(y-x)+O(\norm{y-x}^3)$
+    \item \term{Directional derivative}: $\frac{v^T\grad f(x)}{\norm{v}}$
+\end{enumerate}
+
+\newp
+\ulbf{Quadratic forms}: $\underline{f(x)=\frac{1}{2}x^TQx-b^Tx+c}\implies \underline{x^\ast=Q^{-1}b}$ \begin{itemize}
+    \item \textit{Sylvester's criterion}: $Q$ PD iff minors $d^k>0\;\forall\;k$; ND iff $(-1^k)d^k>0\;\forall\; k$
+\end{itemize}
+
+\newp
+Symmetric matrices $Q$: can rewrite as $Q=V^T\Lambda V$
+
+\newp
+Convex sets: $S$ convex $\Leftrightarrow$ $\forall\;x,y\in S\;\&\;\alpha\in[0,1]$, $\alpha x+(1-\alpha)y\in S$
+
+
+\pagebreak
+\section{Basics of Optimization}
+Want to solve problems of the form:\begin{eqnbox}
+    \min\;f(x) \text{ s.t. } f:\reals^n\to\reals,\;\Omega\subseteq\reals^n
+\end{eqnbox}
+
+\newp
+\textbf{Def}: A \term{local minimizer} of $f$ under $\Omega$ is a point $x^\ast\in\Omega$ if $\exists\;\epsilon>0$ s.t. \begin{align*}
+    f(x^\ast)\leq f(x)\;\forall\;x\in\Omega\cap B_\epsilon(x^\ast)
+\end{align*}
+
+\newp
+\begin{whitebox}
+    \ulbf{Conditions for Local Minima} \begin{enumerate}
+        \item \textbf{FONC}: \begin{gather*}
+            \text{$x^\ast$ is a local min}\implies d^T\grad f(x^\ast)\geq0\;\forall\;d\in\reals^n \text{ feasible} \\[4pt]
+            [\Omega=\reals^n: \grad f(x^\ast)=0]
+        \end{gather*}
+        \item \textbf{SONC}: \begin{gather*}
+            \text{$x^\ast$ is a local min, $d^T\grad f(x^\ast)$}=0\implies d^TD^2_xf(x^\ast)d\geq0\;\forall\;d\in\reals^n \text{ feasible} \\[4pt]
+            [\Omega=\reals^n:D_x^2f(x)\geq0]
+        \end{gather*}
+        \item \textbf{SOSC}: \begin{gather*}
+            \text{$x^\ast$ is an interior point},\,\grad f(x^\ast)=0,\,D^2f(x^\ast)>0\implies\text{$x^\ast$ is a local min}
+        \end{gather*}
+    \end{enumerate}
+\end{whitebox}
+
+
+\pagebreak
+\section{1D Line Search}
+\textit{Goal}: Want to minimize functions $f:\reals\to\reals$.
+
+\begin{whitebox}
+    \ulbf{Golden Section/Fibonacci Search [0$^{th}$ Order]}
+    \begin{enumerate}
+        \item Start with search region $[a_0,b_0]$
+        \item At each step: pick $a_1,b_1\in\reals$ s.t. $a_1-a_0=b_1-b_0=\rho(b_0-a_0)$ (for some $\rho$)
+        \item If $f(a_1)>f(b_1)$, pick $a_1$ as new left endpoint (replacing $a_0$); otherwise, pick $b_1$ as new right endpoint (replacing $b_0$).
+        \item Repeat steps 2 \& 3.
+    \end{enumerate}
+    \begin{center}
+        \vspace{-6pt}
+        \rule{14cm}{0.4pt}
+    \end{center}
+
+    \pstart Want to pick $\rho$ intelligently s.t. either $b_{k}=a_{k+1}$ or $a_k=b_{k+1}$: \begin{enumerate}
+        \item \term{Golden Section}: \begin{eqnbox}
+            \rho^\ast=\frac{3-\sqrt{5}}{2}\approx0.382
+        \end{eqnbox}
+        \item \term{Fibonacci Method}: For Fibonacci numbers $F_1,F_2,\hdots,F_N\in\naturals$ \begin{eqnbox}
+            \rho_1=1-\frac{F_N}{F_{N+1}},\,\rho_2=1-\frac{F_M}{F_{N-1}},\,\hdots\,,\,\rho_N=1-\frac{F_1}{F_2}
+        \end{eqnbox}
+    \end{enumerate}
+\end{whitebox}
+
+\begin{whitebox}
+    \ulbf{Bisection Search [1$^{st}$ Order]} \begin{enumerate}
+        \item Start with search region $[a_0,b_0]$
+        \item At every iteration, evaluate $f'(\frac{b_n+a_n}{2})$
+        \item $f'>0\implies$ choose $a_{n+1}=a_n,b_{n+1}=\frac{b_n+a_n}{2}$; else, choose $a_{n+1}=\frac{b_n+a_n}{2},b_{n+1}=b_n$
+    \end{enumerate}
+\end{whitebox}
+
+\begin{whitebox}
+    \ulbf{Secant Method [1$^{st}$ Order]} \\[4pt]
+    Have update rule:
+    \begin{eqnbox}
+        x^{k+1}:=x^k-\frac{x^k-x^{k-1}}{f'(x^k)-f'(x^{k-1})}f'(x^k)
+    \end{eqnbox}
+\end{whitebox}
+
+\begin{whitebox}
+    \ulbf{Newton's Method [2$^{nd}$ Order]} \\[4pt]
+    Have update rule:
+    \begin{eqnbox}
+        x^{k+1}:=x^k-\frac{f'(x^k)}{f''(x^k)}
+    \end{eqnbox}
+    [($\ast$) Requires $f''(x^k)>0$ within the search region]
+\end{whitebox}
+
+\newp
+\ulbf{Performance}
+\begin{center}
+    Golden Section $<$ Fibonacci $<$ Bisection Search $<$ Secant Method $<$ Newton's Method
+\end{center}
+
+\newp
+\ulbf{Optimizing vs Zero-Finding} \\[6pt]
+Many optimization algorithms can also be used to find the roots/zeroes of a function: \begin{center}
+    \textit{Optimizing}: Finding zeroes of $f'(x)$ \\[4pt]
+    $\Updownarrow$ \\[4pt]
+    \textit{Zero-Finding}: Finding zeroes of $f(x)$
+\end{center}
+
+
+\pagebreak
+\section{Gradient Methods}
+\subsection{Gradient Search}
+\begin{whitebox}
+    \ulbf{Fixed-Step-Size Gradient Descent} \\[4pt]
+    For some fixed step size $\alpha>0$, have search direction $d^k=\grad f(x^{(k)})$: \begin{eqnbox}
+        x^{(k+1)}:=x^{(k)}-\alpha\grad f(x^{(k)})
+    \end{eqnbox}
+\end{whitebox}
+
+\begin{whitebox}
+    \ulbf{Steepest Descent} \\[4pt]
+    For each $k$, have update rule:
+    \begin{eqnbox}
+        x^{(k+1)}:=x^{(k)}-\alpha_k\grad f(x^{(k)})
+    \end{eqnbox}
+    where: \begin{eqnbox}
+        \alpha_k=\arg\min_{\alpha\geq0}f\left(x-\alpha\grad f(x^{(k)})\right)
+    \end{eqnbox}
+\end{whitebox}
+
+\newp
+Convergence: \begin{itemize}
+    \item ``Order-$p$ convergence'': \begin{align*}
+        0<\lim_{k\to\infty}\frac{\norm{x^{k+1}-x^\ast}}{\norm{x^k-x^\ast}^p}<\infty\quad[\text{order-$\infty$: $\frac{\norm{\cdot}}{\norm{\cdot}^p}=0\;\forall\;p$}]
+    \end{align*}
+    \item For a quadratic form \begin{align*}
+        f=\frac{1}{2}x^TQx-b^Tx+c;\;x^\ast=Q^{-1}b,\;\alpha_{opt}=\frac{\grad f(x^k)^T\grad f(x^k)}{\grad f(x^k)^TQ\grad f(x^k)}
+    \end{align*} \begin{itemize}
+        \item Fixed-step-size GD converges if: \begin{eqnbox}
+            0<\alpha<\frac{2}{\lambda_{min}(Q)}
+        \end{eqnbox}
+        \item Steepest descent converges always
+    \end{itemize}
+    \item Convergence rate is worst-case linear
+\end{itemize}
+
+\subsection{Convergence Proofs}
+\term{Fixed SS GD}: Alg satisfies $V(x^{k+1})=(1-\gamma_k)V(x^k)$, where $\gamma_k=1$ if $g^k=0$, otherwise \begin{align*}
+    \gamma_k=\alpha_k\frac{(g_k)^TQg^k}{(g^k)^TQ^{-1}g^k}\left(2\frac{(g^k)^Tg^k}{(g^k)^TQg^k}-\alpha\right)
+\end{align*}
+\begin{theorem}
+    $x^k,\gamma_k$ as above, $\gamma_k>0$; then $x^k\to x^\ast$ for any $x^0$ iff $\sum_{k=0}^\infty\gamma_k=\infty$.
+\end{theorem}
+Use that $\lambda_{\min}(Q)\norm{x}^2\leq x^TQx\leq\lambda_{\max}(Q)\norm{x}^2$; $\lambda_{\min}(Q^{-1})= 1/\lambda_{\max}(Q)$
+
+
+\pagebreak
+\section{Newton's Method + Variations}
+\begin{whitebox}
+    \ulbf{Newton's Method ($\reals^n$)}
+    \begin{eqnbox}
+        x^{(k+1)}:=x^{(k)}-(D^2f(x^{(k)}))^{-1}\grad f(x^{(k)})
+    \end{eqnbox}
+\end{whitebox}
+
+\newp
+\textbf{Convergence}: 
+\begin{itemize}
+    \item $d^{(k)}$ only guaranteed to be a descent direction if $D^2 f(x^{(k)}>0$
+    \item No guarantee that $f(x^{(k+1)})<f(x^{(k)})$
+    \item Criteria: If $f\in C^3$ and $x^\ast\in\reals^n$ s.t. $\grad f(x^\ast)=0$ \& $D^2f(x^\ast)$ invertible, then Newton's method converges with order $\geq2$ in some neighborhood of $x^\ast$ \begin{itemize}
+        \item For quadratic $f$, converges in a single step
+    \end{itemize}
+    \item Can use line search initially to find a better starting point $x^{(0)}$
+\end{itemize}
+\newp
+Convergence Proof: Derive inequalities \& look at $\norm{x^1-x^\ast}$, take $\norm{x^0-x^\ast}\leq\alpha/(c_1c_2)$ \begin{enumerate}
+    \item $\grad f(x)-\grad f(x^0)-D^2f(x^0)(x-x_0)=O(\norm{x-x_0}^2)\leq c_1\norm{x-x_0^2}$ [Via Taylor]
+    \item From regularity: for $x\in B_\epsilon(x^\ast)$, have that $\norm{(D^2f(x))^{-1}}\leq c_2$ for some $c_2\in\reals$
+\end{enumerate}
+
+\newp
+\subsection{Modifications of Newton's Method}
+\begin{whitebox}
+    \ulbf{Levenberg-Marquardt Algorithm} \\[4pt]
+    For more stability, can use update rule [with $\mu>-\lambda_{min}(D^2f(x^{(k)}))$; new eigenvalues $\lambda_i+\mu$]: \begin{eqnbox}
+        x^{(k+1)}:=x^{(k)}-(D^2f(x^{(k)})+\mu I_n)^{-1}\grad f(x^{(k)})
+    \end{eqnbox}
+\end{whitebox}
+Note: \begin{align*}
+    \norm{d^k}\leq\frac{1}{\lambda_{\min}}\norm{\grad f(x^k)}\implies\norm{d^k}\leq\frac{1}{\lambda_{\min}+\mu}\norm{\grad f(x^k)}
+\end{align*}
+
+\begin{whitebox}
+    \ulbf{Gauss-Newton Algorithm} \\[4pt]
+    When optimizing nonlinear least squares problems of the form: \begin{align*}
+        f(x)=\sum_{i=0}^m(r_i(x))^2;\;r_i:\reals^n\to\reals,\;r=\left\langle\begin{matrix}
+            r_1,\,r_2,\,\hdots\,,\,r_m
+        \end{matrix}\right\rangle
+    \end{align*}
+    For more efficiency, if we expect $r_i(x^\ast)\approx0$, can use update rule (for $J=\grad r$): \begin{eqnbox}
+        x^{(k+1)}:=x^{(k)}-(J^TJ)^{-1}Jr(x^{(k)}))
+    \end{eqnbox}
+\end{whitebox}
+
+
+\pagebreak
+\section{Other Optimization Methods}
+\subsection{Conjugate Direction Methods}
+\begin{definition}
+    For quadratic form $f(x)=\frac{1}{2}x^TQx-x^Tb,Q=Q^T>0$: a set of directions $d^1,d^2,\hdots,d^m$ are called \term{Q-conjugate} if $(d^i)^TQd^j=0\;\forall\;i\neq j$. [Note: Q-conjugate $\implies$ linearly independent]
+\end{definition}
+
+\newp
+\ulbf{The Conjugate Direction Algorithm} \\[6pt]
+Given Q-conjugate directions $d^1,\hdots,d^k$: \begin{align*}
+    \underline{x^{k+1}:=x^k+\alpha_kd^k}\text{ where $g^k=Qx^k-b$, $\alpha_k=\frac{(g^k)^Td^k}{(g^k)^TQg^k}$ [stop if $g^{k+1}=0$]}
+\end{align*} \begin{itemize}
+    \item For any $x^0\in\reals^n$, given $n$ Q-conjugate directions, the alg. converges to $x^\ast=Q^{-1}b$ in at most $n$ steps.
+    \item \term{Conjugate Gradient Algorithm}: Find Q-conjugate directions by solving: \begin{align*}
+        \underline{\beta_k=\frac{(g^{k+1)^TQd^k}}{(d^k)^TQd^k}}\Longrightarrow \underline{d^{k+1}:=-g^{}k+1]+\beta_kd^k}\quad[d^0=]
+    \end{align*}
+\end{itemize}
+
+\newp
+\subsection{Quasi-Newton Methods}
+\textbf{Idea}: $x^{k+1}:=x^k-\alpha_kH_k\grad f(x^k)$, $\alpha_k=\arg\min_{\alpha\geq0}f(x^k+\alpha H_k\grad f(x^k))$ for some approximation $H_k\approx(D^2f(x^k))^{-1}$ \begin{itemize}
+    \item Impose constraint $\forall\;k$: $H_{k+1}\grad g^i=\grad x^i$ for $i=1,\hdots,k$ [note: these are conj dir methods]
+
+    After $n$ steps: obtain $n$ linear equations \& solve [if $\grad G^n$ nonsingular]: \begin{gather*}
+        H_n\grad G^n=\grad X^n\rightarrow H_n=\grad X^n(\grad G^n)^{-1} \\
+        \implies\text{Solution unique, $Q^{-1}$ a soln.}\implies\text{ $H_n=Q^{-1}$; yields $Q^{-1}$ after $n$ iterations, converges on $(n+1)^{th}$}
+    \end{gather*}
+\end{itemize}
+\term{Rank-One Correction}: Keep adding ``degrees of freedom'' ($rank[z^k(z^k)^T]=1$) \begin{align*}
+    H_{k+1}:=H_k+a_kz^k(z^k)^T\;[z^k\in\reals^n],\text{ where} a_kz^k(z^k)^T=\frac{(\grad x^k-H_kg^k)(\grad x^k-H_k\grad g^k)^T}{(\grad g^k)^T(\grad x^k-H_k\grad g^k)}\text{ [from constraint]}
+\end{align*}
+\term{DFP}: Given $x^0\in\reals^n$, $H_0$ any symmetric PD matrix (e.g. $I_{n\times n}$: \begin{align*}
+    H_{k+1}:=H_k+\frac{\grad x^k(\grad x^k)^T}{(\grad x^k)^T\grad g^k}-\frac{H_k\grad g^k(H_k\grad g^k)^T}{(\grad g^k)^TH_k\grad g^k}
+\end{align*}
+\begin{lemma}[Sherman-Morris]
+    Let $A\in\reals^{n\times n}$ nonsingular \& $u,v\in\reals^n$ s.t. $1+V^tAu\neq0$; then: \begin{align*}
+        (A+u^Tv)^{-1}=A^{-1}-\frac{(A^{-1}u)(v^TA^{-1})}{1+v^TAu}
+    \end{align*}
+\end{lemma}
+\pstart
+\term{BFGS}: Approximate $D^2f(x)$ and take inverse of approximation \begin{align*}
+    B_{k+1}=B_k-\frac{\grad x^k(\grad x^k)^T}{(\grad x^k)^T\grad g^k}-\frac{B_k\grad g^k(B_k\grad g^k)^T}{(\grad g^k)^TB_k\grad g^k}\quad\Longrightarrow\quad H_{k+1}=(B_{k+1})^{-1}
+\end{align*}
+
+
+\pagebreak
+\section{Solving Linear Systems}
+Want to solve (for $A\in\reals^{m\times n},b\in\reals^m$): \begin{eqnbox}
+    x\in\reals^n \text{ s.t. } Ax=b
+\end{eqnbox}
+\textbf{Three cases}: \begin{enumerate}
+    \item \underline{$m\geq n,\rank{A}=m$}: May not be a solution; pick: \begin{empheq}[innerbox=\emphbox,left={x^\ast=\min_{x\in\reals^n}\norm{Ax-b}^2\implies}]{align*}
+        x^\ast=(A^TA)^{-1}A^Tb
+    \end{empheq}
+    \item \underline{$m\leq n,\rank{A}=n$}: Infinitely many solutions, pick: \begin{empheq}[innerbox=\emphbox,left={x^\ast=\min_{x\in\reals^n}\norm{x} \text{ s.t. } Ax=b}\implies]{align*}
+        x^\ast=A^T(AA^T)^{-1}b
+    \end{empheq}
+    \item \underline{$\rank{A}=r\leq\min\set{m,n}$}: Solve via pseudoinverse $A^\dagger$
+\end{enumerate}
+Kaczmarz algorithm: Solves $m\leq n$ case [$x^k\to x^\ast$] w/ purely rank 1 updates
+
+\begin{lemma}[Full-rank factorization]
+    Let $A\in\reals^{m\times n}$ \& $\rank{A}=r$; then $\exists$ matrices $B\in\reals^{m\times r},C\in\reals^{r\times m}$ s.t. $A=BC$ [$\rank{b}=\rank{C}=r$]
+\end{lemma}
+\begin{definition}
+    Given $A=\reals^{m\times n}$; a matrix $A^\dagger\in\reals^{n\times m}$ is called a [the] \term{pseudo-inverse} of $A$ if: \begin{eqnbox}
+        AA^\dagger A=A
+    \end{eqnbox}
+    and $\exists$ matrices $U\in\reals^{n\times n},V\in\reals^{m\times m}$ satisfying $A^\dagger=UA^T=A^TV$. [Note: always exists + unique]
+\end{definition}
+\begin{itemize}
+    \item If $A$ invertible, then $A^\dagger=A^{-1}$ with $U=(A^TA)^{-1}$, $V=(AA^T)^{-1}$
+    \item In each of 2 cases above, solution is given by $A^\dagger$
+\end{itemize}
+\term{Recursive Least Squares}: Assume have solution $x^0$ for $A_0x=b_0$, but obtain new measurements $A_1,b_1$ \& want to update; $G_1=\begin{smallmatrix}
+    A_0 \\ A_1
+\end{smallmatrix}^T\begin{smallmatrix}
+    A_0 \\ A_1
+\end{smallmatrix}=G_0+A_1^TA_1\implies x^1=x^0+G_1^{-1}A_1^T(G^1-A_1x_0)$
+Sherman-Morrison-Woodbury: $A$ nonsingular, $U,V$ matrices s.t. $1+VA^{-1}U\neq0$; then: \begin{gather*}
+    (A+UV)^{-1}=A^{-1}-(A^{-1}U)(1+VA^{-1}U)(VA^{-1}) \\
+    \implies P_{k+1}=P_kA^T_{k+1}(1+A_{k+1}P_kA_{k+1}^T)A_{k+1}P_k\implies x_{k+1}=x^k+P_{k+1}A_{k+1}^T(b^{k+1}-A_{k+1}x^k) \\
+    \implies P_{k+1}=P_k-\frac{P_ka_{k+1}a_{k+1}^TP_k^T}{1+a^T_{k+1}P_ka_{k+1}}\implies x_{k+1}=x_k+P_{k+1}a_{k+1}(b_{k+1}-a_{k+1}^Tx_k)\;[\text{rank 1 $A_1$}]
+\end{gather*}
+
+
+\pagebreak
+\section{Linear Programming}
+\term{Linear programming (standard form)}: want to find [for $c\in\reals^n,A\in\reals^{m\times n},b\in\reals^m$; $\rank{A}=m$]: \begin{alignbox}
+    \text{minimize }&\;c^Tx \\
+    \text{subject to }&\;Ax=b \\
+    &\;x\geq0
+\end{alignbox}
+Correspond to optimization problems over convex polytopes $\Omega=\set{x\in\reals^n:Ax=b}$
+\begin{definition}
+    Let $B\in\reals^{m\times m}$ be constructed from any $m$ linearly independent columns of $A$; then the vector $[B^{-1}b\;\;0]^T\in\reals^n$ [solving $Ax=b$] is called a \term{basic solution} w.r.t. basis $B$. \begin{itemize}
+        \item If $x_B=B^{-1}b$ has entries with value 0, call it a \term{degenerate basic solution}
+        \item If $x_B\geq0$, call it a \term{basic feasible solution}
+        \item Basic solutions are equivalent to ``extreme points'' [vertices] of convex polytope $\Omega$
+    \end{itemize}
+\end{definition}
+
+\newp
+\term{Fundamental Theorem of LP}: for any LP: \begin{enumerate}
+    \item If $\exists$ a feasible solution, then $\exists$ a basic feasible solution
+    \item If $\exists$ an optimal feasible solution, then $\exists$ an optimal basic feasible solution
+\end{enumerate}
+
+\newp
+\term{Simplex Algorithm}: Algorithm for solving standard form LPs via moving between adjacent corners of $\Omega$ \begin{itemize}
+    \item Given an LP and initial basic feasible solution $x$: the simplex algorithm either returns an optimal solution $x^\ast$ (if one exists), or finds that the LP is unbounded
+    \item \term{Two-phase simplex method}: To find initial point $x$, can solve associated ``artificial problem'': \begin{align*}
+        \text{minimize }\;y_1+\hdots+y_m\text{ subject to }\;&\begin{bmatrix}
+            A & I_m
+        \end{bmatrix}\begin{bmatrix}
+            x \\ y
+        \end{bmatrix}=b \\
+        &\;x,y\geq0
+    \end{align*}
+    $\implies$ original LP has a basic feasible soln iff artificial problem has an optimal feasible soln. with $y=0$
+\end{itemize}
+
+\newp
+Simplex: \begin{enumerate}
+    \item Swapping bases: $a_q=y_{10}a_1+\hdots+y_{m0}a_m\implies \exists$ $y_{1q},\hdots,y_{mq}$ s.t. \begin{align*}
+        \forall\;\epsilon>0:\;(y_{10}-\epsilon y_{1q})a_1+\hdots+(y_{m0}-\epsilon y_{mq})a_m+\epsilon a_q=b;\quad\text{pick }\epsilon=\min_i\set{\frac{y_{i0}}{y_{iq}}:y_{iq}>0}
+    \end{align*}
+\end{enumerate}
+
+\subsection{Duality}
+\ulbf{Duality (Symmetric form)}: \begin{eqnbox}
+    \text{[\term{Primal}]}\quad\left.\begin{matrix}
+        \text{minimize } & c^Tx \\
+        \text{subject to } & Ax\geq b \\
+        & x\geq0
+    \end{matrix}\;\;\right\}\quad\Longleftrightarrow\quad\left\{\;\;\begin{matrix}
+        \text{maximize } & \lambda^Tb \\
+        \text{subject to} & \lambda^TA\leq c^T \\
+        & \lambda\geq0
+    \end{matrix}\right.\quad\text{[\term{Dual}]}
+\end{eqnbox}
+
+\newp
+\ulbf{Duality (Asymmetric form)}: \begin{eqnbox}
+    \text{[\term{Primal}]}\quad\left.\begin{matrix}
+        \text{minimize } & c^Tx \\
+        \text{subject to } & Ax=b \\
+        & x\geq0
+    \end{matrix}\;\;\right\}\quad\Longleftrightarrow\quad\left\{\;\;\begin{matrix}
+        \text{maximize } & \lambda^Tb \\
+        \text{subject to} & \lambda^TA\leq c^T
+    \end{matrix}\right.\quad\text{[\term{Dual}]}
+\end{eqnbox}
+
+\newp
+Symmetric form: \ul{dual of the dual is the primal} [not true for asymmetric]
+
+\begin{theorem}[\textbf{Weak Duality}]
+    Let $x\in\reals^n,\lambda\in\reals^m$ be feasible solutions to the primal and dual LP problems, respectively (either form). Then: \begin{eqnbox}
+        c^Tx\geq \lambda^Tb
+    \end{eqnbox}
+\end{theorem}
+\begin{theorem}[\textbf{Duality Theorem/Strong Duality}]
+    If the primal LPproblem (in either form) has an optimal solution, then so does the dual problem, and \ul{the optimal values for the objective functions are equal for both problems}.
+\end{theorem}
+
+\begin{theorem}[\textbf{Complementary Slackness}]
+    A pair of feasible solutions $x\in\reals^n,\lambda\in\reals^m$ is optimal iff: \begin{enumerate}
+        \item \underline{$(c^T-\lambda^TA_x=0$}
+        \item \underline{$\lambda^T(Ax-b)=0$}
+    \end{enumerate}
+\end{theorem}
+
+
+\pagebreak
+\section{Nonlinear Programming}
+For $x\in\reals^n,f:\reals^n\to\reals,h:\reals^n\to\reals^m,g:\reals^n\to\reals^p$: \begin{alignbox}
+    \text{minimize }&\;f(x) \\
+    \text{subject to }&\;h(x)=0 \\
+    &\;g(x)\leq0
+\end{alignbox}
+\begin{definition}
+    ~\\[-18pt]
+    \begin{enumerate}
+        \item A constraint $g_i(x^\ast)$ is said to be \term{active} at $x^\ast\in\reals^n$ if $g_i(x^\ast)=0$. [All $h_i$ are \term{active}.]
+        \item Define the \term{tangent space} [generated by the active constraints] at $x^\ast$ by: \begin{eqnbox}
+            T(x^\ast)=\set{y\in\reals^n:y^T\grad h(x^\ast)=0,\;y^T\grad g_i(x^\ast)=0\;\forall\;g_i\text{ active}}
+        \end{eqnbox}
+        \item Call $x^\ast$ (feasible) a \term{regular point} if: \begin{eqnbox}
+            \underline{\set{\grad h_i(x^\ast):i=1,\hdots,p}\cup\set{\grad g_j(x^\ast):\text{$g_j$ active}}\text{ is linearly independent}}
+        \end{eqnbox}
+    \end{enumerate}
+\end{definition}
+\begin{whitebox}
+    \begin{definition}
+        Define the \term{Lagrangian} as the function $\ell:\reals^n\times\reals^m\times\reals^p\to\reals$ given by: \begin{eqnbox}
+            \ell(x,\lambda,\mu)=f(x)+h(x)^T\lambda+g(x)^T\mu
+        \end{eqnbox}
+    \end{definition}
+\end{whitebox}
+
+~\\[-42pt]
+\begin{align*}
+    \Downarrow
+\end{align*}
+
+~\\[-42pt]
+\begin{whitebox}
+    \ulbf{1$^{st}$-Order Necessary Conditions (KKT)} \\[4pt]
+    Let $x^\ast$ be a local min of $f:\reals^n\to\reals$ s.t. $h(x^\ast)=0,g(x^\ast)\leq0$ for $h:\reals^n\to\reals^m,g:\reals^n\to\reals^p$. Assume $x^\ast$ is a regular point; then $\exists\;\lambda^\ast$ [\term{Lagrange multi.}], $\mu^\ast$ [\term{KKT multi.}] such that: \begin{enumerate}
+        \item $\mu^\ast\geq0$
+        \item $\grad f(x^\ast)+\grad h(x^\ast)^T\lambda^\ast+\grad g(x^\ast)^T\mu^\ast=0$\quad[i.e.$\grad_x\ell(x,\lambda,\mu)=0$]
+        \item $(\mu^\ast)^T(g(x^\ast))=0$
+    \end{enumerate}
+\end{whitebox}
+
+~\\[-28pt]
+\begin{whitebox}
+    \ulbf{2$^{nd}$-Order Conditions (SONC \& SOSC)} \\[4pt]
+    For $x^\ast,\lambda^\ast,\mu^\ast$ points ($x^\ast$ a regular point) satisfying the FONC
+    and $f,g,h\in\mathcal{C}^2(\reals^n)$: \begin{enumerate}
+        \item \textbf{SONC}: $y^TD\ell(x^\ast,\lambda^\ast,\mu^\ast)y\geq0\;\forall\;y\in T(x^\ast)$ \quad[$D\ell(x^\ast,\lambda^\ast,\mu^\ast)$ is \ul{P.S.D.} on $T(x^\ast)$]
+        \item \textbf{SOSC}: \;$y^TD\ell(x^\ast,\lambda^\ast,\mu^\ast)y>0\;\forall\;y\in T(x^\ast)$ \quad[$D\ell(x^\ast,\lambda^\ast,\mu^\ast)$ is \ul{P.D.} on $T(x^\ast)$]
+    \end{enumerate}
+\end{whitebox}
+
+\begin{itemize}
+    \item Notice: $\mu_i^\ast=0\;\forall\;i$ for which $g_i(x^\ast)$ is active
+\end{itemize}
+
+\end{document}
