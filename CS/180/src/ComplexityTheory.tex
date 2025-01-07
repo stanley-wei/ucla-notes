@@ -1,0 +1,226 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+
+\graphicspath{ {./images/} }
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+\newtheorem*{problem}{Problem}
+\newtheorem{case}{\textbf{Case}}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newtheorem*{observation}{Observation}
+
+\newcommand{\probname}[1]{\noindent \textbf{\textit{#1}}}
+\newcommand{\probtitle}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+\newcommand{\resetcases}[0]{\setcounter{case}{0}}
+
+\begin{document}
+\subsection{Problem Transformation}
+\textbf{Principle} (\textbf{\textit{Algorithmic Transformation}}): We can compare the difficulty of different problems via the notion of transforming/reducing certain problems into other problems.
+
+\begin{definition}
+    Let $X$, $Y$ be two distinct problems. If we can convert an arbitrary instance of $Y$ into an instance of $X$ \ul{in polynomial time}, then we say that $Y$ is \textbf{\textit{polynomial-time reducible}} to $X$, or $Y\leq_pX$.\begin{itemize}
+        \item “Reduction” also encompasses conversions into a \ul{polynomial number of instances} of X \ul{in polynomial time}.
+        \item \textit{Notation}: ``$Y\leq_pX$'', ``$Y\alpha_p\,X$'' $\Rightarrow$ ``there exists a polynomial-time reduction $Y\to X$''
+    \end{itemize}
+\end{definition}
+
+~\\
+\noindent\textbf{\textit{Reasoning}}: If we have a polynomial-time solution to $X$, then the best solution to $Y$ is no worse than polynomial-time [$Y$ is no harder than $X$].\begin{itemize}
+    \item \textit{Alt}: If we cannot solve $Y$ in polynomial time, then it must be the case that we cannot solve $X$ in polynomial time either.
+\end{itemize}
+
+\noindent\textbf{\textit{Note}}: We may say $Y\leq_pX$ in cases where $Y$ is an \textit{instance} or \textit{subproblem} of $X$.
+\begin{itemize}
+    \item Ex. (\textit{Element uniqueness}): Let $X$ be determining if there are any duplicates within a list; and let $Y$ be determining if there are any duplicates within a sorted list.  $Y\leq_pX$.\begin{itemize}
+        \item In this case: $X$ is $O(N\log N)$; $Y$ is $O(N)$
+    \end{itemize}
+    \item Ex. (\textit{Sorting}): Let $Y$ be finding the lowest element in a list of size n [$O(N)$]; let $X$ be sorting a list of size n [$O(N\log N)$]. Since we can solve $Y$ by solving $X$, then $Y$ is reducible to $X$: $Y\leq_pX$
+\end{itemize}
+
+\resetcases
+\subsubsection*{Applications for Problem Transformation}
+\begin{case}
+    We have a problem we already know how to solve; then, given a new problem, we want to transform it to an already-solved problem to obtain a solution. \begin{itemize}
+        \item Ex: Since bipartite matching can be reduced to network flow, therefore having a solution to network flow gives us a solution to bipartite matching.
+    \end{itemize}
+\end{case}
+
+\begin{case}
+    We have a problem we already know is hard [intractable]. Then, given a new problem: if we can reduce the old problem to the new problem, then the new problem must also be hard.\begin{itemize}
+        \item Argument [by contradiction]: If the new problem were easy and we could reduce the old problem to the new one; then the old problem must also be easy.
+    \end{itemize}
+\end{case}
+
+~\\
+\noindent\textbf{\textit{Note}}: Polynomial-time reductions rely on the transformation itself being polynomial-time.\begin{itemize}
+    \item Ex: If $X\leq_{exp}Y$ ($X$ is exponential-time transformable to $Y$), then even if $Y$ can be solved in polynomial time, it may not be the case that $X$ is solvable in polynomial time.
+\end{itemize}
+
+\pagebreak
+\subsubsection{Max-Clique \& Independent Set}
+\begin{definition}
+    Given a graph $G(V,E)$:\begin{itemize}
+        \item A \textbf{\textit{clique}} in $G$ is a set $S\subset V$ that is pairwise connected (every vertex in the set is connected to every other vertex)
+        \item An \textbf{\textit{independent subset}} in $G$ is a set $S\subset V$ such that no two vertices in the set are connected to each other.
+    \end{itemize}
+\end{definition}
+
+\vspace{3pt}
+\begin{problem}[\probname{Max Clique}]
+    Given a graph G, find the largest clique in $G$.
+\end{problem}
+\begin{problem}[\probname{Max Independent Set}]
+    Given a graph G, find the largest independent set in $G$.
+\end{problem}
+
+~\\
+\noindent\textit{Claim: Max Clique $\leq_p$ Max Independent Set}
+\begin{proof}
+Given an arbitrary instance of Max Clique, we want to show that we can transform it into an instance of Max Independent Set in polynomial time.
+\begin{enumerate}
+    \item Start with an arbitrary instance of max-clique on a graph $G$.
+    \item \textit{Transformation}: We can construct a complement $\bar{G}(\overline{V},\overline{E})$ of $G(V,E)$:\begin{enumerate}
+        \item Set $\overline{V}=V$
+        \item For every possible pair of vertices $x,y\in V$:\begin{itemize}
+            \item If $(x,y)\not\in E$, then we add it to $\overline{E}$
+            \item If $(x,y)\in E$, then we omit it from $\overline{E}$
+        \end{itemize}
+    \end{enumerate}
+    \item \textit{Result}: Finding a max clique in G is equivalent to finding a max independent set in $\bar{G}$. \begin{itemize}
+        \item \textit{Argument}: Given a max clique $S$ in $G(V,E)$, for every pair of vertices $x,y\in S$, $(x,y)\in E$; then $(x,y)\not\in\overline{E}$ for any $x,y\in S$, therefore $S$ is an independent set in $\bar{G}$.\begin{itemize}
+            \item This shows that a max clique in $G$ is an independent set in $\bar{G}$; we can show that a max independent set in $\bar{G}$ is a clique in $G$ via similar argument.
+        \end{itemize}
+    \end{itemize}
+\end{enumerate}
+~\\
+We observe that the transformation step is O($V^2$); then we can convert an arbitrary instance of Max Clique into an instance of Max Independent Set in polynomial time.
+\end{proof}
+
+\noindent{\textbf{Consequence}: If maximum clique is not solvable in polynomial time, then maximum independent set cannot be either. \begin{itemize}
+    \item \textbf{\textit{Note}}: Both Max Clique, Max Independent Set are actually NP-complete.
+\end{itemize}
+
+\pagebreak
+\subsubsection{Set Cover \& Vertex Cover}
+\begin{definition}[\probname{Vertex Cover}]
+    Given a graph $G(V,E)$, a \textbf{\textit{vertex cover}} of $G$ is a set $S\subset V$ such that for all edges $(x,y)\in E$, at least one of $x$, $y\in S$.
+\end{definition}
+\begin{center}
+    \adjincludegraphics[trim={0 0 0 0},clip,scale=0.15]{Images/Notes/vertex_cover.png}
+\end{center}
+
+\begin{problem}[\probname{Vertex Cover}]
+    Given graph $G$, find the vertex cover of minimal cardinality in $G$.
+\end{problem}
+
+\vspace{6pt}
+\begin{definition}[\probname{Set Cover}]
+    Given a set of sets $S=\{A,B,\hdots\}$ with $U=\bigcup_{X\in S}X$: a \textbf{\textit{set cover}} is a set $C\subset S$ such that $\bigcup_{X\in C} X=U$.
+\end{definition}
+\begin{problem}[\probname{Set Cover}]
+    Given a set of sets $S$, find the set cover of minimal cardinality in $S$.
+\end{problem}
+
+\vspace{16pt}
+\noindent\textit{Claim: Vertex Cover $\leq_p$ Set Cover}
+\begin{proof}
+    Given an arbitrary instance of Vertex Cover, we want to show that we can transform it into an instance of Set Cover in polynomial time.
+    \begin{enumerate}
+        \item Start with an arbitrary instance of vertex cover on a graph $G$ with vertices $A,B,C,\hdots$
+        \item \textit{Transformation}: For each vertex $x\in G$: \begin{enumerate}
+            \item Create a corresponding set $X'=\{e_1,e_2,\hdots,e_i\}$, where $e_1,e_2,\hdots,e_i$ are the edges in $G$ adjacent to $x$
+        \end{enumerate}
+        \item \textit{Result}: Finding a vertex cover for $G'$ is equivalent to finding a set cover for the sets $A',B',C',\hdots$
+    \end{enumerate}
+\end{proof}
+
+\noindent\textbf{Consequence}: If Vertex Cover is not solvable in polynomial time, then Set Cover cannot be either, since solving vertex cover is equivalent to solving set cover.
+
+\pagebreak
+\subsection{\textit{NP}}
+\noindent\ul{\textbf{Complexity Classes}}
+\begin{itemize}
+    \item \textbf{\textit{P}}: Problems that can be solved in polynomial time
+    \item \textbf{\textit{NP}}: Problems for which solutions can be verified in polynomial time \begin{itemize}
+        \item \textbf{\textit{NP}-Complete}: The hardest problems in \textit{NP}
+    \end{itemize}
+    \item \textbf{\textit{NP}-Hard}: Problems at least as hard as the hardest problems in \textit{NP} \begin{itemize}
+        \item A problem $X$ is considered NP\textbf{-Hard} if all problems $Y\in NP$ can be reduced to $X$.
+    \end{itemize}
+\end{itemize}
+
+\vspace{5pt}
+\begin{center}
+    \adjincludegraphics[trim={0 0 0 0},clip,scale=0.5]{Images/Notes/np.png}
+\end{center}
+
+\vspace{5pt}
+\begin{definition}[\textbf{\textit{NP}-Complete}]
+    A problem $X\in NP$ is considered \textbf{\textit{NP}-Complete} if all problems $Y\in NP$ can be reduced to $X$. Namely, $Y\leq_pX$. \begin{itemize}
+        \item \textbf{Consequence}: If any \textit{NP}-Complete problem can be solved in polynomial time, then it must be the case that all problems in \textit{NP} can be solved in polynomial time.
+        \item \textbf{Observation}: All NP-Complete problems are also NP-Hard.
+    \end{itemize}
+\end{definition}
+
+~\\
+\noindent\textbf{Observation}: $P\subseteq NP$
+\begin{itemize}
+    \item \textbf{Reasoning}: If we can solve a problem in polynomial time, then any solution can be verified in polynomial time simply by resolving the problem.
+    \item \textbf{Problem (\textit{unsolved})}: Is P = NP? \begin{itemize}
+        \item General consensus: \ul{Probably not}
+    \end{itemize}
+\end{itemize}
+
+~\\
+\noindent\textbf{\textit{Note}}: ``\textit{NP}'' = ``Non-deterministic, polynomial-time Turing machine''
+
+\pagebreak
+\subsubsection{\textit{NP}-Completeness}
+\textbf{Principle}: As an alternative to solving a problem, we can instead prove that it is “difficult”; one way to do this is to show that the problem is equivalent to a known NP-Complete problem.\begin{itemize}
+    \item \textit{Ex}: Let $X$ be a new problem, and let $Y$ be a known \textit{NP}-Complete problem. If it is possible to polynomial-time transform $Y$ into $X$ [$Y\leq_pX$], then $X$ must itself be \textit{NP}-Complete.
+\end{itemize}
+
+\vspace{6pt}
+\begin{problem}[\probname{Traveling Salesman}]
+    Given a starting city and a number of cities with weighted edges in between, find the shortest path that visits every city.\begin{itemize}
+        \item This is doable in exponential time ($n$ cities $\to n!$ permutations), but not polynomial time.
+    \end{itemize}
+\end{problem}
+
+\vspace{6pt}
+\begin{problem}[\probname{Satisfiability}]
+    Given a set of Boolean clauses $C_1,\hdots,C_n$ involving a set of Boolean variables $x_1,\hdots,x_n$, is there a set of values for $x_1,\hdots,x_n$ satisfying all clauses? \begin{itemize}
+        \item We say that a set of variables \textit{satisfies} a function if it causes the function to return True.
+        \item \textbf{Problem} (\textbf{\textit{3-Satisfiability}}). Identical to Satisfiability, but with the added constraint that the Boolean clauses must be of length 3. \begin{itemize}
+            \item Ex (Boolean function): $F=(x_1\,||\,\bar{x_2}\,||\,x_3)\;\&\&\;(\bar{x_1}\,||\,x_4\,||\,x_5)$
+        \end{itemize}
+    \end{itemize}
+\end{problem}
+
+~\\
+\noindent\textbf{Additional Problems (\textit{NP}-Complete)}: 
+\begin{itemize}
+    \item Independent Set, Clique
+    \item Set Cover, Vertex Cover
+\end{itemize}
+
+\vspace{6pt}
+\noindent\textbf{\textit{Note}}: The \textit{``decision versions''} of the problems (ex: given $k\in\mathbb{N}$, does there exist a clique of size $\geq k$?) are considered \textit{NP}-Complete; the \textit{``optimization versions''} (find the maximum clique) are \textit{NP}-Hard.
+\end{document}

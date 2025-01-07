@@ -1,0 +1,217 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+
+\graphicspath{ {./images/} }
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+\newtheorem*{problem}{Problem}
+\newtheorem{case}{\textbf{Case}}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newtheorem*{observation}{Observation}
+
+\newcommand{\probname}[1]{\noindent \textbf{\textit{#1}}}
+\newcommand{\probtitle}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+
+\begin{document}
+\subsection*{Overview (Divide \& Conquer)}
+\begin{center}
+\textbf{Principle} (\textbf{\textit{Divide and Conquer}}): \textit{If a problem is too difficult to solve directly, we can instead solve it by partitioning it into more solvable sub-problems. }
+
+\vspace{10pt}
+\rule{100mm}{0.4pt}
+\end{center}
+
+\noindent \textit{Divide \& Conquer}:
+\begin{itemize}
+    \item A common approach is to utilize \ul{recursive partitioning}.
+    \item Divide-and-conquer solutions actually exist for many [most?] problems, though they are not always the optimal solution to the problem.
+\end{itemize}
+
+\subsection{Merge Sort}
+If an array is too long to sort directly, then we can instead sort it by dividing it into subarrays that can be sorted directly.
+
+\begin{tcolorbox}[colback=blue!50!red!13!white]
+    \probtitle{Algorithm (Merge Sort)}
+    \begin{enumerate}
+        \item Divide the array into some number of subarrays of equal size. \begin{itemize}
+            \item Divide subarrays into even smaller subarrays as needed. Keep dividing until the divided subarrays are small enough to sort directly. 
+        \end{itemize}
+        \item Sort all subarrays.
+        \item \textit{Merging step}: Once each subarray is sorted, then we can keep combining (merge) our subarrays into larger subarrays until we have returned to the original array.\begin{itemize}
+            \item \textit{Combination}: We can merge two subarrays into a new subarray by continuously picking the minimum of the next element for each subarray.
+        \end{itemize}
+    \end{enumerate}
+\end{tcolorbox}
+
+\subsubsection*{Time Complexity}
+\textit{Merging Step}: Given two arrays of size $p$, $q$, each element of the output array is added in O($1$) $\to$ total runtime: O($p+q$)\\
+
+\noindent\textit{Overall Runtime}: Let $T(n)$ be the time required to sort $n$ elements. Per the algorithm: \begin{enumerate}
+    \item $T(n)=2T(\frac{n}{2})+O(n)$
+    \item $T(1)$ = O($1$)
+\end{enumerate}
+\begin{center}
+    We can define the cost of merging $n$ elements to be $\lambda n$, for some $\lambda $.
+\end{center}
+\begin{align*}
+    T(n)&=2T(\frac{n}{2})+\lambda n\\
+    &=2(2T(\frac{n}{2})+\frac{1}{2}\lambda n)+\lambda n\\
+    &=2^2\cdot T(\frac{n}{2^2})+2\cdot \lambda n\\
+    &=2^i\cdot T(\frac{n}{2^i})+i\cdot \lambda n\,\text{(by induction)}
+\end{align*}
+After $\log_2(n)$ recursions, $T(\frac{n}{2^i})$ becomes just $T(1)$:
+\begin{align*}
+    \implies T(n)&=2^{\log_2(n)}T(\frac{n}{2^{\log_2n}})+2\lambda \cdot n\log_2(n)\\
+    &=n\cdot T(1)+2\lambda \cdot n\log_2(n)
+\end{align*}
+\begin{gather*}
+    \implies\text{O($n\log n$)}
+\end{gather*}
+
+\subsubsection*{Notes}
+\begin{itemize}
+    \item The \textbf{\textit{master theorem}} is a general formula for finding the time complexities of recursive divide-and-conquer algorithms \textit{\`{a} la} merge sort.
+    \item It is not immediately obvious that O($n\log n$) is optimal, since the most obvious lower bound for the time complexity of sorting is O($n$); however, it has been proven that O($n\log n$) \textit{is}, in fact, optimal.
+\end{itemize}
+
+\pagebreak
+\subsection{Counting Inversions}
+\begin{problem}[\probname{Crossing Problem}]
+    Given two parallel lines between which there are total $n$ lines (potentially overlapping), find an algorithm to determine the number of crossings.\begin{itemize}
+        \item \textit{Trivial solution}: compare every possible pair of lines [O($n^2$)]
+    \end{itemize}
+\end{problem}
+
+\begin{observation}
+    We can assign numerical indices $1,2,\hdots$ to each line, in order of the coordinates where those lines touch one of the two parallel axes (e.g. the bottom axis). Then, two lines $i,j$ cross iff $i$ is before $j$ on one axis and after $j$ on the other. \begin{itemize}
+        \item The number of crossings is equal to the number of out-of-order indices (\textit{inversions}).
+    \end{itemize}
+\end{observation}
+
+\begin{center}
+    \adjincludegraphics[trim={0 0 0 0},clip,scale=0.4]{Images/Notes/counting_inversions.png}
+\end{center}
+
+\subsubsection*{Algorithm (Counting Inversions)}
+\begin{enumerate}
+    \item Assign each line a label based on where that line meets the bottom axis, as described above. Create a counter [initially 0] to hold the number of crossings.
+    \item Take the sequence in which the lines meet the top axis, and perform merge sort.
+
+    During every merge: \begin{enumerate}
+        \item Case 1: The number on the right is larger than the number on the left; then the two lines did not cross.\begin{itemize}
+            \item We use ``left'' to denote the subsequence that occurred earlier in the original sequence (of the two subsequences being compared)
+        \end{itemize}
+        \item Case 2: The number on the right is smaller than the number on the left; then the number on the right crossed the current left number, and every number in the left array larger than the current left number.
+
+        We increment the crossings counter accordingly.
+    \end{enumerate}
+\end{enumerate}
+
+$\implies$ \textbf{Runtime}: O($n\log n$) for merge sort
+
+\pagebreak
+\subsection{Closest Pair Problem}
+\begin{problem}[\probname{Closest Pair}]
+    Given set of $n$ points in $\mathbb{R}^i$, we want to find the closest pair of points, i.e. two points $x,y$ [$x\neq y$] such that $||x-y||\leq ||x'-y'||$ for any other pair $x',y'$. \begin{itemize}
+        \item \textit{Trivial solution}: compare every possible pair of points [O($n^2$)]
+        \item \textit{Note}: There are a number of possible metrics for quantifying distance in $\mathbb{R}^i$ (e.g. the Manhattan/L1 norm); in this case, we consider only the \textit{Euclidean/L2} norm.
+    \end{itemize}
+\end{problem}
+
+\noindent In the case of $\mathbb{R}^1$ [$i=1$], we can obtain an O($n\log n$) solution simply by sorting the points by coordinate. However, simple greedy approaches (e.g. projection onto an axis, taking polar coordinates) fail in general $\mathbb{R}^n$.
+
+\begin{observation}
+    If we partition the set of points $S$ into two subsets $S_1,S_2$, then the closest pair of points in $S$ is either a closest pair in one of $S_1,S_2$, or is a pair $(x\in S_1,y\in S_2)$.
+    
+    \vspace{6pt}
+    Namely, if we define $\delta$ to be the minimum of the distance between closest pairs in $S_1,S_2$, a pair $(x\in S_1,y\in S_2)$ is a closest pair in $S$ only if $||x-y||\leq\delta$. \begin{itemize}
+        \item Suggests a divide-and-conquer approach: we can find the closest pair in $S_1,S_2$ recursively, then look for closest pairs between partitions during the merging step. 
+
+        $\to$ We can obtain an O($n\log n$) runtime if we can merge in O($n$).
+    \end{itemize}
+\end{observation}
+
+\subsubsection*{The Merging Step}
+We can use $(i-1)$-dimensional subspaces of $\mathbb{R}^i$ (e.g. 2D planes in $\mathbb{R}^3$) as dividers between $S_1,S_2$. Then a pair of points between partitions can only be less than $\delta$ apart if both points are less than $\delta$ away from the divider.
+
+Taking $\mathbb{R}^2$ as an example: if our divider is a vertical line at $x=\lambda$, then a pair of points $a\in S_1,b\in S_2$ can only have $||a-b||<\delta$ if $|a_x-\lambda|,|b_x-\lambda|<\delta$.
+
+However, we also observe that $a,b$ must also have that $|a_y-b_y|<\delta$.\\
+
+\noindent \textit{Consequence}: For any point $p\in S_1$, a point $p'\in S_2$ can have $||p'-p||<\delta$ only if: 
+\begin{enumerate}
+    \item $p_x'\in(\lambda,\lambda+\delta)$
+    \item $p_y'\in(p_y-\delta,p_y+\delta)$
+\end{enumerate}
+
+Then any closest pair partner for $p$ must be within the $\delta\times 2\delta$ rectangular region $(\lambda,\lambda+\delta)\times(p_y-\delta,p_y+\delta)$, i.e. we need only look at the points in that region. Then we can find that the merging step is O($n$) if we can show that the number of points within this rectangle is bounded above by a constant.
+
+\begin{proof}
+    We observe that the rectangle is strictly contained in $S_2$.
+    
+    We can divide the rectangle into 8 squares of size $\frac{\delta}{2}\times\frac{\delta}{2}$. We see that all of these squares are themselves strictly in $S_2$; then there is at most one point in each square. \begin{itemize}
+        \item Recall the definition for $\delta$: if there were more than one point in a square, then we could find a pair in $S_2$ less than $\delta$ apart.
+    \end{itemize}
+
+    Since there is at most one point in each square, then there are at most 8 points in the rectangle; then for any point $p\in S_1$, we need only consider at most 8 points $p'\in S_2$ to identify all possible closest pairs. 
+\end{proof}
+
+~\\
+\noindent Then, if we can find a way to make sure we look at all said points (if they exist) in O(1), we can merge in O($n$).
+
+For simplicity, assume the points belong to $\mathbb{R}^2$, and that the divider is some vertical line $x=x_0$. Then the region of eligible points is the set of points within the $x$-interval $(x_0-\delta,x_0+\delta$; and for any point $p=(x_1,y_1)\in S_1$, we need only look at the 8 points in $S_2$ with y-coordinates nearest to $y_1$ (that fall within the $x$-interval).
+
+\begin{center}
+    \adjincludegraphics[trim={0 0 0 0},clip,scale=0.4]{Images/Notes/closest_pair.png}
+\end{center}
+
+Then, if the points are sorted by y-coordinate, we can check our 8 points in O($1$) by simply looking at the 8 points before/after $p$; then it remains to find a way to have all points by sorted by y-coordinate, while limiting our merges to O($n$) runtime.
+
+\vspace{8pt}
+\noindent $\implies$\textbf{Solution}: Sort all points by y-coordinate ahead of time, and merge in a way that preserves sortedness. \begin{itemize}
+    \item During merging: assume left and right are sorted ahead of time, then use the same process as merge sort to merge.
+\end{itemize}
+
+\begin{tcolorbox}[colback=blue!50!red!7!white]
+    \probtitle{Algorithm (Closest Pair - $\mathbb{R}^2$)}
+    \begin{enumerate}
+        \item Sort the set of points by y-coordinate.
+        \item Keep using vertical lines to divide the set of points in half. 
+        \item Keep dividing subsets into additional subsets, until subsets are of size $1$ or $2$. 
+        \item Compute the closest pair within each subset (if a pair exists).
+        \item \textit{Merging step}: Once the closest pair in each subset is found, then we can keep merging our subsets into larger subsets until we have returned to the original set.
+
+        For each merge:
+        \begin{enumerate}
+            \item Merge points in sorted order (by y-coordinate). \begin{itemize}
+                \item During the merge: keep track of points of $S_1$, $S_2$ within the $2\delta$ $x$-interval. For each point in $S_1$, look at the 8 points of $S_2$ above/below it and find the minimum distance. Keep track of the closest such pair.
+            \end{itemize}
+            \item Set the closest pair in the merged set to be the closest of: \begin{enumerate}
+                \item The closest pair in $S_1$.
+                \item The closest pair in $S_2$.
+                \item The closest pair between $S_1$, $S_2$.
+            \end{enumerate}
+        \end{enumerate}
+    \end{enumerate}
+    \vspace{5pt}
+    \noindent\textbf{Runtime}: O($n\log n$)
+\end{tcolorbox}
+
+\end{document}

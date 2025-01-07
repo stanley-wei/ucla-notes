@@ -1,0 +1,105 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles
+}
+\usepackage[most]{tcolorbox}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+\newtheorem*{problem}{Problem}
+\newtheorem{case}{\textbf{Case}}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+\newcommand{\probname}[1]{\noindent \textbf{\textit{#1}}}
+\newcommand{\probtitle}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+\newcommand{\resetcases}[0]{\setcounter{case}{0}}
+
+\begin{document}
+\begin{definition}
+    Given two groups $S_1$, $S_2$ each of $n$ elements,  a \textit{\textbf{complete matching}} on $S_1,S_2$ is a mapping between $S_1$, $S_2$ such that every element in each group is mapped to \textit{exactly} one element in the other. \begin{itemize}
+        \item \textit{Extension}: To represent an element $y$ taking multiple matches from the other set, we can simply create multiple copies of the element ($y_1$, $y_2$, etc.)
+    \end{itemize}
+\end{definition}
+
+\noindent\textbf{Variation}: We can associate with each element [in both sets], a \textit{\ul{priority list/complete ranking}} of which elements in the other group it ``prefers'' to match with. 
+
+In this case, a complete matching is called \textbf{\textit{stable}} if there do not exist any cases in which two elements that are not matched with each other, both prefer the other over their current matches. 
+
+\begin{problem}[\probname{Stable Matching}]
+    Given two groups of $n$ elements, find a stable matching. 
+\end{problem}
+
+\begin{tcolorbox}[colback=red!20!white]
+\probtitle{Algorithm (Gale-Shapley)}
+\begin{enumerate}
+    \item Pick arbitrary element $x\in S_1$. Match $x$ with its highest-priority match $y\in S_2$. 
+    \item Continue picking unmatched elements $x\in S_1$ until all elements in have been matched. For each $x\in S_1$: look at the highest-ranked element $y\in S_2$ that it has not already asked.  \begin{enumerate}
+        \item If $y$ is either currently unmatched or has $x$ higher in its ranking than its current match $x'$, match $x$ with $y$ (and unmatch $x'$, $y$). 
+        \item Otherwise, move to the next-highest match for $x$ until $x$ is matched.
+    \end{enumerate}
+\end{enumerate}
+\end{tcolorbox}
+
+\subsubsection*{Proof of Correctness}
+\textit{Claim. No elements will be unmatched.}
+\begin{proof}
+Assume, for the sake of contradiction, that there is an element in group 1 that is unmatched when the algorithm terminates. 
+
+If there is an element in group 1 that is unmatched, then there must also be an element in group 2 that is unmatched.
+
+ The only case in which the element in group 2 would not match with the element in group 1 is if the element in group 2 already found a better match; but the element in group 2 is unmatched. [Contradiction]
+
+\end{proof}
+
+\resetcases
+\noindent\textit{Claim. The algorithm produecs a stable matching.}
+\begin{proof}
+Assume, for the sake of contradiction, that on some $S_1,S_2$, the algorithm does not produce a stable matching. We know from the previous claim that the algorithm will always produce \textit{a} matching. Then, the matching produced by the algorithm on $S_1,S_2$ must not be stable, i.e. there is an element $x\in S_1$ and an element $y\in S_2$ such that $y$ is higher in $x$’s ranking than $x$’s current match and $x$ is higher in $y$’s ranking than $y$’s current match. 
+
+\begin{case}
+    $x$ has not already asked $y$. This is not possible: per the algorithm, $x$ will only match with an element of lower ranking than $y$ if $x$ has already asked every element ranked higher than its current match, including $y$, per the algorithm. [Contradiction]
+\end{case}
+
+\begin{case}
+    $x$ already asked $y$. This would mean $y$ matched with a higher-ranked element than $x$. $x$ is higher in $y$’s ranking than $y$’s current match; therefore $y$ moved from a higher-ranked match to a lower-ranked match (its current match). But a characteristic of the algorithm is that an element in $S_2$ will never move from a higher-ranked match to a lower-ranked match. [Contradiction]
+\end{case}
+\end{proof}
+
+\subsubsection*{Implementation}
+We can store $S_1,S_2$ as linked lists.
+\begin{itemize}
+    \item $S_1$ is stored as a linked list, and the first element $x$ in the list taken as the next element to match at each step; when $x$ is matched, remove it from the list. \begin{itemize}
+        \item If an element $x\in S_1$ is unmatched, it can be inserted back into the list.
+    \end{itemize}
+\end{itemize}
+
+\noindent We can store priority rankings of elements $x\in S_1$ as arrays associated with each element.
+\begin{itemize}
+    \item Since the priority ranking of an element $x\in S_1$ is never backtracked, we can find the next-not-asked entry in O($1$).
+\end{itemize}
+
+\noindent Since the priority rankings of elements $y\in S_2$ are searched, rather than simply iterated through, there are two options for storing the priority rankings of elements $y\in S_2$: \begin{enumerate}
+    \item Store as a vector, and search via linear search $\rightarrow$ O($n^2$) $\cdot$ O($n$)=O($n^3$).
+    \item Pre-compute and store as a hash map (mapping indices in $S_1$ to rank): O($n^2$) for pre-computing, O($n^2$) $\cdot$ O($1$) search $\rightarrow$ O($n^2$)+O($n^2$)=O($n^2$) overall.
+\end{enumerate}
+
+\subsubsection*{Time Complexity}
+Best case: Only $n$ asks are needed for the algorithm to terminate.
+
+\noindent \ul{Worst case}: $n^2$ asks are needed $\rightarrow$ O($n^2$)
+
+\end{document}

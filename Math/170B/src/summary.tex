@@ -1,0 +1,630 @@
+\documentclass[12pt]{extarticle}
+\include{utils.sty}
+
+\begin{document}
+	
+% \pstart Stanley Wei
+
+\begin{center}
+    \begin{Large}
+        \textbf{Math 170B: Probability Theory II}
+    \end{Large}
+    
+    \begin{large}
+        \vspace{8pt}
+        Prof. R. Killip $\vert$ Spring 2024
+    \end{large}
+\end{center}
+\tableofcontents
+
+\pagebreak
+\section{Characteristic \& Moment-Generating Functions}
+\begin{tcolorbox}[colback=white]
+    \begin{definition}
+        Given a random variable $X$, the \term{characteristic function} [CF] of $X$ is the function $\phi_X:\reals\to\complex$ defined by: 
+        \begin{eqnbox}
+            \charfn{X}{\xi}=\expected{e^{i\xi X}}
+        \end{eqnbox}
+    \end{definition}
+    
+    \begin{center}
+        \vspace{3pt}
+        \rule{14cm}{0.4pt}
+    \end{center}
+    
+    \begin{definition}
+        Given a random variable $X$, the \term{moment-generating function} [MGF] of $X$ is the function $M_X:\reals\to\reals$ defined by: 
+        \begin{eqnbox}
+            \mgf{X}{t}=\expected{e^{tX}}
+        \end{eqnbox}
+    \end{definition}
+\end{tcolorbox}
+
+\titleul{Characteristic \& Moment-Generating Functions}
+Suppose $M_X(t)$ exists in some neighborhood $[-\delta,\delta]$ of 0 ($\delta>0$); then $\forall\;t\in[-\delta,\delta]$: \begin{enumerate}
+    \item $M_X(t)$ can be expressed as a power series: \begin{eqnbox}
+        M_X(t)=\sum_{k=0}^\infty\frac{t^k}{k!}\expected{X^k}
+    \end{eqnbox}
+    \item Can derive the moments of $X$ from the characteristic/moment-generating functions: \begin{eqnbox}
+        \expected{X^k}=\;\frac{d^k}{dt^k}\mgf{X}{t}\bigg\vert_{t=0}=\;(i)^{-k}\frac{d^k}{d\xi^k}\charfn{X}{\xi}\bigg\vert_{t=0}
+    \end{eqnbox}
+        \setcounter{enumi}{2}
+    \item For $\xi\in[-\delta,\delta]$ ($|\xi|\leq\delta$), can treat characteristic function, MGF similarly: \begin{eqnbox}
+        \charfn{X}{\xi}=\mgf{X}{i\xi}
+    \end{eqnbox}
+    \item $\phi_X$ is analytic: for every point $\xi\in\reals$, $\phi_X$ has value given in some neighborhood of $\xi$ by power series with radius of convergence $r\geq\delta$
+\end{enumerate}
+
+\vspace{16pt}
+\noindent\begin{minipage}[t]{0.10\textwidth}
+\centering
+\textbf{Existence}:
+\end{minipage}
+\noindent\begin{minipage}[t]{0.85\textwidth}
+    \begin{itemize}
+        \item Characteristic function $\charfn{X}{\xi}$ defined/exists $\forall\;\xi\in\reals$ \begin{itemize}
+            \item In particular: if $\expected{\abs{X}^n}<\infty$, then $\charfn{X}{\xi}$ is $n$-times differentiable at the origin and $\phi_{X}^{(n)}(0)=i^n\expected{X^n}$.
+        \end{itemize}
+        \item Moment-generating function $\mgf{X}{t}$ strictly positive, only guaranteed to exist at $t=0$; may not be defined for $t\in\reals\setminus\{0\}$ \begin{itemize}
+            \item $k^{th}$ moment of $X$ exists iff $\mgf{X}{t}$ is $k$-times differentiable at $t=0$
+        \end{itemize}
+    \end{itemize}
+\end{minipage}
+
+~\\
+\subsection{Multivariate Characteristic Functions}
+\begin{definition}
+    Let $X_1,X_2,\hdots,X_n$ be random variables; then the \term{joint characteristic function} of $\Vec{X}=\vect{X_1,X_2,\hdots,X_n}$ is given by: \begin{eqnbox}
+        \charfn{\Vec{X}}{\Vec{\xi}}=\expected{e^{i\xi_1X_1+i\xi_2X_2+\hdots+i\xi_nX_n}}
+    \end{eqnbox}
+\end{definition}
+
+\vspace{4pt}
+\begin{tcolorbox}[colback=white]
+    \begin{theorem}[\term{Joint Characteristic Functions}]
+        \begin{align*}
+            X_1,X_2,\hdots,X_n\text{ independent}\;\Longleftrightarrow\;\charfn{\vec{X}}{\vec{\xi}}=\charfn{X_1}{\xi_1}\cdot\charfn{X_2}{\xi_2}\cdot\hdots\cdot\charfn{X_n}{\xi_n}
+        \end{align*}
+    \end{theorem}
+\end{tcolorbox}
+
+\newp
+\ulbf{Multivariate Characteristic Functions}
+\begin{enumerate}
+    \item[(i)] The joint characteristic function $\charfn{\vec{X}}{\vec{\xi}}$ uniquely determines the joint law of $\Vec{X}$
+    \item[(ii)]If $X_1,X_2,\hdots,X_n$ are independent, then the characteristic function of $Y=X_1+X_2+\hdots+X_n$ is: \begin{eqnbox}
+            \charfn{Y}{\xi}=\,\prod_{i=1}^n\charfn{X_i}{\xi}
+        \end{eqnbox}
+\end{enumerate}
+
+~\\
+\subsection{Cumulants}
+\begin{tcolorbox}[colback=white]
+    \begin{definition}
+        Given a random variable $X$, the \term{cumulant-generating function} [CGF] of $X$ is defined (for $|\xi|$ small) as: \begin{eqnbox}
+            K:\xi\mapsto \ln[\expected{e^{i\xi X}}]=\ln[\charfn{X}{\xi}]
+        \end{eqnbox}
+    \end{definition}
+    
+    \newp
+    \textbf{Cumulants}:
+    \begin{align*}
+        1.\quad\kappa_1:&\;\kappa_1=\frac{1}{i}\frac{d}{d\xi}\ln[\charfn{X}{\xi}]\bigg\vert_{\xi=0}=\expected{X} \\[6pt]
+        2.\quad\kappa_2:&\;\kappa_2=\frac{1}{i^2}\frac{d^2}{d\xi^2}\ln[\charfn{X}{\xi}]\bigg\vert_{\xi=0}=\variance{X}
+    \end{align*}
+\end{tcolorbox}
+
+~\\
+\subsection{Bochner's Theorem}
+\begin{recall}
+    A symmetric/Hermitian matrix $A\in M_{n\times n}(\complex)$ is called: \begin{enumerate}
+        \item \term{Positive semi-definite} if $z^TAz\geq0\;\forall\; z\in\complex^n$
+        \item \term{Positive definite} if $z^TAz>0$ strictly.
+    \end{enumerate}
+
+    \vspace{8pt}\pstart
+    \ulbf{Properties}: \begin{enumerate}
+        \item[(i)] $A$ is positive semi-definite iff $\lambda\geq0$ real non-negative for every eigenvalue $\lambda$ of $A$. In particular, $A$ is positive definite iff $\lambda>0$. \begin{itemize}
+            \item Corollary: $\det(A)\geq0$ [semi-definite] / $\det(A)>0$, $A$ invertible [definite]
+        \end{itemize}
+        \item[(ii)] $A$ is positive semi-definite iff $\exists\;L\in M_{n\times n}(\complex)$ such that $A=L^\ast L$. In particular, $A$ is positive definite iff $L$ is invertible.
+    \end{enumerate}
+\end{recall} \vspace{8pt}
+
+\begin{tcolorbox}[colback=white]
+    \begin{theorem}[\term{Bochner's Theorem}]
+        A function $\phi:\reals\to\complex$ is a characteristic function for some r.v. $X$ iff: \begin{enumerate}
+            \item $\phi(0)=1$
+            \item $\phi$ is continuous
+            \item $\phi$ is ``positive-definite'': $\sum_{i,j=1}^n\overline{\lambda}_i\lambda_j\phi(\xi_i-\xi_j)\geq0\;\forall\;n\in\naturals,\xi_i\in\reals,\lambda_i\in\complex$
+    
+            Equivalently, the matrix $\big(\phi(\xi_i-\xi_j)\big)_{ij}$ is positive-definite, where: \begin{align*}
+                \big(\phi(\xi_i-\xi_j)\big)_{ij}=\begin{pmatrix}
+                    \phi(0) & \phi(\xi_2-\xi_1) & \hdots & \phi(\xi_n-\xi_1) \\
+                    \phi(\xi_1-\xi_2) & \phi(0) & \hdots & \phi(\xi_n-\xi_2) \\
+                    \vdots & \vdots & \ddots & \vdots \\
+                    \phi(\xi_1-\xi_n) & \phi(\xi_2-\xi_n) & \hdots & \phi(0)
+                \end{pmatrix}
+            \end{align*}
+        \end{enumerate}
+    \end{theorem}
+\end{tcolorbox}
+
+
+\pagebreak
+\section{Applications of Characteristic Functions}
+\subsection{Uniqueness Theorem}
+\begin{tcolorbox}[colback=white]
+    \begin{theorem}[\term{Characterizations of a Distribution}]
+        Let $X$, $Y$ be two random variables; then TFAE: \begin{enumerate}
+            \item $F_X(x)=F_Y(x)\;\forall\;x\in\reals$
+            \item $\charfn{X}{\xi}=\charfn{Y}{\xi}\;\forall\;\xi\in\reals$
+            \item $\expected{f(X)}=\expected{f(Y)}$ for all bounded continuous functions $f:\reals\to\reals/\complex\to\complex$
+        \end{enumerate}
+    \end{theorem}
+\end{tcolorbox}
+
+
+\subsection{Moment Problem}
+\begin{minipage}[t]{0.25\textwidth}
+    \textbf{Moment Problem}:
+\end{minipage}
+\begin{minipage}[t]{0.75\textwidth}
+    \begin{itemize}
+        \item If an r.v. $X$ has any moment $\expected{X^k}=\infty$, then its distribution $F_X$ is not uniquely determined by its moments.
+        \item If $F_X$ is determined by finitely many moments, then $X$ takes only finitely many values.
+        \item[($\ast$)] All moments $\expected{X^k}$ of $X$ exist \& are finite iff all even moments exist \& are finite
+    \end{itemize}
+\end{minipage}
+
+\vspace{6pt}
+\begin{theorem}[\term{Uniqueness Theorem for Moments}]
+    Let $m_k=\expected{X^k}$; then the moments $m_k$ characterize $X$ if, for some $a>0$: \begin{eqnbox}
+        \sum_{k=0}^\infty\frac{a^{2k}}{(2k)!}m_{2k}<\infty
+    \end{eqnbox}
+\end{theorem}
+
+\pagebreak
+\section{Branching Processes}
+\begin{tcolorbox}[colback=white]
+    \begin{definition}
+        Given a random variable $X$, the \term{probability-generating function} of $X$ is the function $G_X:\reals\to\reals$ defined by: 
+        \begin{eqnbox}
+            \pgf{X}{z}=\expected{z^X}
+        \end{eqnbox}
+    \end{definition}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=white]
+    \begin{prop}
+        Let $N$ be an r.v. with values in $\naturals\;\cup\;\{0\}$ and let $X_1,X_2,\hdots,X_j,\hdots$ i.i.d. and independent of $N$. Let $Y=X_1+X_2+\hdots+X_N$; then: \begin{eqnbox}
+            \charfn{Y}{\xi}=\charfn{N}{\frac{1}{i}\ln[\charfn{X}{\xi}]}
+        \end{eqnbox}
+    \end{prop}
+
+    \vspace{0pt}
+    \ctrrule{12cm}{0.1pt}
+    \vspace{4pt}
+    
+    \noindent
+    \begin{minipage}[t]{0.12\textwidth}
+        \centering
+        \textbf{Corollary}:
+    \end{minipage}
+    \begin{minipage}[t]{0.85\textwidth}
+        \begin{enumerate}
+            \item[(a)] If $X$ and $N$ admit MGFs, have $\mgf{Y}{t}=\mgf{N}{\ln[\mgf{X}{t}]}$
+            \item[(b)] $\expected{Y}=\expected{X}\cdot\expected{N}$
+            \item[(c)] $\variance{Y}=\variance{N}\expected{X}^2+\expected{N}\variance{X}$
+            \item[(d)] $\pgf{Y}{z}=G_n\circ\pgf{X}{z}$
+        \end{enumerate}
+    \end{minipage}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=white]
+    \begin{theorem}[\term{Galton-Watson Tree}]
+        Suppose an individual [gen 0] has $X$-many children, each of whom has independently and with distribution $X$ and so on ad infinitum. 
+
+        \vspace{5pt}
+        Let $Z_n$ denote the number of children in the $n^{th}$ generation [$Z_0=1$]; then:
+        \begin{enumerate}
+            \item $\expected{Z_n}=\expected{X}^n$
+            \item Let $e_n=\prob{Z_n=0}$; then $e_{n+1}\geq e_n$. In particular, $e=\lim_{n\to\infty}e_n$ exists.
+            \item $e\in[0,1]$ is the smallest root/solution to $\pgf{X}{x}=x$ for $x\in[0,1]$.
+            \item $e<1$ iff either (i) $\expected{X}>1$ or (ii) $X\equiv 1$.
+            \item $e=0$ iff $\prob{X=0}=0$.
+        \end{enumerate}
+    \end{theorem}
+\end{tcolorbox}
+
+\pagebreak
+\section{Conditional Expectation}
+\begin{tcolorbox}[colback=white]
+    \begin{theorem}[\term{Conditional Expectation}]
+        Let $X,Y$ random variables and $\expected{|Y|}<\infty$; then there is a \ul{unique} r.v. $\expected{\cond{Y}{X}}$ [finite] satisfying: \begin{enumerate}
+            \item[(i)] $\expected{\cond{Y}{X}}$ depends only on $X$, i.e. $\expected{\cond{Y}{X}}=g(X)$ for some function $g$
+            \item[(ii)] For any bounded function $h$, have that: \begin{eqnbox}
+                \expected{Y\cdot h(X)}=\expected{\expected{\cond{Y}{X}}\cdot h(X)}
+            \end{eqnbox}
+        \end{enumerate}
+    \end{theorem}
+\end{tcolorbox}
+
+\vspace{8pt}
+\begin{recall} 
+    $\expected{\cond{Y}{X}}=g(X)$ defined via: \begin{align*}
+        \expected{\cond{Y}{X}}=&\sum_{n\in\integers}1_{\{X=n\}}(\omega)\expected{\cond{Y}{X=n}} &\text{[$X$ discrete]}\\
+        \expected{\cond{Y}{X}}=&\frac{\int y\pdf{X,Y}{x,y}dx}{\int\pdf{X,Y}{x,y}dy} &\text{[$X$ continuous]}
+    \end{align*}
+\end{recall}
+\vspace{8pt}
+
+\begin{tcolorbox}[colback=white]
+    \begin{theorem}[\term{Conditional Expectation}]
+        Let $X,Y$ r.v.s with $\expected{|Y|}<\infty$: \begin{enumerate}
+            \item[(i)] \textbf{Law of Iterated Expectation}: \begin{eqnbox}
+                \expected{\expected{\cond{Y}{X}}}=\expected{Y}
+            \end{eqnbox}
+            \item[(ii)] Define the \term{conditional variance} of $Y$ given $X$: \begin{eqnbox}
+                \variance{\cond{Y}{X}}:=\expected{\cond{[Y-\expected{\cond{Y}{X}}]^2}{X}}=\expected{\cond{Y^2}{X}}-\expected{\cond{Y}{X}}^2
+            \end{eqnbox}
+            \item[(iii)] Can obtain the \textbf{Law of Total Variance}: \begin{eqnbox}
+                \variance{Y}=\expected{\variance{\cond{Y}{X}}}+\variance{\expected{\cond{Y}{X}}}
+            \end{eqnbox}
+        \end{enumerate}
+    \end{theorem}
+\end{tcolorbox}
+
+\pagebreak
+\section{Inequalities}
+\begin{tcolorbox}[colback=white]
+    \begin{theorem}[\term{Markov's Inequality}]
+        Let $X$ non-negative; then for any $\lambda>0$
+        \begin{eqnbox}
+            \prob{X\geq\lambda}\leq\frac{1}{\lambda}\expected{X}
+        \end{eqnbox}
+    \end{theorem}
+    \begin{corollary}[\term{Chebyshev's Inequality}]
+        Let $X$ r.v. and $\mu\in\reals$; then: 
+        \begin{eqnbox}
+            \prob{|X-\mu|\geq\lambda}\leq\frac{1}{\lambda^2}\expected{(X-\mu)^2}
+        \end{eqnbox}
+        In particular, if $\mu=\expected{X}$: 
+        \begin{eqnbox}
+            \prob{|X-\expected{X}|\geq\lambda}\leq\frac{1}{\lambda^2}\variance{X}
+        \end{eqnbox}
+    \end{corollary}
+\end{tcolorbox}
+
+\begin{corollary}[\term{Exponential Markov}]
+    For any $s\geq0$, have: \begin{align*}
+        \prob{X\geq\lambda}\leq e^{-s\lambda}\expected{e^{sX}}
+    \end{align*}
+\end{corollary}
+
+\newp
+\textbf{Large Deviation Argument} (\term{Cramer's Method}): To obtain a smaller upper bound for $\prob{X\geq\lambda}$, can solve for $e^{-s\lambda}\expected{e^{sX}}$ and minimize over all $s$.
+
+\begin{theorem}[\term{Cauchy-Schwarz Inequality}] \begin{eqnbox}
+        \expected{XY}^2\leq\expected{X^2}\expected{Y^2}
+    \end{eqnbox}
+\end{theorem}
+
+\begin{theorem}[\term{Jensen's Inequality}]
+    For any convex function $\phi$: \begin{eqnbox}
+        \phi(\expected{X})\leq\expected{\phi(X)}
+    \end{eqnbox}
+\end{theorem}
+
+\pagebreak
+\section{Modes of Convergence}
+\begin{definition}
+    Say that random variables $X_n$ \term{converge in distribution} to a random variable $X$ if, $\forall$ bounded continuous functions $f$: \begin{eqnbox}
+        \expected{f(X_n)}\xrightarrow{n\to\infty}\expected{f(X)}
+    \end{eqnbox}
+\end{definition}
+
+\begin{theorem}[\term{Levy-Cramer}]
+    Given random variables $X_n$ and $X$, TFAE: \begin{enumerate}
+        \item $\expected{f(X_n)}\to\expected{f(X)}$ $\forall$ bounded \& continuous $f$
+        \item $F_{X_n}(x)\to F_X(x)$ for every $x\in\reals$ at which $F_X(x)$ is continuous
+        \item $\charfn{X_n}{\xi}\to\charfn{X}{\xi}\;\forall\;\xi\in\reals$
+    \end{enumerate}
+\end{theorem}
+
+\begin{tcolorbox}[colback=white]
+    \titleul{Mode of Convergence}
+    Say that a sequence of r.v.s $X_n$ converge to an r.v. $X$ [on the same probability space]: \begin{enumerate}
+        \item ...\ul{\textbf{in $\mathbf{p}$-mean/$\mathbf{L^p}$}} ($1\leq p<\infty$) if: \begin{eqnbox}
+            \expected{\abs{X-X_n}^p}\to0\text{ as }n\to\infty
+        \end{eqnbox}
+        \item ...\ul{\textbf{in probability}} if, $\forall\;\epsilon>0$: \begin{eqnbox}
+            \prob{\abs{X_n-X}>\epsilon}\to0\text{ as }n\to\infty
+        \end{eqnbox}
+        \item ...\ul{\textbf{almost surely}} [a.s.] if: \begin{eqnbox}
+            \prob{\set{\omega:X_n(\omega)\to X(\omega}}=1
+        \end{eqnbox}
+    \end{enumerate}
+\end{tcolorbox}
+
+\begin{theorem}
+    Fix $1\leq p\leq r<\infty$. Given r.v.s $X_n$, $X:\Omega\to\reals$, the modes of convergence of $X_n$ to $X$ are interrelated as follows: \begin{gather}
+        \text{$r$-mean convergence}\implies\text{$p$-mean convergence}\implies\text{convergence in $\mathbb{P}$} \\
+        \text{convergence almost surely}\implies\text{convergence in $\mathbb{P}$} \\
+        \text{convergence in $\mathbb{P}$}\implies\text{convergence in distribution}
+    \end{gather}
+\end{theorem}
+
+\subsection{Compactness for Convergence in Distribution}
+\begin{tcolorbox}[colback=white]
+    \begin{definition}
+        A family of r.v.s $X_n$ is called \term{tight} if, for every $\epsilon>0$, $\exists\;L>0$ s.t.: \begin{eqnbox}
+            \prob{\abs{X_n}\geq L}<\epsilon\;\forall\;n\in\naturals
+        \end{eqnbox}
+    \end{definition}
+
+    \vspace{-4pt}
+    \ctrrule{12cm}{0.6pt}
+    
+    \begin{theorem}[\term{Prokhorov}]
+        If a sequence of r.v.s $X_n$ are tight, then there is a subsequence $X_{n_k}$ that converges in distribution.
+    \end{theorem}
+\end{tcolorbox}
+
+\begin{theorem}[\term{Helly selection theorem}]
+    Given a sequence $F_n$ of non-decreasing cadlag functions that are uniformly bounded on a bounded interval $[a,b)$, there is: \begin{enumerate}
+        \item A subsequence $F_{n_k}$ of $F_n$, and 
+        \item A non-decreasing cadlag function $F:[a,b)\to\reals$
+    \end{enumerate} such that $F_{n_k}\to F$ pointwise [for points where $F$ is continuous].
+\end{theorem}
+
+\newp
+\begin{proof}
+    Can enumerate the rationals by $q_m$; at each $q_m$, find a subsequence $F_{n_k}$ s.t. $F_{n_k}(q_m)$ converges. Via the Cantor diagonal slash argument, find the subsequence s.t. $F_{n_k}(q_m)$ converges $\forall\;q_m$ and take $F$ to be the limit of $F_{n_k}$.
+\end{proof}
+
+\newp
+\begin{lemma}[\term{Borel-Cantelli}]
+    If the sum of probabilities of events $E_n$ is finite [i.e. $\sum_{n=1}^\infty\prob{E_n}<\infty$], then the probability of infinitely many $E_n$'s occurring is 0: \begin{align*}
+        \prob{\limsup_{n\to\infty}E_n}=0
+    \end{align*}
+\end{lemma}
+
+\pagebreak
+\section{The Central Limit Theorem}
+\begin{tcolorbox}[colback=white]
+    \begin{theorem}[\term{Central Limit Theorem}]
+        Let $X_i$ be \ul{i.i.d.} random variables with mean $\expected{X_i}=\mu$ and finite variance $\variance{X_i}=\sigma^2<\infty$. Then: \begin{eqnbox}
+            Z_n=\frac{X_1+X_2+\hdots+X_n-n\mu}{\sqrt{n\sigma^2}}\xrightarrow{\text{in dist.}}\normal{0}{1}
+        \end{eqnbox}
+    \end{theorem}
+\end{tcolorbox}
+
+\begin{proof}
+    Via characteristic functions: \begin{align*}
+        \charfn{Z_n}{\xi}\to\charfn{\normal{0}{1}}{\xi}\text{ pointwise $\forall\;\xi\in\reals$.}
+    \end{align*}
+\end{proof}
+
+
+\begin{theorem}[\term{Berry-Esseen Theorem}]
+    Suppose $X_i$ are i.i.d. r.v.s with $\expected{\abs{X_i}^3}<\infty$, and define the $Z_n$'s by \begin{align*}
+        Z_n=\frac{X_1+X_2+\hdots+X_n}{n}.
+    \end{align*}
+    Then the CDFs $F_n$ of the $Z_n$'s satisfy that: \begin{eqnbox}
+        \sup_z\abs{F_n(z)-\Phi(z)}\leq\frac{1}{\sqrt{n}}\frac{\expected{\abs{X_i}^3}}{\sigma^3}
+    \end{eqnbox}
+\end{theorem}
+
+\pagebreak
+\section{Laws of Large Numbers}
+\subsection{The Weak Law of Large Numbers}
+\begin{theorem}
+    Suppose that $\variance{X_i}<\infty$; then: \begin{align*}
+        \frac{X_1+\hdots+X_n}{n}\xrightarrow[n\to\infty]{L^2}\expected{X_i}
+    \end{align*}
+\end{theorem}
+\begin{lemma}
+    If a sequence of random variables $Z_n$ converge $Z_n\xrightarrow{d}C$ to some $C\in\reals$, then $Z_n\to C$ in probability as well.
+\end{lemma}
+
+\vspace{8pt}
+\begin{tcolorbox}[colback=white]
+    \begin{theorem}[\term{Weak/Khinchin LLN}]
+       If $X_i$ are i.i.d. r.v.s with $\expected{\abs{X_i}}<\infty$, then: \begin{eqnbox}
+           \frac{X_1+X_2+\hdots+X_n}{n}\xrightarrow[n\to\infty]{p}\expected{X_i}
+       \end{eqnbox}
+    \end{theorem}
+\end{tcolorbox}
+\begin{proof}
+    Can show that: \begin{align*}
+        Z_n=\frac{X_1+\hdots+X_n-n\mu}{n}\implies\charfn{Z_n}{\xi}\to\charfn{0}{\xi}\text{ pointwise $\forall\;\xi\in\reals$}
+    \end{align*}
+    and apply Lemma.
+\end{proof}
+
+\pagebreak
+\subsection{Strong Laws of Large Numbers}
+\begin{theorem}[\term{Kolmogorov Maximal Theorem}]
+    Let $W_i$ i.i.d. r.v.s with $\expected{W_i}=0$, $\expected{W_i^2}<\infty$. Then for each $N\in\naturals$, $\lambda>0$: \begin{eqnbox}
+        \prob{\sup_{1\leq n\leq N}\abs{\,\sum_{i=1}^nW_i\,}>\lambda}\leq\frac{\sum_{i=1}^N\variance{W_i}}{\lambda^2}
+    \end{eqnbox}
+
+    \pstart
+    In particular, sending $N\to\infty$: \begin{eqnbox}
+        \prob{\sup_{n\in\naturals}\abs{\,\sum_{i=1}^nW_i\,}>\lambda}\leq\frac{1}{\lambda^2}\left(\sum_{i=1}^\infty\variance{W_i}\right)
+    \end{eqnbox}
+\end{theorem}
+
+\newp
+\begin{lemma}[\textbf{Kronecker}]
+    Let $y_k\in\reals$ such that $\sum_{k=1}^\infty\frac{y_k}{k}$ converges. Then: \begin{eqnbox}
+        \frac{y_1+y_2+\hdots+y_n}{n}\to0
+    \end{eqnbox}
+\end{lemma}
+
+\vspace{4pt}
+\begin{tcolorbox}[colback=white]
+    \begin{theorem}[\term{Strong/Kolmogorov LLN}]
+        If $X_i$ are i.i.d. random variables with $\expected{\abs{X_i}}<\infty$, then: \begin{eqnbox}
+            \frac{X_1+X_2+\hdots+X_n}{n}\xrightarrow[n\to\infty]{\text{almost surely}}\expected{X_i}
+        \end{eqnbox}
+    \end{theorem}
+\end{tcolorbox}
+
+\begin{proof}
+\newp
+    (\textit{Finite $4^{th}$ Moment}) Via Chebyshev's inequality.
+
+    \newp
+    (\textit{Finite Variance}) Via Kronecker's Lemma.
+
+    \newp
+    (\textit{Kolmogorov LLN}) Define $X_n=X_n'+X_n''$, $X_n'=\indicator{\abs{X_n}\leq n}X_n$, $X_n''=\indicator{\abs{X_n}>n}X_n$.
+
+    \newp
+    Can split up original expression: \begin{align*}
+        \frac{X_1+\hdots+X_n}{n}=\frac{[X_1'-\expected{X_1'}]+\hdots+[X_n'-\expected{X_n'}]}{n}+\frac{\expected{X_1'}+\hdots+\expected{X_n'}}{n}+\frac{1}{n}\sum_{k=1}^nX_k''
+    \end{align*}
+    and show separately that all three terms $\to$ 0 almost surely.
+\end{proof}
+
+\section{Random Walks}
+\subsection{Simple Random Walks}
+\begin{tcolorbox}[colback=white]
+    \textbf{Setup}: Let $X_k$ be i.i.d. random variables defined by: \begin{eqnbox}
+        X_k=\begin{cases}
+            +1 & \text{with probability $p$} \\
+            -1 & \text{with probability $q=1-p$}
+        \end{cases}
+    \end{eqnbox}
+    and define for $n\in\naturals$: \begin{eqnbox}
+        S_n=\sum_{k=1}^nX_k
+    \end{eqnbox}
+\end{tcolorbox}
+
+\newp
+\begin{lemma}
+    Define: \begin{eqnbox}
+        u_n=\prob{\text{return to origin at time $n$}}=\prob{S_n=0}
+    \end{eqnbox}
+    Then $\forall\;m\in\naturals$: \begin{align*}
+        u_{2m+1}=0;\quad u_{2m}=\binom{2m}{m}p^m(1-p)^m
+    \end{align*}
+\end{lemma}
+\begin{proof}
+    Trivial.
+\end{proof}
+
+\newp
+\begin{lemma}
+    For $z\in\reals$ with $\abs{z}^2\leq\frac{1}{4pq}$: \begin{eqnbox}
+        U(z):=\sum_{n=0}^\infty u_nz^n=\frac{1}{\sqrt{1-4pqz^2}}
+    \end{eqnbox}
+\end{lemma}
+\begin{proof}
+    Can keep taking derivatives $\frac{d}{d\epsilon}(1-\epsilon)^{-(m-\frac{1}{2})}$ to find that \begin{align*}
+        (1-\epsilon)^{-\frac{1}{2}}=1+\sum_{m=1}^\infty\frac{(2m-1)\cdot\hdots\cdot3\cdot1}{2^mm!}\epsilon^m
+    \end{align*}
+    and substitute $\epsilon=4pqz^2$.
+\end{proof}
+
+\newp
+\begin{theorem}
+    Define: \begin{eqnbox}
+        f_n=\prob{\text{first return to origin at time $n$}}=\prob{S_n=0\text{ but }S_{n-1},\hdots,S_2,S_1\neq 0}
+    \end{eqnbox}
+    Then: \begin{eqnbox}
+        F(z):=\sum_{n=0}^\infty f_nz^n=1-\frac{1}{U(z)}
+    \end{eqnbox}
+    In particular: \begin{align*}
+        f_{2m+1}=0;\quad f_{2m}=\frac{1}{2m-1}\binom{2m}{m}p^m(1-p)^m
+    \end{align*}
+\end{theorem}
+\begin{proof}
+    Can use that: \begin{align*}
+        u_n=f_n+\sum_{m=1}^{n-1}f_mu_{n-m}
+    \end{align*}
+    and substitute into expression for $U(z)$.
+\end{proof}
+
+\begin{corollary}
+    \begin{eqnbox}
+        \prob{\text{eventually return to origin}}=1-\abs{p-q}
+    \end{eqnbox}
+\end{corollary}
+
+\begin{prop}
+    Let $T_1=$ time of $1^{st}$ return; $T_1=\min\set{n:S_n=0}$ for a symmetric SRW [$p=q$]. Then $\expected{T_1}=\infty$.
+\end{prop}
+
+\pagebreak
+\subsection{The Gambler's Ruin Problem}
+\textbf{Setup}: Assign values $V(0)=0$, $V(N)=1$; a person starting at $0<n<N$ performs a simple random walk ($\prob{\text{step right}}=p$, $\prob{\text{step left}}=q$) until reaching either $0$ (``lose'') or $N$ (``win'').
+
+\newp
+$\Rightarrow$ Want to find the ``value'' $V(n)=\expected{\cond{V}{\text{start at $n$}}}$ of a position $0<n<N$. \begin{enumerate}
+    \item Boundary conditions: $V(0)=0,V(N)=1$
+    \item Difference equation: $v(n)=pv(n+1)+qv(n-1)$
+\end{enumerate}
+
+\newp
+\term{Symmetric SRW} (\textit{simple case}: $p=q=1/2$): \begin{eqnbox}
+    v(n)=\frac{v(n+1)+v(n-1)}{2}\implies v(n)=\frac{n}{N}
+\end{eqnbox}
+
+\newp
+\term{Biased SRW} (\textit{hard case}: $p\neq q$): \begin{eqnbox}
+    v(n)=\frac{\left(\frac{q}{p}\right)^n-1}{\left(\frac{q}{p}\right)^N-1}
+\end{eqnbox}
+
+\newp
+Can compute \textit{expected game length} $e(n)$: \begin{eqnbox}
+    e(n)=\begin{cases}
+        n\cdot(N-n) & p=q=1/2 \\[8pt]
+        \frac{1}{q-p}\left[N\frac{\left(\frac{q}{p}\right)^n-1}{\left(\frac{q}{p}\right)^N-1}-n\right] & p\neq q
+    \end{cases}
+\end{eqnbox}
+
+
+\pagebreak
+\section{Appendix}
+\subsection{Distributions of Discrete Random Variables}
+\[\hskip-0.75cm\def\arraystretch{3}
+\begin{array}{|c|c|c|c|}
+    \hline \textbf{Name} & \textbf{Parameters} & \textbf{Distribution} & \textbf{Characteristic} \\
+    \hline \bernoulli{p} & p\in[0,1] & \pdf{X}{k}=\begin{cases}
+        p & k=1\\ 1-p & k=0
+    \end{cases} & 1-p+pe^{i\xi} \\
+    \hline \binomial{n}{p} & n\in\naturals, p\in[0,1] & \pdf{X}{k}=\begin{cases}
+        \binom{n}{k}p^k(1-p)^{n-k} & k=0,1,\hdots,n \\ 0 & \text{otherwise}
+    \end{cases} & (1-p+pe^{i\xi})^n \\
+    \hline \geometric{p} & p\in(0,1] & \pdf{X}{k}=\begin{cases}
+        (1-p)^{k-1}p & k=1,2,3,\hdots \\ 0 & \text{otherwise}
+    \end{cases} & \frac{pe^{i\xi}}{1-(1-p)e^{i\xi}}\\
+    \hline \poisson{\lambda} & \lambda\geq0 & \pdf{X}{k}=\frac{\lambda^k}{k!}e^{-\lambda} & e^{\lambda(e^{i\xi}-1)} \\ \hline
+\end{array}\]
+
+\pagebreak
+\subsection{Distributions of Continuous Random Variables}
+\begin{definition}[\term{Gamma Function}]
+    The \term{gamma function} is the function defined by: \begin{eqnbox}
+        \Gamma(z)=\int_0^\infty t^{z-1}e^{-t}dt
+    \end{eqnbox}
+\end{definition}
+\[\hskip-0.75cm\def\arraystretch{3}
+\begin{array}{|c|c|c|c|}
+    \hline \textbf{Name} & \textbf{Parameters} & \textbf{Distribution} & \textbf{Characteristic} \\
+    \hline \normal{\mu}{\sigma^2} & \mu,\sigma\in\reals & \pdf{X}{x}=\frac{1}{\sqrt{2\pi\sigma^2}}\exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right) & e^{i\mu\xi-\frac{1}{2}\sigma^2\xi^2} \\
+    \hline \normal{\vec{\mu}}{\Sigma} & \vec{\mu}\in\reals^k,\Sigma\in\reals^{k\times k} & \frac{1}{(2\pi)^{k/2}\det(\Sigma)^{\frac{1}{2}}}\exp\left(-\frac{(\vec{x}-\vec{\mu})^T\Sigma^{-1}(\vec{x}-\vec{\mu})}{2}\right) & e^{i\vec{\xi}\cdot\vec{\mu}-\frac{1}{2}\vec{\xi}\cdot\Sigma\vec{\xi}} \\
+    \hline \Gamma(k,\lambda) & k,\lambda>0 & \pdf{X}{x}=\begin{cases}
+        \frac{\lambda^k}{\Gamma(k)}x^{k-1}e^{-\lambda x} & x>0 \\ 
+        0 & \text{otherwise}
+    \end{cases} & (1-\frac{i\xi}{\lambda})^{-k} \\
+    \hline \exponential{\lambda} & \lambda>0 & \pdf{X}{x}=\begin{cases}
+        \lambda e^{-\lambda x} & x\geq0 \\
+        0 & \text{otherwise}
+    \end{cases} & \frac{\lambda}{\lambda-i\xi} \\ \hline
+\end{array}\]
+
+\end{document}

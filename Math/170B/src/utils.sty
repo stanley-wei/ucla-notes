@@ -1,0 +1,95 @@
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{empheq}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.7in,rmargin=0.7in,tmargin=0.7in,bmargin=0.7in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subcaption}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+\usepackage[explicit]{titlesec}
+\usepackage{ulem}
+
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{#1\hrule\vspace*{-14pt}}
+
+\newtcbox{\emphbox}[1][]{%
+    nobeforeafter, math upper, tcbox raise base,
+    enhanced, colframe=black,
+    colback=white, boxrule=1pt,
+    #1}
+
+\NewDocumentEnvironment{eqnbox}{b}{}{
+  \begin{empheq}[box=\emphbox]{equation*}
+    #1
+  \end{empheq}
+}
+
+\theoremstyle{definition}
+\newtheorem*{corollary}{Corollary}
+\newtheorem*{definition}{Definition}
+\newtheorem*{lemma}{Lemma}
+\newtheorem*{prop}{Prop}
+\newtheorem*{recall}{Recall}
+\newtheorem*{theorem}{Theorem}
+
+\newcommand{\pstart}[0]{\noindent}
+\newcommand{\newp}[0]{\vspace{8pt}\pstart}
+\newcommand{\term}[1]{\textit{\textbf{#1}}}
+\newcommand{\ulbf}[1]{\textbf{\ul{#1}}}
+
+\newcommand{\titleul}[1]{\newp\ulbf{#1}\vspace{7pt}~\\}
+\newcommand{\ctrrule}[2]{\begin{center}\rule{#1}{#2}\end{center}}
+
+% Notable Fields
+\newcommand{\naturals}[0]{\mathbb{N}}
+\newcommand{\integers}[0]{\mathbb{Z}}
+\newcommand{\reals}[0]{\mathbb{R}}
+\newcommand{\complex}[0]{\mathbb{C}}
+
+% Probability Operators
+\newcommand{\prob}[1]{\mathbb{P}\left(#1\right)}
+
+\newcommand{\cond}[2]{#1\,\vert\,#2}
+\newcommand{\condbigg}[2]{#1\,\bigg\vert\,#2}
+
+\newcommand{\expected}[1]{\mathbb{E}\left(#1\right)}
+\newcommand{\expectedcond}[2]{\mathbb{E}_{#1}\left(#2\right)}
+
+\newcommand{\variance}[1]{\text{var}\left(#1\right)}
+\newcommand{\covariance}[2]{\text{cov}\left(#1,#2\right)}
+\newcommand{\bias}[2]{\text{Bias}\left(#1,#2\right)}
+
+
+% Discrete Probability Distributions
+\newcommand{\bernoulli}[1]{\text{Bernoulli}(#1)}
+\newcommand{\binomial}[2]{\text{Binomial}(#1,#2)}
+\newcommand{\geometric}[1]{\text{Geometric}(#1)}
+\newcommand{\poisson}[1]{\text{Poisson}(#1)}
+
+\newcommand{\negbinomial}[2]{\text{NB}\left(#1,#2\right)}
+
+% Continuous Probability Distributions
+\newcommand{\chisquared}[1]{\chi_{#1}^2}
+\newcommand{\gammaDist}[2]{\text{Gamma}\left(#1,#2\right)}
+\newcommand{\normal}[2]{\text{N}\left(#1,\,#2\right)}
+\newcommand{\exponential}[1]{\text{Exp}(#1)}
+\newcommand{\uniform}[1]{\text{Uniform}\left(#1\right)}
+
+% Probability Operators
+\newcommand{\pmf}[2]{p_{#1}\left(#2\right)}
+\newcommand{\pdf}[2]{f_{#1}\left(#2\right)}
+\newcommand{\cdf}[2]{F_{#1}\left(#2\right)}
+\newcommand{\charfn}[2]{\phi_{#1}\left(#2\right)}
+\newcommand{\mgf}[2]{M_{#1}\left(#2\right)}
+\newcommand{\pgf}[2]{G_{#1}\left(#2\right)}
+
+% Misc
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\indicator}[1]{1_{#1}}
+\newcommand{\loh}[1]{o\left(#1\right)}
+\newcommand{\Loh}[1]{O\left(#1\right)}
+\newcommand{\set}[1]{\left\{#1\right\}}
+\newcommand{\vect}[1]{\left<#1\right>}

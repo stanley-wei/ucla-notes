@@ -1,0 +1,204 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+
+\graphicspath{ {./images/} }
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+\newtheorem*{problem}{Problem}
+\newtheorem{case}{\textbf{Case}}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newtheorem*{observation}{Observation}
+
+\newcommand{\probname}[1]{\noindent \textbf{\textit{#1}}}
+\newcommand{\probtitle}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+
+\begin{document}
+\subsubsection*{Introduction to Networks}
+\begin{definition}[\probname{Network}]
+    A \textbf{network} is a weighted directed graph where each edge has an associated \textbf{\textit{capacity}} [weight]. \begin{itemize}
+        \item An \textbf{S-T network} is a network with a specified starting vertex S, end vertex T.
+        \item The capacity of an edge may be used to indicate the number of items that can be sent through that edge.
+        \item Cycles are allowed.
+    \end{itemize}
+\end{definition}
+
+\begin{center}
+    \adjincludegraphics[trim={0 {0.12\height} 0 {0.23\height}},clip,scale=0.8]{Images/Notes/network_flow.png}
+\end{center}
+
+\begin{definition}[\probname{Flow}]
+    Given an S-T network, a \textbf{flow} is a function mapping each edge to a non-negative number. A \textbf{\textit{legal flow}} is a flow such that the number assigned to each edge is less than or equal to the capacity of the edge.
+\end{definition}
+\begin{definition}[\probname{Max Flow}]
+    Given a flow F on an S-T network, we defined the \textbf{\textit{capacity}} \textbar F\textbar\ of F to be the sum of the flow to T. We define a \textbf{max flow} on F to be a legal flow with maximum capacity.
+\end{definition}
+
+\subsection{Max Flow Problem}
+\begin{problem}[\probname{Max Flow/Min Cut}]
+    Given an S-T network, find a max flow on the network.\\[5pt]
+    \noindent \textbf{\textit{Rules}}: \begin{enumerate}
+        \item The flow through any edge is bounded by the capacity of the edge, i.e. $f_i\leq c_i\;\forall\;i$.
+        \item Edge capacities are \textit{positive nonzero integers}.
+        \item \textit{Conservation of flow}: The flow into any vertex needs to be equal to the flow out of it ($\sum_{\to v_i}f_j$=$\sum_{v_i\to}f_j$) \begin{itemize}
+            \item Exceptions: $S$, $T$
+        \end{itemize}
+    \end{enumerate}
+\end{problem}
+
+\subsubsection*{Solutions to Max Flow}
+\noindent Simple case: if the network is a single path, then the max flow is simply the minimum of capacities in the network.\\
+
+\noindent \textit{\textbf{Greedy principle}}: We can keep looking for paths $S\to T$ that do not yet contain any saturated edges [edges where flow = capacity] and saturating them, until no more paths exist.\\
+
+\noindent \textit{Issue}: Random path selection does not always provide a max flow, but $\nexists$ any criteria for path selection that would provide a max flow on every network.
+
+\noindent\textit{Solution}: We can modify greedy to allow it to ``change its mind''.\begin{itemize}
+    \item \textit{Mechanism}: Anytime the greedy algorithm picks an edge $(u\to v)$ and runs $x$ amount of flow through it, we can create a \textit{back edge} $(v\to u)$ with capacity $x$. \begin{itemize}
+        \item Graph with back edges called an \textit{augmented graph/network} or \textit{residual network}.
+    \end{itemize}
+    \item Can repeat the greedy process on the augmented graph to find ``augmented paths'' $S\to T$, stopping when no more augmented paths exist. \begin{itemize}
+        \item \textit{Interpretation}: Sending flow through a back edge $(v\to u)$ is equivalent to decreasing the flow sent through the original edge $(u\to v)$.
+    \end{itemize}
+\end{itemize}
+
+\begin{tcolorbox}[colback=yellow!10!white]
+    \probtitle{Algorithm (Ford-Fulkerson)}
+    \begin{enumerate}
+        \item Begin by finding any path $S\to T$ in the graph, e.g. via BFS/DFS.
+        \item ``Augment'' the graph: \begin{enumerate}
+            \item For each edge $(u\to v)$ on the path, increment the flow on that edge by 1 and create a \textit{back edge} $(v\to u)$ with capacity 1. \begin{itemize}
+                \item If the edge $(v\to u)$ already exists, increase its capacity by 1.
+            \end{itemize}
+            \item ``Delete'' any saturated edges from the graph, to remove them from consideration when looking for additional paths $S\to T$.
+        \end{enumerate}
+        \item Repeat the process on the new \textit{augmented graph} until no more paths $S\to T$ exist. Then a max flow can be found by, for each edge $(v\to u)$ in the original network, assigning it the value $|(v\to u)|-|(u\to v)|$ from the augmented network.
+    \end{enumerate}
+\end{tcolorbox}
+
+\subsubsection*{Proof of Correctness}
+\begin{definition}
+    Given an S-T network, we define a \textbf{cut} [partition] of the network to be a bipartition of the vertices of the network into two sets $S_1,S_2$ such that $S\in S_1$ and $T\in S_2$. \begin{itemize}
+        \item Given a cut $(S,T)$, we define its \textbf{\textit{capacity}} $C(S,T)$ to be the sum of the capacities of all edges $(x\to y)$ such that $x\in S_1$, $y\in S_2$.
+        
+        $\rightarrow$ A \textbf{\textit{minimum cut}} is a cut with minimum capacity.\begin{itemize}
+            \item Notably, $C(S,T)$ does not include edges $(y\to x)$ s.t. $x\in S_1$, $y\in S_2$.
+        \end{itemize}
+    \end{itemize}
+\end{definition}
+
+\begin{observation}
+    Given a network with max flow $F$: for any cut $(S,T)$, we find that $|F|\leq C(S,T)$. In particular, $|F|$ is bounded above by the capacity of the minimum cut.\begin{itemize}
+        \item \textit{Reasoning}: All flow in a max flow $F$ must pass from $S_1$ to $S_2$ at some point, but it is (by definition) not possible to send more than $C(S,T)$ flow between $S_1,S_2$.
+    \end{itemize}
+\end{observation}
+
+\noindent\textit{}
+
+\noindent\textit{Claim: The augmented greedy approach is optimal.}
+\begin{proof}
+Let $N$ be a network, $f$ a flow in $N$. We want to show that the following are equivalent: \begin{enumerate}
+    \item $f$ is a max flow in $N$
+    \item The augmented network $N_f$ ($N$ with flow $f$) contains no unsaturated augmented paths.
+    \item $|f|=C(S,T)$ for some cut $(S,T)$ of $N$
+\end{enumerate}
+
+~\\
+\noindent$1\to 2$: Assume $(1)$. Assume, for the sake of contradiction, that $N_f$ contains an unsaturated augmented path; then we could saturate that path and obtain a larger flow [contradiction].\\
+
+\noindent$2\to 3$: Assume $(2)$. Remove (from $N_f$) all saturated edges. Then $S$ and $T$ will become disconnected in the resulting graph. \begin{itemize}
+    \item \textit{Reasoning}: Since $N_f$ contains no unsaturated augmented paths, then every path $S\to T$ in $N_f$ must contain at least one saturated edge.
+\end{itemize}
+
+We can take the connected components containing $S$ and $T$, respectively, as a cut $(S,T)$ of $N$; then all edges between partitions are saturated in $N_f$, therefore $|f|=C(S,T)$.\\
+
+\noindent$3\to 1$: Assume $(3)$. Since the capacity of any flow is bounded above by the capacity of any cut, then no flow $f'$ can have $f'>|f|=C(S,T)$; therefore $f$ is a max flow.
+\end{proof}
+
+\subsubsection*{Time Complexity}
+Let $N(V,E)$ be a network with max flow $f$. Then Ford-Fulkerson will need to find at most $|f|$ augmenting paths, where finding an augmenting path via BFS/DFS is done in O($V+E$) and augmenting a graph is, worst-case, O($E$).\\
+
+\noindent$\to$ \textbf{Runtime}: O($|f|\cdot E$) (\textit{pseudo-polynomial})
+
+\pagebreak
+\subsection{Extensions of Max Flow}
+\subsubsection{Cell Tower Problem}
+\begin{problem}[\probname{Cell Tower Problem}]
+    Given a set of $m$ cell phones and $n$ cell towers (where each cell tower has a certain capacity), find a way to assign a maximum amount of cell phones to cell towers.\\
+
+    \noindent\textbf{\textit{Assumptions}}:
+    \begin{enumerate}
+        \item Each cell tower has the same capacity $x$.
+        \item Each cell phone can be assigned to any tower within a certain distance $R$.
+    \end{enumerate}
+\end{problem}
+
+\noindent \textbf{Approach}: Can reframe as a network flow problem: \begin{enumerate}
+    \item Represent cell phones, cell towers as individual nodes \begin{itemize}
+        \item One phone-tower connection $\Rightarrow$ one unit of flow
+        \item Can use edge capacities to enforce cell tower capacities
+    \end{itemize}
+\end{enumerate}
+
+\vspace{8pt}
+\noindent\ul{\textbf{Algorithm}}
+\begin{enumerate}
+    \item For each cell tower, create a corresponding node $y$ in the graph
+    \item For each cell phone, create a corresponding node $x$ in the graph \begin{itemize}
+        \item For each cell tower $y_i$ within a distance $R$ from $x$, create an edge $(x\to y_i)$ with capacity 1
+    \end{itemize}
+    \item Create a \textit{virtual source} $S$\begin{itemize}
+        \item For each phone $a_i$,  create an edge $(a_i\to S)$ with capacity 1
+    \end{itemize}
+    \item Create a \textit{virtual sink} $T$ \begin{itemize}
+        \item For each tower $b_j$, create an edge $(b_j\to T)$ with capacity $x$
+    \end{itemize}
+    \item Run Ford-Fulkerson from $S\to T$ on the graph.
+\end{enumerate}
+
+\pagebreak
+\subsubsection{Bipartite Matching}
+\begin{problem}[\probname{Bipartite Matching}]
+    Given a graph partitioned into two sets $S_\text{left},S_\text{right}$, find the maximum number of possible matches $S_\text{left}\to S_\text{right}$ such that each node is matched with at most one other node.
+\end{problem}
+
+\noindent\ul{\textbf{Algorithm}}
+\begin{enumerate}
+    \item Create a \textit{virtual source} $S$\begin{itemize}
+        \item For each node $x\in S_\text{left}$, create an edge $(S\to x)$ with capacity $1$
+    \end{itemize}
+    \item Create a \textit{virtual sink} $T$ \begin{itemize}
+        \item For each node $y\in S_\text{right}$, create an edge $(y\to T)$ with capacity $1$
+    \end{itemize}
+    \item Run Ford-Fulkerson from $S\to T$ on the graph.
+\end{enumerate}
+
+\begin{center}
+    \adjincludegraphics[trim={0 {0.4\height} 0 {0.2\height}},clip,scale=0.6]{Images/Notes/bipartite_flow.png}
+\end{center}
+
+\subsubsection{``Gadgets''}
+If we want to create a restriction that at most $n$ flow passes through a given node $x$ in a network without modifying the capacities of adjacent edges, we can do so by splitting $x$ into two nodes $x_1,x_2$ such that:\begin{enumerate}
+    \item All edges $(v\to x)$ become edges $(v\to x_1)$
+    \item All edges $(x\to u)$ become edges $(x_2\to u)$
+    \item $x_1,x_2$ are connected by an edge with capacity $n$
+\end{enumerate}
+
+\end{document}

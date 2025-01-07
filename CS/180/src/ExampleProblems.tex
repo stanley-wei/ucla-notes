@@ -1,0 +1,101 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+
+\graphicspath{ {./images/} }
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+\newtheorem*{problem}{Problem}
+\newtheorem{case}{\textbf{Case}}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newtheorem*{observation}{Observation}
+
+\newcommand{\probname}[1]{\noindent \textbf{\textit{#1}}}
+\newcommand{\probtitle}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+\newcommand{\resetcases}[0]{\setcounter{case}{0}}
+
+\begin{document}
+\subsection{Majority Problem}
+\begin{problem}[\probname{Majority Problem}] Given a total of $n$ votes for $m$ candidates, we want to find whether any single candidate has a majority (strictly more than half the votes). \begin{itemize}
+    \item \textbf{Condition}: Algorithm should use a \ul{constant amount} of extra shortage
+    \item Assume votes are presented in the form of an $n$-length array of numbers $1$, $2$, $\hdots$, $m$
+\end{itemize}
+\end{problem}
+
+\begin{observation}
+    If a given candidate $m$ has a majority [$>\frac{n}{2}$ votes] across a set of $n$ votes, then if we remove 2 votes (one vote for $m$, and one vote not for $m$), $m$ will still have a majority [$>\frac{n-2}{2}$ votes] across the remaining $n-2$ votes.
+
+    Alternatively: if a given candidate $m$ must have $>\frac{n}{2}$ votes to win, then if we remove 2 votes as above, $m$ will only need $>\frac{n}{2}-1$ votes in the remaining set to win; any other candidate (aside from the other candidate whose vote was removed) still needs $\frac{n}{2}$ to win.
+\end{observation}
+
+\vspace{6pt}
+We can use this observation to find an algorithm that progressively reduces/simplifies the problem to arrive at a solution.
+
+\subsubsection*{Algorithm}
+\begin{enumerate}
+    \item Take the 1st element (vote) as our \textit{temporary majority candidate}, and initialize its \textit{vote counter} to be 1.
+    \item Advance a pointer through the array. At each element: \begin{enumerate}
+        \item Case 1: The element is  the same as the temporary majority. Then increment the majority vote counter by 1.
+        \item Case 2: The element is different from the temporary majority. Then decrement the majority candidate vote counter by 1. \begin{itemize}
+            \item This is analogous to implicitly removing one element of the temporary majority + the just-found element
+        \end{itemize}
+        \item If the majority vote counter reaches 0, there is no current majority; set the temporary majority to be the next element and continue
+    \end{enumerate}
+    \item When the loop finishes: \begin{enumerate}
+        \item Case 1: The temporary majority is nonzero, and has at least 1 vote. Then that specific element is the only one that might have a majority; rescan all the votes to determine if that element has a majority.
+        \item Case 2: The temporary majority is null. Then there is no majority.
+    \end{enumerate}
+\end{enumerate}
+
+\subsubsection*{Implementation}
+Only 4 pieces of extra storage needed: \begin{enumerate}
+    \item A pointer to start of array
+    \item Our current index in the array
+    \item One variable denoting the [temporary] majority candidate
+    \item One variable containing the no. of votes for that majority candidate
+\end{enumerate}
+
+\pagebreak
+\subsection{Famous Person Problem}
+\begin{problem}[\probname{Celebrity Problem}]
+    Given a set of $n$ people, we define a [the] \textit{famous person} to be a person who does not know anyone, but is known by all other people (where “know” is a one-way relation).
+\end{problem}
+
+We want an algorithm that, given a set of people, can efficiently find the famous person in the set. Similar to the last problem, we want to find a way to progressively reduce the size of the problem in order to arrive at a solution.
+
+\vspace{12pt}
+\begin{observation}
+    Given two people $A$, $B$: \begin{enumerate}
+        \item Case 1: $A$ knows $B$. Then $A$ is not a famous person, and $B$ may be a famous person.
+        \item Case 2: $A$ does not know $B$. Then $B$ is not a famous person, and $A$ may be a famous person.
+    \end{enumerate}
+\end{observation}
+
+\subsubsection*{Algorithm}
+\begin{enumerate}
+    \item While the set of people is of size $>1$: \begin{enumerate}
+        \item Pick two people $A$, $B$ from the set. \begin{enumerate}
+            \item Case 1: $A$ knows $B$; then we remove $A$ from the set.
+            \item Case 2: $A$ does not know $B$; then we remove $B$ from the set.
+        \end{enumerate}
+    \end{enumerate}
+    \item Return the remaining element.
+\end{enumerate}
+
+\end{document}

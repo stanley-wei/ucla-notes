@@ -1,0 +1,83 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+\usepackage[explicit]{titlesec}
+\usepackage{ulem}
+
+\graphicspath{ {./images/} }
+
+
+\title{CS180: Algorithms \& Complexity}
+\author{Stanley Wei}
+\date{M. Sarrafzadeh $\vert$ Fall 2023}
+
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{#1\hrule\vspace*{-14pt}}
+
+\usepackage[explicit]{titlesec}
+\titleformat{\subsubsection}
+  {\normalfont\bfseries}{}{0pt}{\uline{#1}}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+\newtheorem*{problem}{Problem}
+\newtheorem{case}{\textbf{Case}}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newtheorem*{observation}{Observation}
+
+\newcommand{\probname}[1]{\noindent \textbf{\textit{#1}}}
+\newcommand{\probtitle}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+\newcommand{\resetcases}[0]{\setcounter{case}{0}}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\newpage
+\section{Stable Matching}
+\subfile{StableMatching.tex}
+
+\newpage
+\section{Example Problems}
+\subfile{ExampleProblems.tex}
+
+\newpage
+\section{Graphs}
+\subfile{Graphs.tex}
+
+\newpage
+\section{Greedy Paradigm}
+\subfile{GreedyParadigm.tex}
+
+\newpage
+\section{Divide \& Conquer}
+\subfile{DivideAndConquer.tex}
+
+\newpage
+\section{Dynamic Programming}
+\subfile{DynamicProgramming.tex}
+
+\newpage
+\section{Network Flow}
+\subfile{NetworkFlow.tex}
+
+\newpage
+\section{Complexity Theory}
+\subfile{ComplexityTheory.tex}
+
+\end{document}

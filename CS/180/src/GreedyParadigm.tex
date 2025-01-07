@@ -1,0 +1,317 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+
+\graphicspath{ {./images/} }
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+\newtheorem*{problem}{Problem}
+\newtheorem{case}{\textbf{Case}}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newtheorem*{observation}{Observation}
+
+\newcommand{\probname}[1]{\noindent \textbf{\textit{#1}}}
+\newcommand{\probtitle}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+\newcommand{\resetcases}[0]{\setcounter{case}{0}}
+
+\begin{document}
+\subsection*{Overview (Greedy Paradigm)}
+\textbf{\textit{\ul{Greedy paradigm for local optimization}}}: In certain cases, we may decide to make simplifying assumptions about a problem/solution space (without exploring the entire space) for speed and efficiency in our algorithms.
+
+\vspace{5pt}
+Greedy assumptions can be used to find a solution that is \textbf{\textit{locally optimal}}, but \textbf{\textit{may or may not be globally optimal}}; if we can then find a proof of global optimality, a greedy solution can be generalized to the entire space.
+
+\subsection{Interval Scheduling}
+\begin{problem}[\probname{Interval Scheduling}]
+    Given a number of overlapping intervals, we want to find the maximum number of non-overlapping intervals.
+\end{problem}
+
+\vspace{5pt}
+\begin{center}
+    \adjincludegraphics[trim={0 0 0 0},clip,scale=0.55]{Images/Notes/interval_scheduling.png}
+\end{center}
+
+\vspace{5pt}
+\noindent \textit{Greedy Heuristic}: The interval that ends the earliest will always be the best choice.
+
+\vspace{8pt}
+\noindent$\implies$ \textit{Solution}: \ul{Keep taking the earliest-ending interval}
+
+\vspace{8pt}
+\begin{tcolorbox}[colback=yellow!8!white]
+    \noindent\probtitle{Algorithm (Interval Scheduling)}
+    \begin{enumerate}
+        \item Sort the set of intervals by end time (via heapsort, e.g.)
+        \item While the set is non-empty: \begin{enumerate}
+            \item Choose the earliest-ending interval and add it to our solution
+            \item Remove (from the set) all intervals that overlap with the just-added interval
+        \end{enumerate}
+    \end{enumerate}
+
+    \textbf{Runtime}: O($n\log n$) [Sorting]
+\end{tcolorbox}
+
+\subsubsection*{Proof of Optimality}
+Via a \textit{stay-ahead argument}: Given a solution from the greedy algorithm, we want to prove that the first $k$ intervals in the greedy solution will end no later than the first $k$ intervals in any other solution, $\forall\;k\in\mathbb{N}$. (prove by induction)
+\begin{proof}
+    By induction: \begin{enumerate}
+        \item \textit{Base case}: $k=1$. Our greedy algorithm chooses the earliest-ending interval across all arguments, therefore any other solution for $k=1$ will either pick that same interval (and thus end at the same time) or a different interval (and end later)
+        \item \textit{Inductive step}: Assume the claim holds for $k=n$.
+        
+        Since the hypothesis is true for $k=n$, therefore the first $n$ intervals of the greedy solution will end at the same time at, or before, any other solution. 
+        
+        Then the greedy algorithm can pick, for its $(n+1)^{\text{th}}$ interval, any interval that the non-greedy algorithm can pick.
+        
+        Then $(n+1)^{\text{th}}$ interval in the greedy solution will end no later than the $(n+1)^{\text{th}}$ interval in the non-greedy solution, thus the claim holds for $k=n+1$.
+    \end{enumerate}
+\end{proof}
+
+\pagebreak
+\subsection{Shortest Path Problem}
+\begin{problem}[\probname{Shortest Path/Minimum-Weight Path}]
+    Given a graph with weighted edges, find the minimum weight path from a vertex a to another vertex b.\begin{itemize}
+        \item Assumption: All weights are \ul{non-negative}. [Negative weights: use \textit{Bellman-Ford}]
+    \end{itemize}
+\end{problem}
+
+\begin{tcolorbox}[colback=blue!80!red!10!white]
+    \noindent\probtitle{Algorithm (Dijkstra’s)}
+    \begin{enumerate}
+        \item Start at vertex $a$.
+        \item Find the neighbor $x$ of $a$ that is closest to $a$. Then the shortest path $a\to x$ is the edge from $a$ to $x$. \begin{enumerate}
+            \item Assign $d(a,x)$ to be the length of this edge.
+        \end{enumerate}
+        \item Find next-closest vertex $y$ to $a$. This vertex will be either a neighbor of $a$ or a neighbor of $x$. \begin{enumerate}
+            \item Fix $d(a,y)$ as the length of the edge $(a,y)$, or the length of the edge $(x,y)$ plus the distance from $x$ to $a$. (Or the minimum of the two). Then $d(a,y)$ is the weight of the minimum-weight path $a\to y$.
+        \end{enumerate}
+        \item Continue this process until the distance from all vertices to $a$ has been determined. \begin{enumerate}
+            \item Can represent all vertices $v$ as belonging to one of three categories: \begin{enumerate}
+                \item \textit{Processed}: A minimum-weight path $a\to v$ has been found.
+                \item \textit{Intermediate}: Any path $a\to v$ has been found.
+                \item \textit{Unprocessed}: $v$ has not yet been seen.
+            \end{enumerate}
+        \end{enumerate}
+    \end{enumerate}
+\end{tcolorbox}
+
+\subsubsection*{Implementation}
+Two implementations for storing processed/intermediate vertices: \begin{enumerate}
+    \item Store intermediate vertices in an \textbf{array} - O($N^2$) \begin{enumerate}
+        \item $N$ steps, at most $(N-1)$ vertices modified per step
+    \end{enumerate}
+    \item Store every intermediate vertex in a \textbf{heap} - O($E\log N$) \begin{enumerate}
+        \item O($1$) to find the minimum-weight vertex at each step
+        \item O($\log N$) to insert a vertex; maximum $E$ insertions
+    \end{enumerate}
+\end{enumerate}
+
+\pagebreak
+\subsection{Minimum Spanning Tree}
+\begin{definition}
+    A \textbf{\textit{subgraph}} of a graph $G$ is a subset of the nodes/edges of $G$. In particular, a subgraph is called a \textit{\textbf{tree subgraph}} if it has a tree structure.
+\end{definition}
+
+\begin{center}
+    \adjincludegraphics[trim={0 0 0 0},clip,scale=0.3]{Images/Notes/spanning_tree.png}
+\end{center}
+
+\begin{definition}
+    A subgraph of a graph $G$ is called a \textbf{\textit{spanning tree}} of $G$ if it is a tree subgraph, is connected, and touches every vertex in the graph. \begin{itemize}
+        \item Spanning trees are the minimum network of edges in the graph without cycles; any network with a cycle can be reduced to a spanning tree without one \begin{itemize}
+            \item A spanning tree always contains $(n-1)$ edges
+        \end{itemize}
+        \item BFS, DFS trees are themselves spanning trees
+    \end{itemize}
+\end{definition}
+
+\begin{definition}
+    A \textbf{\textit{minimum spanning tree}} (\textbf{MST}) of a graph is the spanning tree of minimum total weight. \begin{itemize}
+        \item An MST is unique iff all edge weights are unique (no two edges have the same weight).
+    \end{itemize}
+\end{definition}
+
+\subsubsection*{The MST Theorem}
+\begin{problem}
+    Given a graph G, find a minimum spanning tree of G.
+\end{problem}
+\begin{theorem}
+    For every MST on the graph, for \ul{any} partition of G into two sets, the \ul{edge of minimum weight} between partitions will be included in the MST.
+\end{theorem}
+
+\begin{proof}
+Begin with an arbitrary MST and an arbitrary partition. Assume, for the sake of contradiction, that the edge of minimum weight between partitions is not in the MST. \\
+
+Let $v$ and $w$ be the two vertices such that the edge of minimum weight is the edge $(v,w)$. \\
+
+Then there is a path between $v$ and $w$ in the MST, and that path must take an edge between partitions that is of larger weight than $(v,w)$. \\
+
+Then the MST would become a spanning tree with smaller total weight if we replaced that edge with the edge $(v, w)$. \\
+
+Then there is a spanning tree with total weight smaller than the MST. [\textit{contradiction}]
+\end{proof}
+
+\pagebreak`
+\subsubsection*{Algorithms for MST}
+\noindent\textbf{1. \ul{Prim's Algorithm}}
+\begin{tcolorbox}[colback=red!40!yellow!15!white]
+    \noindent\probtitle{Algorithm (Prim's)}
+    \begin{enumerate}
+        \item Partition the vertices of G into two sets, such that one set ($S_1$) contains only 1 vertex and the other set ($S_2$) contains the other $(n-1)$ vertices.
+        \item While the $S_1\neq V$: \begin{enumerate}
+            \item Take the minimum edge between $S_1$, $S_2$ and add it to our subgraph. If there are multiple minimum edges, pick one.
+            \item Let $e_i=(v\in S_1,u\in S_2)$ be the just-added edge. Move $u$ to $S_1$.
+        \end{enumerate}
+    \end{enumerate}
+    \vspace{8pt}
+    \textbf{Runtime}: O($N^2$) / O($E\log N$) [Identical to Djikstra's]
+\end{tcolorbox}
+
+\vspace{8pt}
+\noindent\textbf{\textit{Note}}: Correctness of Prim's Algorithm is provided by the MST Theorem.
+
+~\\
+\noindent\textbf{2. \ul{Kruskal's Algorithm}}
+\begin{tcolorbox}[colback=red!70!yellow!15!white]
+    \noindent\probtitle{Algorithm (Kruskal’s)}
+    \begin{enumerate}
+        \item Sort all edges by weight.
+        \item Add the two shortest edges $e_1$, $e_2$ to the graph.
+        \item Continue looking at next-shortest edges $e_k$ until $(n-1)$ edges have been added.
+
+        For each edge $e_k=(a,b)$:
+        \begin{enumerate}
+            \item Case 1: $a$ and $b$ are not connected in our graph [in different connected components]. Then we add $e_k$ to our graph.
+            \item Case 2: Both $a$, $b$ are already connected in our graph (i.e. adding $e_k$ would create a cycle). Then we do not add $e_k$ to our graph
+        \end{enumerate}
+    \end{enumerate}
+\end{tcolorbox}
+
+\noindent\textbf{Time Complexity}
+
+\vspace{3pt}
+\noindent\textbf{Runtime}: O($E\cdot N$) [using arrays]
+\begin{itemize}
+    \item Our algorithm requires we keep track of the connected components in the graph, and merge them as edges are added; combining two arrays is an O($n$) operation.
+\end{itemize}
+
+\pagebreak
+\subsubsection{Union-Find}
+
+\noindent\textbf{Q}: Can we find a more efficient data structure for storing connected components?
+
+\vspace{3pt}
+\noindent$\implies$ \textbf{A}: \ul{Disjoint sets [Union-find]}
+
+\begin{center}
+    \vspace{2pt}
+    \rule{50mm}{0.4pt}
+\end{center}
+
+\vspace{3pt}
+\begin{problem}[\probname{Union-Find}]
+    Given $n$ elements partitioned into $k$ sets, we want to be able to perform two operations efficiently: \begin{enumerate}
+        \item \ul{\textbf{Find}}: Given two elements, determine if they are in the same set.
+        \item \ul{\textbf{Union}}: Given two sets, replace them with their union.
+    \end{enumerate}
+\end{problem}
+
+\vspace{10pt}
+\noindent\textbf{Solution}: Store the elements of each set in a \textbf{\textit{rooted tree}}.
+
+\vspace{5pt}
+\noindent \textbf{Operations}:
+\begin{enumerate}
+    \item \ul{\textbf{Find}}: Visit both elements and determine the roots of their respective trees. The elements are in the same set iff the roots are the same.
+    \item \ul{\textbf{Union}}: We can append one tree to the end of another, e.g. by adding the root of one tree as an element of the other.
+\end{enumerate}
+
+\vspace{8pt}
+\noindent\textbf{Q}: How should we arrange our rooted trees, such that both operations run efficiently?
+
+\vspace{10pt}
+\noindent\textbf{Possible Configurations}
+\begin{enumerate}
+    \item Store each tree as a single path of elements (\textit{\`{a} la} a linked list) \begin{itemize}
+        \item \textit{Advantage}: Union runs in O(1)
+        \item \textit{Disadvantage}: Find runs in O($n$)
+    \end{itemize}
+    \item Store each tree by having all elements be children of the root (i.e. as a tree of height 2) \begin{itemize}
+        \item \textit{Advantage}: Find runs in O(1)
+        \item\textit{Disadvantage}: Union runs in O($n$) \begin{itemize}
+            \item (For the merged tree to have the same depth-1 configuration, the program would need to individually point all elements of one tree toward the root of the other)
+        \end{itemize}
+    \end{itemize}
+    \item Store each set as a \textit{balanced tree}, such that the height is proportional to the \ul{logarithm} of the number of vertices \begin{itemize}
+        \item \textit{Advantage}: Find runs in O($\log n$) \begin{itemize}
+            \item The maximum number of iterations needed to backtrack from an element to a tree root is $\log n$
+        \end{itemize}
+        \item \textit{Advantage}: Union runs in O(1) \begin{itemize}
+            \item Simply pointing the root of the shorter tree toward the root of the other is an O(1) operation, and the resulting tree still obeys the logarithm-height property
+        \end{itemize}
+    \end{itemize}
+\end{enumerate}
+
+~\\
+\noindent$\implies$ We can use \ul{balanced rooted trees} to keep track of connected components in Kruskal's:
+
+\begin{tcolorbox}[colback=red!70!yellow!15!white]
+    \probtitle{Kruskal's (Union-Find)}
+    \begin{itemize}
+        \item Start by placing each vertex in its own Union-Find set of height 1
+        \item Within Kruskal's algorithm, use Union-Find trees to keep track of connected components: \begin{itemize}
+            \item Checking cycles: Given an edge, can perform a Find on the two vertices to determine if they are in the same connected component
+            \item Adding edges: Perform a Union of the connected components on the edge
+        \end{itemize}
+    \end{itemize}
+\end{tcolorbox}
+
+~\\
+\noindent\textbf{\ul{Time Complexity}}
+
+\vspace{8pt}
+\noindent \textbf{Runtime}: O($E\log E$)
+\begin{itemize}
+    \item O($E\log E$) to sort all $m$ edges
+    \item O($E\log N$) for Kruskal Union-Find loop \begin{itemize}
+        \item $m$ edges; 1 Find [O($\log n$)] and 1 Union [O(1)] per edge
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{MST Notes}
+\textbf{\textit{Note}}: Can find many algorithms for finding MSTs just by using the MST Theorem.
+
+\vspace{8pt}
+\noindent Ex: ``\textbf{\textit{\ul{Reverse deletion algorithm}}}'' (relies on MST Theorem)\begin{enumerate}
+    \item Sort the edges of the graph in descending order.
+    \item Loop through the edges: at each edge, check if we can delete the edge without disconnecting the graph (if so, we delete the edge).
+\end{enumerate}
+
+~\\
+\textbf{\textit{Note}}: Algorithms may fail if edge weights are not unique
+
+\vspace{3pt}
+\noindent $\implies$ \textbf{Solution}: If two edges have the same weight, we can add a small number $\epsilon$ to one of the edges to make the weights become unique \begin{itemize}
+    \item May result in different MSTs depending on which edge is chosen
+    \item In the case of multiple edges sharing the same weight, we may add $\epsilon$, $2\epsilon$, etc. \begin{itemize}
+        \item Worst-case: becomes an additional step with complexity O($n$)
+    \end{itemize}
+\end{itemize}
+
+\end{document}

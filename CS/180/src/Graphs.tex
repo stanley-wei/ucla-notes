@@ -1,0 +1,306 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+
+\graphicspath{ {./images/} }
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+\newtheorem*{problem}{Problem}
+\newtheorem{case}{\textbf{Case}}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newtheorem*{observation}{Observation}
+
+\newcommand{\probname}[1]{\noindent \textbf{\textit{#1}}}
+\newcommand{\probtitle}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+
+\begin{document}
+\subsection{Introduction to Graphs}
+
+\noindent\ul{\textbf{Graphs}}
+\begin{definition}
+    A \textbf{graph} is composed of \textbf{nodes} and \textbf{edges} between nodes. \begin{itemize}
+        \item A \textbf{\textit{digraph}} is a graph where each edge has an associated direction.
+        \item A \textbf{\textit{weighted graph}} is a graph where each edge has an associated weight.
+        \item\textit{Notation}: $n$ nodes, $m$ edges \begin{itemize}
+            \item Given a graph with $n$ nodes, the maximum number of possible edges is $\frac{(n)(n-1)}{2}\sim n^2$.
+        \end{itemize}
+    \end{itemize}
+\end{definition}
+
+\begin{center}
+    \adjincludegraphics[trim={0 0 0 0},clip,scale=0.25]{Images/Notes/paths.png}
+\end{center}
+
+\begin{definition}
+    A \textbf{path} is a sequence of nodes/vertices $v_1$, ..., $v_k$ of a graph, where for any $v_n$, $v_{n+1}$ there exists an edge ($v_n$, $v_{n+1}$). \begin{itemize}
+        \item A \textit{simple path} is a path where all vertices are distinct.
+        \item A \textit{cycle} is a path where the endpoint is the same as the start point.
+        \item The \textbf{distance} between two nodes $u,v$ is the length of the shortest path $u\to v$.
+        \item A graph is called \textbf{connected} if, for any two vertices in the graph, there exists a path between them.
+    \end{itemize}
+\end{definition}
+
+~\\
+\noindent\ul{\textbf{Trees}}
+\begin{definition}
+    A graph is called a \textbf{tree} if it is connected and does not contain a cycle. \begin{itemize}
+        \item Nodes in a tree are referred to as \textit{descendants} of a root node, with according \textit{parent/child} relationships between adjacent nodes in the tree.
+    \end{itemize}
+\end{definition}
+\noindent \textbf{Properties of Trees}: \begin{enumerate}
+    \item An $n$-node tree has exactly $n-1$ edges
+    \item A tree is a maximum network without a cycle.
+\end{enumerate}
+
+~\\
+\noindent\ul{\textbf{Representations of Graphs}}
+\begin{enumerate}
+    \item \textbf{Adjacency Matrix}: Represents an $n$-node graph as an $n\times n$ matrix, where the $i,j$ cell is 1 if $\exists$ an edge $(v_i,v_j)$ in the graph, 0 otherwise. \begin{itemize}
+        \item Suitable for \textit{dense graphs}, where nodes generally have close to $n$ neighbors.\begin{itemize}
+            \item \textbf{Advantage}: Checking whether two given nodes are adjacent is a fixed O(1). 
+            \item\textbf{Disadvantage}: Given a node, the cost of finding all adjacent nodes is a fixed O($n$) due to needing to scan an entire row of the array.
+        \end{itemize}
+        \item In weighted graphs, the value of a cell $i,j$ is set to the \textit{weight} of the edge $(v_i,v_j)$, if it exists.
+    \end{itemize}
+    \item\textbf{Adjacency List}: Represents an $n$-node graph via $n$ node objects, where each node contains a linked list of all edges containing that node. \begin{itemize}
+        \item Suitable for \textit{sparse graphs}, where nodes generally have much less than $n$ neighbors. \begin{itemize}
+        \item\textbf{Advantage}: Given a node $x$, the cost of finding all nodes adjacent to $x$ is only directly proportional to the number of neighbors of $x$, not to $n$.
+        \item\textbf{Disadvantage}: Given a node $x$, the cost of checking if it is adjacent to a node $y$ is proportional to the number of neighbors of $x$.
+        \end{itemize}
+        \item In digraphs, a node may have two linked lists for holding incoming and outgoing edges, respectively.
+    \end{itemize}
+\end{enumerate}
+
+\noindent In both cases: the complexity of representing a graph with $n$ vertices, $e$ edges is \ul{O($n+e$)}.
+
+\pagebreak
+\subsection{Graph Traversal: BFS \& DFS}
+Two main algorithms for traversing unweighted graphs: \textbf{BFS} and \textbf{DFS}.
+
+\begin{tcolorbox}[colback=green!8!white]
+\textbf{\ul{Breadth-First Search (BFS)}}: \textit{“Explore things that are close together first”}
+\\[-9pt]
+
+Given a graph $G(V,E)$:
+\begin{enumerate}
+    \item Begin at a root node $u$. Call the set $\{u\}$ ``\textit{layer 0}''.
+    \item From the root node: find all adjacent nodes [\textit{\textbf{neighbors}}] in $G$. Call the set of neighbors of $u$, ``\textit{layer 1}''.
+    \item Once all neighbors of $u$ have been found, find all neighbors of neighbors of $u$ not already in layers 0/1. Call this set ``\textit{layer 2}''. Continue finding layers 3, 4, etc. until all nodes have been added to a layer.
+\end{enumerate}
+
+\begin{center}
+    \adjincludegraphics[trim={0 0 {.51\width} 0},clip,scale=0.2]{Images/Notes/bfs_dfs.png}
+\end{center}
+
+\probtitle{BFS Trees}
+\begin{definition}[\probname{BFS Tree}]
+    During BFS, we call every edge used when first visiting a node, a \textbf{tree edge}. A subgraph of $G$ composed of only tree edges from an instance of BFS [rooted at $u$] is called a \textbf{BFS tree} [rooted at $u$].
+\end{definition}
+\begin{definition}[\probname{Layer}]
+    The \textbf{layer} of a node $v$ in a BFS tree rooted at $u$ is defined as the distance from the root node $u$ to $v$ in the tree, and is equivalent to the length of the shortest path $u\to v$ in $G$.
+\end{definition}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=blue!8!white]
+\textbf{\ul{Depth-First Search (DFS)}}: “\textit{Explore everything in one direction first}”
+\\[-9pt]
+
+Given a graph $G(V,E)$:
+\begin{enumerate}
+    \item Begin at a root node $u$.
+    \item From the root node: pick a random neighbor of $u$, and visit it.
+    \item Upon visiting a node: visit any neighboring node that has not already been visited. Continue doing so until we reach a node with no unvisited neighbors, then backtrack until we reach a node with unvisited neighbors.
+\end{enumerate}
+
+\begin{center}
+    \adjincludegraphics[trim={{.5\width} 0 0 0},clip,scale=0.2]{Images/Notes/bfs_dfs.png}
+\end{center}
+
+\probtitle{DFS Trees}
+\begin{definition}[\probname{DFS Tree}]
+    A subgraph of $G$ composed of only the edges taken from an instance of DFS is called a \textbf{DFS tree}.\begin{itemize}
+        \item Any edges in $G$ not in the DFS tree, form a cycle with the edges of the DFS tree.
+    \end{itemize}
+\end{definition}
+\end{tcolorbox}
+
+\subsubsection*{BFS vs DFS}
+BFS, DFS are ``\textit{orthogonal algorithms}'': \begin{itemize}
+    \item \textbf{BFS}: Used for finding \textbf{distances} from a node $u$ to other nodes in the graph
+    \item \textbf{DFS}: Used for finding \textbf{cycles} in a graph
+\end{itemize}
+
+\subsubsection*{Implementations}
+\begin{tcolorbox}[colback=green!8!white]
+\textbf{\ul{Breadth-First Search (Implementation)}}
+\\[-9pt]
+
+Given a graph $G(V,E)$:
+\begin{enumerate}
+    \item Begin with a root node $u$. Initialize a \textbf{queue} [LIFO] containing unvisited nodes. Add all neighbors of the root node to the queue.
+    \item While the queue is nonempty: pop a node $v$ from the queue. For every edge $(v,w)$ with $v$ as an endpoint: if the node $w$ has not yet been visited, add $w$ to the queue and record the edge $(v,w)$.
+\end{enumerate}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=blue!8!white]
+\textbf{\ul{Depth-First Search (Implementation)}}
+\\[-9pt]
+
+Given a graph $G(V,E)$:
+\begin{enumerate}
+    \item Begin at a root node $u$. Initialize a \textbf{stack} [FIFO] containing unvisited nodes. Add all neighbors of the root node to the stack.
+    \item While the stack is nonempty: pop a node $v$ from the stack. For every edge $(v,w)$ with $v$ as an endpoint: if the node $w$ has not yet been visited, add $w$ to the stack and record the edge $(v,w)$.
+\end{enumerate}
+\end{tcolorbox}
+
+\subsubsection*{Time Complexity}
+For both BFS, DFS: every vertex is added to the stack/queue exactly once [O($V$)], during the first visit to that vertex. Similarly, every edge is seen exactly twice (once on each endpoint) $\rightarrow$ O($E$). Taken together: O($V+E$).\\
+
+\noindent There are two methods of interpreting this complexity:
+\begin{enumerate}
+    \item \textbf{\textit{Linear}}: O($V+E$) is linear with respect to $V$, $E$.
+    \item \textbf{\textit{Exponential}}: The maximum number of edges in a graph is dependent on $V$; namely, proportional to $V^2$. If we treat $E$ as dependent on $V$: O($V+E$) $\rightarrow$ O($V+V^2$) $\rightarrow$ O($V^2$).
+\end{enumerate}
+
+\noindent Given a graph with $n$ nodes, $m$ edges: complexity is typically said to be O($m+n$), linear with respect to the input size.
+
+\newpage
+\subsection{Extensions of BFS/DFS}
+\subsubsection{Graph Coloring}
+\begin{definition}[\probname{Bipartite graph}]
+     A \textbf{bipartite graph} [\textit{2-colorable graph}] is a graph where the nodes can be partitioned into two sets $X$ and $Y$ such that every edge in the graph is between a node in $X$ and a node in $Y$. \begin{itemize}
+        \item Equivalently: A bipartite graph is a graph with \textbf{no odd cycles}.
+         \item Components of a graph may be individually referred to bipartite/not bipartite.
+     \end{itemize}
+\end{definition}
+
+\begin{problem}[\probname{Testing Bipartiteness}]
+    Given a graph $G=(V,E)$ [undirected] with one component, determine whether $G$ is bipartite [2-colorable].
+\end{problem}
+
+\begin{center}
+    \adjincludegraphics[trim={0 0 0 0},clip,scale=0.3]{Images/Notes/bipartite_graphs.png}
+\end{center}
+
+\noindent \textbf{Approach}: Assign each vertex one of two colors (ex: red or blue). If the graph is bipartite, then we must be able to find an assignment such that given a red vertex, all of its neighbors are blue, and vice versa.
+
+\begin{tcolorbox}[colback=red!10!white]
+    \probtitle{Algorithm (Graph Coloring)}
+    \begin{enumerate}
+        \item Assign a random node to be the root node of a BFS, and color it red.
+        \item Use BFS to generate a BFS tree of the graph.
+        \item Assign all nodes in every odd layer to be blue, and all nodes in every even layer to be red.
+        \item The graph is bipartite if and only if there are no edges between two nodes of the same color (i.e. in the same layer).
+    \end{enumerate}
+    \noindent\textbf{Runtime}: O($m+n$) [BFS]
+\end{tcolorbox}
+
+\pagebreak
+\subsubsection{Strong Connectedness}
+\begin{definition}
+    A \textbf{digraph} $G$ is called “\textbf{strongly connected}” if, for any two nodes $u$ and $v$ in $G$, there exists a path from each to the other ($u$ and $v$ are \textit{mutually reachable}).
+\end{definition}
+\begin{problem}[\probname{Strong Connectivity}]
+    Determine if a digraph G is strongly connected.
+\end{problem}
+\begin{tcolorbox}[colback=white!90!black]
+    \probtitle{Algorithm (Strong Connectivity)}
+    \begin{enumerate}
+        \item Pick an arbitrary vertex $u\in G$; from $u$, run BFS on $G$. If every node is included in the resulting BFS tree, then there is a path from $u$ to every node in the tree.
+        \item Look at the graph $G_{rev}$: $G$, but with the direction of all edges reversed. Run BFS from $u$ on $G_{rev}$. If every node is included in the resulting BFS tree, then there is a path from every node in the tree to $u$.
+        \item If there is a path from $u$ to every node, and a path from every node to $u$, then $G$ is strongly connected.
+    \end{enumerate}
+    \noindent\textbf{Runtime}: O($m+n$) for BFS
+\end{tcolorbox}
+
+\pagebreak
+\subsection{Topological Sorting}
+\subsubsection*{Digraph Terminology}
+\begin{definition}[\probname{Degree}]
+    The in-degree and out-degree of a node $u$ in a digraph are the number of edges into and out of $u$, respectively. \begin{itemize}
+        \item A node with an in-degree of 0 is called a \textbf{\textit{source}}.
+        \item A node with an out-degree of 0 is called a \textbf{\textit{sink}}.
+    \end{itemize}
+\end{definition}
+
+\begin{figure}[h]
+    \centering
+    \adjincludegraphics[trim={0 {0.1\height} 0 {0.15\height}},clip,scale=0.7]{Images/Notes/digraph_degree.png}
+\end{figure}
+
+\begin{definition}
+    A \textbf{directed acrylic graph} (\textbf{DAG}) is a directed graph with no cycles.
+\end{definition}
+\begin{remark}
+    Any DAG must have at least one source node.
+\end{remark}
+\begin{observation}
+    Removing nodes and/or edges from a DAG, preserves direct acylicity.
+\end{observation}
+
+\subsubsection*{Topological Ordering}
+\begin{definition}
+    A \textbf{topological ordering} of a digraph $G$ is an ordering $v_1,v_2,...$ of nodes of $G$ such that for any edge $v_i\to v_j$ in $G$, $j>i$. \begin{itemize} 
+        \item A topological ordering need not be unique.
+    \end{itemize}
+\end{definition}
+
+\begin{problem}[\probname{Topological Sorting}]
+    Given a directed graph $G(V, E)$, find a topological ordering of $G$ [or determine that none exists].
+\end{problem}
+
+\begin{observation}
+    A graph $G$ has a topological ordering only if $G$ has no cycles, i.e. if $G$ is a DAG.
+\end{observation}
+
+\begin{tcolorbox}[colback=blue!75!red!10!white]
+    \probtitle{Algorithm (Topological Sorting)}
+    \begin{enumerate}
+        \item Initialize an empty topological ordering.
+        \item While not all nodes have been added to the ordering: \begin{enumerate}
+            \item Pick any source node $u$, and append $u$ to our ordering. \begin{itemize}
+                \item If there is no source node, then $G$ is not a DAG; then we terminate.
+            \end{itemize}
+            \item Delete $u$ from $G$, as well as any edges with $u$ as an endpoint.\begin{itemize}
+                \item If $G$ is a DAG, then $G$ will still be a DAG after removing $u$.
+            \end{itemize}
+        \end{enumerate}
+    \end{enumerate}
+\end{tcolorbox}
+
+\subsubsection*{Implementation}
+Given a graph with $n$ vertices, $e$ edges, we can pre-compute the in-, out-degree of all nodes before beginning the topological ordering algorithm. 
+
+This can be done through a loop through the edges of the graph in O($e$) time.\\
+
+\noindent During the topological sorting process, source nodes can be stored using a stack/queue. \begin{itemize}
+    \item Before sorting, we can find all sources [nodes with an in-degree of 0] in the original graph by scanning all vertices in linear time [O($n$)].
+    \item At each step, we pop a source from the queue to add to our ordering.
+    \item When deleting an edge: \begin{itemize}
+        \item We can decrement the in-degree of the node on end of the edge by 1.
+        \item If this causes the in-degree of the node to become 0, then we add it to our queue.
+    \end{itemize}
+\end{itemize}
+The time complexity of the loop is thus O($n+e$): each node is popped from the queue exactly once [O($n$)], and each edge is looked at/removed exactly once [O($e$)].\\
+
+\noindent$\rightarrow$ \textbf{Overall runtime}: O($n+e$)
+
+
+
+\end{document}

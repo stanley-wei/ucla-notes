@@ -1,0 +1,341 @@
+\documentclass[12pt]{extarticle}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{fancyhdr}
+\usepackage[lmargin=0.9in,rmargin=0.9in,bmargin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{subfiles}
+\usepackage[most]{tcolorbox}
+
+\graphicspath{ {./images/} }
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+\newtheorem*{problem}{Problem}
+\newtheorem{case}{\textbf{Case}}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newtheorem*{observation}{Observation}
+
+\newcommand{\probname}[1]{\noindent \textbf{\textit{#1}}}
+\newcommand{\probtitle}[1]{\noindent \textbf{\ul{#1}}}
+\newcommand{\claim}[1]{\noindent Claim: \textit{#1}}
+\newcommand{\resetcases}[0]{\setcounter{case}{0}}
+
+\begin{document}
+\subsection*{Overview (Dynamic Programming)}
+\begin{center}
+    \textbf{Recall} (\textbf{\textit{Divide \& Conquer}}): \textit{``Given a problem, we can recursively divide the problem into distinct non-overlapping subproblems.''}
+\end{center}
+
+Although divide \& conquer is powerful, there may be instances in which a problem cannot be easily broken down into non-overlapping subproblems in a way that leads to a solution. However, we may still be able to use a similar approach via \ul{dynamic programming}:
+
+\begin{center}
+    \textbf{Principle} (\textbf{\textit{Dynamic Programming}}): Given a problem, we can divide it into multiple \ul{overlapping subproblems}; if we can solve each subproblem optimally, then we can combine the solutions to subproblems to obtain a solution for the original problem.
+\end{center}
+
+\noindent Dynamic programming is analogous to a \ul{controlled exhaustive search} - looking through a large number of possibilities (helping us ensure the optimality of solutions), but in a way that avoids the typical runtime cost of blind exhaustive search.
+
+\subsection{Weighted Interval Scheduling}
+\noindent\textbf{Recall} (\probname{Interval Scheduling Problem}): Given a number of overlapping intervals, we want to find the maximum number of non-overlapping intervals. (Solved using a greedy approach)
+
+\vspace{10pt}
+\noindent$\rightarrow$ \textbf{Extension} (\probname{Weighted Interval Scheduling}): Given a number of \ul{weighted} overlapping intervals, we want to find the maximum set of non-overlapping intervals (maximum weight).
+\begin{itemize}
+    \item No efficient greedy/divide-and-conquer solutions
+\end{itemize}
+
+\begin{center}
+    \adjincludegraphics[trim={0 0 0 0},clip,scale=0.4]{Images/Notes/weighted_interval_scheduling.png}
+\end{center}
+
+\subsubsection*{Approach}
+We can denote weighted intervals as elements $I_j=[l_j,r_j]$ for start time $l_j$, end time $r_j$, with corresponding weights $w_j$.
+
+\vspace{8pt}
+\noindent We can describe optimal solutions for end times, where the optimal solution for end time $r$ is the maximum weight set of intervals ending at (or before) $r$. Let \ul{opt($r$)} denote the \textit{optimal solution for end time $r$}.
+
+\begin{tcolorbox}[colback=white!95!black]
+    \begin{observation}
+    For any interval $I_j$: either $I_j$ is in the optimal solution opt($r_j$) for end time $r_j$, or it is not in the optimal solution for end time $r_j$. Looking at our two cases: \begin{enumerate}
+        \item Case 1: $I_j$ is in opt($r_j$) $\implies$ opt($r_j$)=opt($l_j$)+$w_j$
+        \item Case 2: $I_j$ is not in opt($r_j$) $\implies$ opt($r_j$)=opt($r_{j-1}$)
+    \end{enumerate}
+    Since solutions opt($r$) are specifically \textit{optimal} solutions, we can thus find:\begin{center}
+        opt($r_j$)=$\max\{$opt($l_j$)+$w_j$, opt($r_{j-1}$)$\}$
+    \end{center}
+    \end{observation}
+\end{tcolorbox}
+
+We can take the problem of finding optimal solutions for various times, as the subproblems for our larger problem. Notably, we assume that when finding a value opt($r$), we have already found all values opt($s$) for times $s<r$.
+
+\subsubsection*{Algorithm}
+We can store the solutions to our subproblems via an array of length $2n$, where each index in the array (corresponding to some time $r$) maps to a cell containing the solution opt($r$).
+\begin{enumerate}
+    \item Create an array of length $2n$, where each index in the array represents either a start time $l_j$ or an end time $r_j$. \begin{enumerate}
+        \item Sort the array.
+    \end{enumerate}
+    \item Set opt($l_1$)=0.
+    \item For each index $i$ of the array: \begin{enumerate}
+        \item Case 1: The entry $x_i$ at index $i$ is a start time $l_j$; then we set $x_i=x_{i-1}$.
+        \item Case 2: The entry $x_i$ is an end time $r_j$; then we set $x_i=\max\{x_{l_j}+w_j,x_{i-1}\}$
+    \end{enumerate}
+    \item We take the value of the cell corresponding to end time $r_j$ as the solution to our problem.
+\end{enumerate}
+
+\pagebreak
+\subsection{Knapsack Problem}
+\begin{problem}[\probname{Knapsack}]
+    Given a knapsack with space capacity $S$ and $n$ items $I_i$ each with value $v_i$ and space $s_i$ - what is the most valuable set of items that can fit in the knapsack?\begin{itemize}
+        \item Assume multiple of each item is allowed
+        \item Greedy approaches do not work
+    \end{itemize}
+\end{problem}
+
+\vspace{5pt}
+\begin{center}
+    \adjincludegraphics[trim={0 0 0 0},clip,scale=0.45]{Images/Notes/knapsack.png}
+\end{center}
+
+\subsubsection*{Approach} 
+We can find solutions opt($i,j$) to subproblems of finding the most valuable set of items, when considering \ul{only the first $i$ items}, that can fit in a knapsack with space capacity \ul{$j$}.
+
+\vspace{8pt}
+\begin{tcolorbox}[colback=white!95!black]
+    \begin{observation}
+    For each solution opt($i,j$):\begin{enumerate}
+        \item Case 1: $I_i$ is included in the set $\implies$ opt($i,j$)=opt($i,j-s_i$)+$v_i$ \begin{itemize}
+            \item In the case where we choose not to allow duplicate items, this would instead become opt($i,j$)=opt($i-1,j-s_i$)+$v_i$
+        \end{itemize}
+        \item Case 2: $I_i$ is not included in the set $\implies$ opt($i,j$)=opt($i-1,j$)
+    \end{enumerate}
+
+    \begin{center}
+        $\implies$ \ul{opt($i,j$)=$\max\{$opt($i,j-s_i$)+$v_i$, opt($i-1,j$)$\}$}
+    \end{center}
+\end{observation}
+\end{tcolorbox}
+
+Notably, we assume that when computing a value opt($i,j$), opt($i',j'$) has already been found for all $i'\leq i$, $j'\leq j$ (excluding $i'=i,j'=j$).
+
+\vspace{8pt}
+\noindent Additionally, we can find \textit{base cases}: \begin{itemize}
+    \item opt($0,j$) is just 0, since no items are being considered
+    \item opt($i,0$) is just 0, since there is no space to put any items
+\end{itemize}
+
+\subsubsection*{Algorithm}
+\begin{enumerate}
+    \item Initialize a table of size $n+1\times S+1$.
+    \item Set each entry opt($0,j$) = 0
+    \item Set each entry opt($i,0$) = 0
+    \item Fill the table in \ul{row-major} order: first fill row 1, then row 2, etc. \begin{enumerate}
+        \item For each entry opt($i,j$): \begin{enumerate}
+            \item If $s_i\leq j$: set opt($i,j$)=$\max\{$opt($i,j-s_i$)+$v_i$, opt($i-1,j$)$\}$
+            \item If $s_i>j$: set opt($i,j$)=opt($i-1,j$)
+        \end{enumerate}
+    \end{enumerate}
+    \item Take opt($n,S$) as the final solution.
+\end{enumerate}
+
+\subsubsection*{Time Complexity}
+\noindent \textbf{Runtime}: \# cells $\cdot$ cost per cell = ($n\cdot S$) $\cdot$ O(1) = \ul{O($nS$)}
+
+\vspace{8pt}
+We observe, however, that our input size (the amount of space needed to store the input) is only proportional to the number of items $n$, since $S$ is just an integer (changing $S$ does not affect the input size); then our runtime O($nS$) is proportional to a factor $S$ that is, in turn, \textit{not} directly proportional to our input size. 
+
+\vspace{8pt}
+\noindent We have a special name for these cases:
+
+\begin{definition}
+    An algorithm may be said to have \textbf{\textit{pseudo-polynomial runtime}} if it can be either polynomial or not polynomial (relative to the input size), depending on a parameter that is independent of input size.\begin{itemize}
+        \item Ex: If $S=2^n$, then O($nS$) would be exponential relative to input size $n$; if $S=n^4$, then O($nS$) is polynomial.
+    \end{itemize}
+\end{definition}
+
+\subsubsection*{Notes}
+\begin{itemize}
+    \item Matrix representations are common in dynamic programming: \begin{itemize}
+        \item Weighted interval scheduling: 1 row, $n$ columns
+        \item Knapsack problem: $n$ rows, $S$ columns
+    \end{itemize}
+    \item Solutions to problems so far have only provided total values/weights, not actual items/intervals in the optimal set \begin{itemize}
+        \item To find items/intervals, we would backtrack a pointer from the cell containing the overall solution to the first cell in the matrix \begin{itemize}
+            \item Jumps taken during the backtracking process would each correspond to items added - can be stored for each cell during the computation process
+        \end{itemize}
+        \item Backtracking (if done) becomes an additional step with complexity O($nS$)
+    \end{itemize}
+\end{itemize}
+
+\pagebreak
+\subsection{Sequence Alignment}
+\begin{problem}[\probname{Longest Common Subsequence}]
+    Given two sequences $L \& R$ with sizes $m \& n$, find the longest subsequence in common between both sequences. \begin{itemize}
+        \item Also called: \textit{Sequence Alignment}, \textit{Maximum Subsequence} \begin{itemize}
+            \item ``Sequence Alignment'' may also be used to refer to more complex problems, such as RNA Sequencing and other extensions of Longest Common Subsequence
+        \end{itemize}
+        \item Is equivalent to \textit{aligning shared terms} between sequences
+    \end{itemize}
+\end{problem}
+
+\begin{center}
+    \adjincludegraphics[trim={0 0 0 0},clip,scale=0.18]{Images/Notes/lcs.png}
+\end{center}
+
+\subsubsection*{Approach}
+We can find solutions opt($i,j$), representing the longest subsequences in common between the first $i$ characters of $L$ and the first $j$ characters of $R$.
+
+~\\
+For each pair $i,j$:
+
+\vspace{6pt}
+\noindent Case 1: \ul{$L_i=R_j$}. We claim that opt($i,j$) = opt($i-1,j-1$)+1.
+\begin{proof}
+    We observe that if $L_i=R_j$, then the optimal solution opt($i,j$) includes at least one of $L_i$, $R_j$; otherwise, we could match up $L_i$, $R_j$ and extend opt($i,j$) by 1 [a contradiction].
+    
+    We use this result to show that matching $L_i$ and $R_j$ is an optimal solution. Assume, for instance, that $L_i$ is included in the optimal solution, and that another optimal solution exists that matches $L_i$ with some character $R_k$ ($k\neq j$); then we could swap $L_i$'s match to $R_j$ and obtain a solution of equivalent length. 
+\end{proof}
+\begin{center}
+    $\implies$ opt($i,j$) = opt($i-1,j-1$)+1.
+\end{center}
+
+~\\
+\noindent Case 2: \ul{$L_i\neq R_j$}. Then either $L_i$ is matched with some element not $R_j$, $R_j$ is matched with some element not $L_i$, or neither $L_i$, $R_j$ are matched. Notably, $L_i$ and $R_j$ could not both be matched simultaneously. \begin{center}
+    $\implies$ opt($i,j$)=$\max\{$opt($i-1,j$), opt($i,j-1$)$\}$
+\end{center}
+
+\subsubsection*{Algorithm}
+\begin{enumerate}
+    \item Initialize a table of size $m+1\times n+1$
+    \item Set each entry opt($0,j$) = 0
+    \item Set each entry opt($i,0$) = 0
+    \item Fill the table in row-major order, using the recursive relations specified above
+    \item Backtrack from opt($m,n$) to opt(0,0) to obtain the final result
+\end{enumerate}
+
+\subsubsection*{Time Complexity}
+\textbf{Runtime}: O($m\cdot n$) [polynomial relative to input size O($m+n$)]
+
+\pagebreak
+\subsection{RNA Sequencing}
+\textbf{\textit{Recall}}: RNA sequences are sequences composed of elements $A$, $U$, $C$, and $G$, where $A$ can only match with $U$ and $C$ can only match with $G$ (and vice versa).
+
+\begin{problem}[\probname{RNA Sequencing}] Given a sequence of AUCG, what is the largest possible number of matches between elements in the sequence? \begin{itemize}
+    \item Also called \textit{Sequence Alignment}
+    \item \textbf{Constraints}:\begin{enumerate}
+        \item \textit{No sharp corners}: any two elements must be at least $4$ characters in between them in order to match \begin{itemize}
+            \item May be generalized to values other than 4
+        \end{itemize}
+        \item No crossing/overlapping matches
+    \end{enumerate}
+\end{itemize}
+\end{problem}
+
+\subsubsection*{Approach}
+We can find solutions opt($i,j$) to the subproblem of finding the most number of matches between element $i$, element $j$ in the sequence.
+
+\begin{tcolorbox}[colback=white!95!black]
+\begin{observation}
+    Assume that when considering the first $i$ elements, we find a match $t$ for element $i$; then any other matches can only be within the range $(1,t-1)$ or within the range $(t+1,i-1)$.
+    
+    Notably, if opt($1,i$) matches $i$ with $t$, we find that: \begin{center}
+        opt($1,i$) = opt($1,t-1$) + opt($t+1,i-1$) + 1
+    \end{center}
+
+    \noindent For each value opt($1,i$): \begin{enumerate}
+        \item Case 1: $i$ is matched with another element $t$ in opt($1,i$). Then opt($1,i$) must be the maximum of opt($1,t-1$) + opt($t+1,i-1$) + 1 across \ul{all possible values of $t$}: \begin{center}
+            $\implies$ opt($1,i$) = $\max_{t<i-4}\{$opt($1,t-1$) + opt($t+1,i-1$) + 1$\}$
+
+            (Note: the max is across all elements $t<i-4$ \ul{that are eligible to match with $i$})
+        \end{center}
+    
+        \item Case 2: $i$ is not matched in opt($1,i$) \begin{center}
+            $\implies$ opt($1,i$) = opt($1,i-1$)
+        \end{center}
+    \end{enumerate}
+
+    \noindent Combining our two cases: \begin{center}
+        opt($1,i$) = $\max\{\max_{t<i-4}\{$opt($1,t-1$) + opt($t+1,i-1$) + 1$\}$, opt($1,i-1$)$\}$
+    \end{center}
+\end{observation}
+\end{tcolorbox}
+
+\subsubsection*{Implementation}
+We can fill out opt($i,j$) for all intervals ($i,j$) in order of interval length: filling out all intervals of length $5$, then all intervals of length $6$, and so on. (We can set opt($i,j$) = 0 for all intervals where $i<j-4$)
+
+~\\
+\noindent \textbf{Runtime}: O($n^2$) possible intervals , each seen at most $n$ times $\implies$ \ul{O($n^3$)}
+
+\vspace{5pt}
+[Alternatively: O($n^2$) possible intervals $\cdot$ O($n$) for computing opt($i,j$) $\implies$ O($n^3$)]
+
+\pagebreak
+\subsection{($\ast$) Bellman-Ford}
+\textbf{Recall} (\textbf{\textit{Shortest Path Problem}}): Given a graph with weighted edges, find the minimum weight path from a vertex $a$ to another vertex $b$. \begin{itemize}
+    \item Solved by Djikstra's algorithm for graphs with \ul{no negative edges}
+\end{itemize}
+
+\vspace{10pt}
+\noindent\textbf{Q}: What about graphs with no negative edges?
+
+\vspace{5pt}
+\noindent\textbf{A}: A solution exists only if there are \textbf{no negative cycles}.\begin{itemize}
+    \item If there is a negative cycle, then we could go around the cycle infinitely to obtain paths with infinitely negative weight.
+    
+    $\implies$ We assume there are no negative cycles.
+\end{itemize}
+
+\begin{tcolorbox}[colback=white!95!black]
+    \begin{observation}[1]
+        Under the assumption of negative cycles, a minimum-weight path $a\to b$ will contain \ul{at most $(n-1)$ edges}.
+
+        \begin{proof}
+            Let $P$ be a path $a\to b$ with more than $(n-1)$ edges. Since $P$ has more than $(n-1)$ edges, therefore $P$ contains a cycle. Per our assumption of no negative cycles, this cycle will have non-negative weight. Assume, WLOG, that the cycle has positive weight; then we could obtain a path of less weight by removing the cycle, therefore $P$ is not a minimum-weight path.
+        \end{proof}
+    \end{observation}
+
+    \begin{observation}[2]
+        Let $x$ be a vertex adjacent to vertices $u_1,\hdots,u_i$. Then the shortest path $x\to b$ containing at most $\lambda+1$ vertices will either be the shortest path $x\to b$ containing at most $\lambda$ vertices, or a shortest path $u_j\to b$ containing $\lambda$ vertices plus the edge $(x,u_j)$. 
+
+        ~\\
+        Namely, let opt($x,\lambda$) be the minimum-weight path $x\to b$ containing at most $\lambda$ vertices:
+        \begin{gather*}
+            \text{opt}(x,\lambda+1)=\min\left\{\min_{1\leq j\leq i}\left\{\text{opt}(u_j,\lambda)+|(x,u_j)|\right\}\text{, opt}(x,\lambda)\right\}
+        \end{gather*}
+    \end{observation}
+\end{tcolorbox}
+
+~\\
+\begin{tcolorbox}[colback=blue!80!red!10!white]
+    \noindent\probtitle{Algorithm (Bellman-Ford)}
+
+    \vspace{8pt}
+    \noindent Let $a=v_0,v_1,\hdots,b=v_n$ be the vertices of the graph.
+    \begin{enumerate}
+        \item Create a table of size $n+1\times n-1$.
+        \item Set $(0,j)=+\infty\;\forall\;j\neq n$; set $(0,n)=0$.
+        \item For each entry $(1, j)$: \begin{enumerate}
+            \item Case 1: $\exists$ an edge $(v_j,b)$; then we set $(1,j)$ to be the weight of that edge.
+            \item Case 2: $\nexists$ an edge $(v_j,b)$; then we set $(1,j)$ to be $+\infty$.
+        \end{enumerate}
+        \item For $1\leq i\leq n$: \begin{itemize}
+            \item Let $v_{\lambda_1},\hdots,v_{\lambda_k}$ be the vertices adjacent to $v_i$. Set:
+            \begin{gather*}
+                (i,j)=\min\left\{\min_{1\leq t\leq k}\{(i-1,\lambda_t)+|(v_i,v_{\lambda_t})|\},(i-1,j)\right\}
+            \end{gather*}
+        \end{itemize}
+        \item Output $(n,n-1)$.
+    \end{enumerate}
+    \vspace{5pt}
+    \textbf{Runtime}: O($V\cdot E$)
+\end{tcolorbox}
+
+\end{document}
