@@ -1,0 +1,583 @@
+\documentclass[12pt]{extarticle}
+\include{utils.sty}
+
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{#1\hrule\vspace*{-20pt}}
+
+% \usepackage[lmargin=0.3in,rmargin=0.3in,bmargin=0.3in,tmargin=0.3in]{geometry} % <- Shrunken sizing
+\usepackage[lmargin=0.7in,rmargin=0.7in,tmargin=0.7in,bmargin=0.7in]{geometry}
+\pagenumbering{gobble}
+
+\begin{document}
+
+% \pstart Stanley Wei
+
+\begin{center}
+    \begin{Large}
+        \textbf{Math 151A: Applied Numerical Methods}
+    \end{Large}
+    
+    \begin{large}
+        \vspace{8pt}
+        Prof. M. Zhou $\vert$ Winter 2025
+    \end{large}
+\end{center}
+\tableofcontents
+
+
+\pagebreak
+\section{Review}
+\textbf{Theorems (Calculus)}: \begin{enumerate}
+    \item \textbf{IVT}:
+    Let $f\in C[a,b]$ and let $k\in\reals$ between $f(a),f(b)$. Then $\exists\;c\in[a,b]$ s.t. $f(c)=k$.
+    \item \textbf{MVT}: Let $f\in C[a,b]$ be differentiable on $(a,b)$. Then $\exists\;c\in(a,b)$ s.t. $f'(c)=\frac{f(b)-f(a)}{b-a}$.
+\end{enumerate}
+
+\newp
+\begin{theorem}[\textbf{Taylor's Theorem}]
+    Let $f\in C^n[a,b]$, and let $x_0\in[a,b]$. Assume $f^{n+1}$ exists on $[a,b]$. Then $\forall\;x\in[a,b]$, $\exists\;\xi_x\in[x_0,x]$ s.t. $f(x)=P_n(x)+R_n(x)$, where: \begin{gatherbox}
+        P_n(x)=f(x_0)+f'(x_0)(x-x_0)+\frac{f''(x_0)}{2}(x-x_0)^2+\hdots+\frac{f^{(n)}(x_0)}{n!}(x-x_0)^n \\[8pt]
+        R_n(x)=\frac{f^{(n+1)}(\xi_x)}{(n+1)!}(x-x_0)^{n+1}
+    \end{gatherbox}
+\end{theorem}
+
+\newp
+\textbf{Integration by Parts}: $\int u(x)v'(x)dx=u(x)v(x)-\int u'(x)v(x)dx$
+
+\newp
+\textbf{Error}: Let $p$ be an approximation of $p^\ast$: \begin{enumerate}
+    \item \term{Absolute error} $\big(\abs{p-p^\ast}\big)$ vs. \term{relative error} $\bigg(\abs{\frac{p-p^\ast}{p^\ast}}\bigg)$ [$p\neq0$]
+    \item \term{Underflow error}: When a small number rounds to 0 (after subtracting near-equal \#s, e.g.)
+    \item \term{Overflow error}: When a large number rounds to $\pm\infty$ (from dividing by a small \#, e.g.)
+\end{enumerate}
+
+\newp
+\textbf{Big-O Notation}: Say that a function $f(x)$ is $O(g(x))$ as $x\to\infty$ if $\exists$ constants $M>0,x_0\in\reals$ s.t.: \begin{eqnbox}
+    \abs{f(x)}\leq M\abs{g(x)}\;\forall\;x>x_0
+\end{eqnbox}
+Say that $f(x)$ is $O(g(x))$ as $x\to a$ if $\exists\;M,\delta>0$ s.t.: \begin{eqnbox}
+    \abs{f(x)}\leq M\abs{g(x)}\;\forall\;x\text{ s.t. }\abs{x-a}\leq\delta
+\end{eqnbox}
+
+\newp
+\begin{whitebox}
+    \ulbf{Orders of Convergence}
+
+    \newp
+    A convergent sequence $\set{x_n}_{n\geq1}$ with limit $x$ is said to converge with order $\alpha\geq1$ to $x$ if $\exists$ constant $L\in(0,\infty)$ s.t.: \begin{eqnbox}
+        \lim_{n\to\infty}\frac{\abs{x_{n+1}-x}}{\abs{x_n-x}^\alpha}=L
+    \end{eqnbox}
+\end{whitebox}
+
+
+\pagebreak
+\section{Floating Point}
+\textbf{Floating point}: computational form for representing a decimal number; can denote by $Fl(x)=x+\epsilon$
+\begin{enumerate}
+    \item \textbf{Single-precision/short/float32}: $\sim$6-9 [base 10] decimal digits
+    \item \textbf{Double-precision/long/float64}: $\sim$15-17 decimal digits
+    \item In general: machine accuracy given by $\epsilon\approx10^{-16}$
+\end{enumerate}
+
+\newp
+\begin{whitebox}
+    \ulbf{The IEEE \textit{binary64} Floating Point}
+
+    \newp
+    IEEE binary64 floating point format (64 bits total) is divided into 3 parts: (i) the \term{sign bit} [1 bit], (ii) the \term{exponent} [11 bits], and (iii) the \term{significand} [52 bits] \begin{eqnbox}
+        \text{\ul{FP}}: (-1)^{\text{sign}}\cdot[1.\text{significand}]_2\cdot 2^{\text{exponent}-2}
+    \end{eqnbox}
+\end{whitebox}
+
+\newp
+\textbf{Floating Point}: \begin{enumerate}
+    \item Sign bit indicates sign of a number, including \textit{$\pm$ zero}
+    \item Exponent bits are unsigned, range from 0 to 2047 $\underset{-1024}{\longrightarrow}$ -1022 to +1023 \begin{itemize}
+        \item -1023 (all 0s), +1024 (all 1s) reserved for special numbers
+    \end{itemize}
+\end{enumerate}
+
+
+\pstart
+\textbf{Finite-Digit Arithmetic}: For numbers that cannot be represented exactly, have to either \term{chop} [remove extra digits] or \term{round} [round to nearest representable number] \begin{itemize}
+    \item When doing arithmetic: chop/round after every operation
+    \item Accumulate error with every operation $\to$ can use \term{nested arithmetic}: factor common terms to reduce the total \# operations [FLOPs: floating point operations] performed
+\end{itemize}
+
+
+\pagebreak
+\section{Root-Finding}
+\begin{whitebox}
+    \ulbf{Bisection Search} \begin{enumerate}
+        \item Start with search region $[a_0,b_0]$
+        \item At every iteration, evaluate $f(\frac{b_n+a_n}{2})$
+        \item $f>0\implies$ choose $a_{n+1}=a_n,b_{n+1}=\frac{b_n+a_n}{2}$; else, choose $a_{n+1}=\frac{b_n+a_n}{2},b_{n+1}=b_n$
+    \end{enumerate}
+\end{whitebox}
+
+\newp
+\textbf{Convergence of Bisection Method}: Let $f\in C[a,b]$ s.t. $\sign{f(a)}\neq\sign{f(b)}$. Then the sequence $\set{p_n}_{n\geq1}$ generated by the bisection method converges globally to a root $p$ of $f$ with error: \begin{eqnbox}
+    \abs{p_n-p}\leq\frac{b-a}{2^n}\;\forall\;n\geq1
+\end{eqnbox}
+
+
+\newp
+\ulbf{Fixed-Point Iteration}
+
+\newp
+\textbf{Def}: A \term{fixed point} of a function $g$ is a point $p$  s.t. $g(p)=p$. (Note: f.p. of $g$ $\Leftrightarrow$ root of $x-g(x)$
+
+\newp
+\textbf{Theorems (Fixed Points)}: \begin{enumerate}
+    \item \textbf{Existence}: Let $g\in C[a,b]$ with $a\leq g(x)\leq b\;\forall\;x\in[a,b]$; then $\exists\;p\in[a,b]$ s.t. $g(p)=p$.
+    \item \textbf{Uniqueness}: If $g'(x)$ exists on $(a,b)$ and $\exists$ constant $0<k<1$ s.t. $\abs{g'(x)}\leq k\;\forall\;x\in(a,b)$, then the aforementioned fixed point $p$ is unique.
+\end{enumerate}
+
+\newp
+\begin{whitebox}
+    \ulbf{Fixed-Point Iteration}
+
+    \newp
+    Given $g\in C[a,b]$ s.t. $g(x)\in[a,b]\;\forall\;x\in[a,b]$ and initial guess $p_0\in[a,b]$, can find a sequence $p_n$ converging to fixed point $p$.
+
+    \newp
+    Let $\set{p_n}_{n\geq1}^\infty$ def. by $\underline{p_n=g(p_{n-1})}$; if ${p_n}_{n\geq1}$ converges to $p\in[a,b]$, then $p$ is a fixed point of $g$.
+\end{whitebox}
+
+\newp
+\textbf{Theorems (Fixed Point Iteration)}: \begin{enumerate}
+    \item \textbf{Fixed-Point Theorem}: Let $g$ as above. Suppose $g'$ exists on $(a,b)$ and $\exists$ constant $k\in(0,1)$ s.t. $\abs{g'(x)}\leq k\;\forall\;x\in(a,b)$. Then for any $p_0\in[a,b]$, the sequence $\set{p_n}_{n\geq1}$ converges to the unique fixed point $p\in[a,b]$ of $g$ [\textit{Corollary}: with error $\underline{\abs{p_n-p}\leq k^n\cdot\max(p_0-a,b-p_0)}$].
+    \item \textbf{Convergence}: $\set{p_n}_{n\geq1}$ converges linearly to $p$ with $\lim_{n\to\infty}\frac{\abs{p_n-p}}{\abs{p_{n-1}-p}}=\abs{g'(p)}\leq k<1$.
+\end{enumerate}
+
+\newp
+\begin{whitebox}
+    \ulbf{Newton's Method} \\[4pt]
+    Given an initial guess $p_0$ s.t. $\abs{p_0-p}$ small, have update rule:
+    \begin{eqnbox}
+        x^{k+1}:=x^k-\frac{f(x^k)}{f'(x^k)}
+    \end{eqnbox}
+\end{whitebox}
+
+\newp
+\textbf{Theorems (Newton's Method)}: \begin{enumerate}
+    \item \textbf{Convergence}: Let $f\in C^2[a,b]$. If $p\in(a,b)$ satisfies $f(p)=0,f'(p)\neq0$, then $\exists\;\delta>0$ s.t. Newton's method converges to $p$ for any $p_0\in[p-\delta,p+\delta]$.
+    \item \textbf{Convergence Order}: Let $g=x-\frac{f(x)}{f'(x)}\in C^\alpha[a,b]$ ($\alpha>2$), and let $p\in[a,b]$. Assume $g(p)=p$ and $g'(p)=\hdots=g^{\alpha-1}(p)$, but $g^\alpha(p)\neq0$. Then $p_n\to p$ with order $\alpha$.
+\end{enumerate}
+
+\newp
+\begin{whitebox}
+    \ulbf{Secant Method} \\[4pt]
+    Have update rule:
+    \begin{eqnbox}
+        x^{k+1}:=x^k-\frac{x^k-x^{k-1}}{f(x^k)-f(x^{k-1})}f(x^k)
+    \end{eqnbox}
+\end{whitebox}
+
+\newp
+\ulbf{Modified Newton's Method}
+
+\newp
+\textbf{Def}: A root $p$ of $f$ is a zero of multiplicity $m$ for $f$ if, for $x\neq p$, can write: \begin{eqnbox}
+    \underline{f(x)=(x-p)^mq(x)}\text{ for }q(x)\text{ s.t. }q(p)\neq0
+\end{eqnbox}
+\textbf{Theorems (Modified Newton)}: \begin{enumerate}
+    \item Let $f\in C^m(a,b)$ and $p\in(a,b)$. 
+    
+    Then $p$ is a zero with multiplicity $m$ iff \underline{$0=f(p)=f'(p)=\hdots=f^{m-1}(p)$}, but \underline{$f^m(p)\neq0$}.
+    \item \textit{Corollary}: Let $m\geq1$, $p$ a zero with multiplicity $m$. Then the function $\mu(x):=\frac{f(p)}{f'(p)}$ has a zero of multiplicity 1 at $p$.
+    
+    $\to$ \textbf{Modified Newton's Method}: Newton's method on $\mu(x)$: \begin{eqnbox}
+        p_{n+1}=p_n-\frac{\mu(p_n)}{\mu'(p_n)}=p_n-\frac{f(p_n)f'(p_n)}{[f'(p_n)]^2-f(p_n)f''(p_n)}
+    \end{eqnbox}
+\end{enumerate}
+
+
+\newp
+\ulbf{Orders of Convergence} (Global for bisection; local otherwise)
+
+\begin{center}
+    \def\arraystretch{1.5}
+    \begin{tabular}{|c|c|}
+         \hline \textbf{Method} & \textbf{Order} \\ \hline
+         \textbf{Bisection} & 1 \\ \hline
+         \textbf{Fixed-Point} & 1 if $\abs{g'(p)}\in(0,1)$, $\geq2$ if $g'(p)=0$ \\ \hline
+         \textbf{Newton's} & $\geq2$ if $g'(p)\neq0$; $1$ otherwise \\ \hline
+         \textbf{Secant} & $(1+\sqrt{5})/2\approx1.618$ \\ \hline
+    \end{tabular}
+\end{center}
+($\ast$) \textbf{Fixed-Point Iteration}: Order = smallest $n$ satisfying $g^{(n)}(p)\neq0$ (?)
+
+\newp
+\begin{whitebox}
+    \ulbf{Theorem (Aitken's $\Delta^2$ Method for Accelerating Convergence)}
+
+    \newp
+    Assume $\set{p_n}_{n\geq1}$ converges \ul{linearly} to $p$, and that for $n$ large, $(p_{n+2}-p)(p_n-p)>0$. Then the sequence $\set{\hat{p}}_{n\geq1}$ satisfies $\lim_{n\to\infty}\frac{\abs{\hat{p}_n-p}}{\abs{p_n}-p}=0$, where: \begin{eqnbox}
+        \hat{p}_n=p_n-\frac{(p_{n+1}-p_n)^2}{p_{n+2}-2p_{n+1}+p_n}\text{ for $n\geq0$}
+    \end{eqnbox}
+\end{whitebox}
+
+\pagebreak
+\section{Data Fitting}
+
+\begin{whitebox}
+    \ulbf{Lagrange Polynomials}
+
+    \newp
+    Define the basis elements for $k=0,\hdots,n$: \begin{align*}
+        L_{k,n}:=\frac{(x-x_0)\hdots(x-x_{k-1})(x-x_{k+1})\hdots(x-x_n)}{(x_k-x_0)\hdots(x_k-x_{k-1})(x_k-x_{k+1})\hdots(x_k--x_n)}=\prod_{\substack{i=0 \\ i\neq k}}^n\frac{x-x_i}{x_k-x_i} \\[-20pt]
+    \end{align*}
+    This yields the (unique) Lagrange polynomial for  the points $x_0,\hdots,x_n$ [degree $n-1$]:
+    \begin{eqnbox}
+        P(x)=\sum_{k=0}^nf(x_k)L_{k,n}(x)=\sum_{k=0}^nf(x_k)\prod_{\substack{i=0\\i\neq k}}^n\frac{x-x_i}{x_k-x_i}
+    \end{eqnbox}
+\end{whitebox}
+
+\begin{theorem}[\textbf{Lagrange Interpolation Error}] Let $x_0,\hdots,x_n\in[a,b]$ be distinct, and let $f\in C^{n+1}[a,b]$. Then for each $x\in[a,b]$, $\exists\;\epsilon(x)\in[a,b]$ within the interval spanned by $x_0,\hdots,x_n$ s.t.: \begin{eqnbox}
+        f(x)=P(x)+\frac{f^{n+1}(\epsilon(x))}{(n+1)!}(x-x_0)\hdots(x-x_n)
+    \end{eqnbox}
+\end{theorem}
+
+\newp
+\ulbf{The Divided Differences Method}
+
+\newp
+Let $x_0,\hdots,x_n$ be distinct, and let $P(x)$ be the Lagrange polynomial of $\set{(x_i,f(x_i)}$. \term{Newton's divided differences} is an expression for $P(x)$ in the following form: \begin{eqnbox}
+    P_n(x):=a_0+a_1(x-x_0)+a_2(x-x_0)(x-x_1)+\hdots+a_n(x-x_0)\hdots(x-x_{n-1})
+\end{eqnbox}
+
+\newp
+Define the divided differences by: \begin{enumerate}
+    \item $0^{th}$ divided difference: $f[x_i]=f(x_i)$
+    \item $1^{st}$ divided difference: $f[x_i,x_{i+1}]=\frac{f[x_{i+1}]-f[x_i]}{x_{i+1}-x_i}$
+    \item $k^{th}$ divided difference $f[x_i,x_{i+1},\hdots,x_{i+k}]=\frac{f[x_{i+1},\hdots,x_{i+k}]-f[x_i,\hdots,x_{i+k-1}]}{x_{i+k}-x_i}$
+\end{enumerate}
+
+\newp
+\begin{whitebox}
+    \ulbf{Newton's Divided Difference Interpolating Polynomial}
+
+    \newp The divided difference polynomial coefficients $a_i$ are given by \underline{$a_k=f[x_0,x_1,\hdots,x_k]$}: \begin{eqnbox}
+        P(x)=f(x_0)+\sum_{k=1}^nf[x_0,\hdots,x_k](x-x_0)(x-x_1)\hdots(x-x_{k-1})
+    \end{eqnbox}
+\end{whitebox}
+
+\newp
+\textbf{Divided Differences for Equally-Spaced Points}: Assume nodes are arranged consecutively with equal spacing $h=x_{i+1}-x_i$ [$i=0,\hdots,n-1$] between nodes. Let $x=x_0+sh$; then: \begin{eqnbox}
+    P_n(x)=P_n(x_0+sh)=f[x_0]+\sum_{k=1}^n(\binom{s}{k})k!h^kf[x_0,x_1,\hdots,x_k]
+\end{eqnbox}
+
+
+\newp
+\textbf{Lagrange Polynomial Methods}: \begin{itemize}
+    \item Can use the divided differences method to iteratively construct higher- and higher-order polynomials (up to degree $n$) \begin{itemize}
+        \item Start from degree 0, use to build degree 1, etc.
+    \end{itemize}
+\end{itemize}
+
+\newp
+\ulbf{Non-Equispaced Polynomial Interpolation}
+
+\newp
+\textbf{Runge's phenomenon}: Even for ``well-behaved'' $f\in C^{n+1}[a,b]$, the interpolation error may still be large if the nodes $\set{x_i}_{i=0,\hdots,n}$ are equispaced.
+
+\begin{theorem}[\textbf{Runge's phenomenon}]
+    If the Lagrange polynomial nodes $\set{x_i}_{i=0,\hdots,n}$ are equispaced (i.e. $x_i=x_0+ih$ for $i=0,\hdots,n$) and $x_0=a,x_n=b$, then: \begin{eqnbox}
+        \max_{x\in[a,b]}\prod_{j=0}^n\abs{x-x_j}\leq\frac{1}{4}h^{n+1}n!\quad\implies\quad\abs{f(x)-P(x)}\leq\frac{M}{n+1}\cdot\frac{h^{n+1}}{4}
+    \end{eqnbox}
+\end{theorem}
+
+\newp
+To reduce error: instead of equispaced nodes, use \textbf{Chebyshev nodes} (\underline{$a=-1,b=1$}): \begin{eqnbox}
+    \Tilde{x}_i=\cos\left(\frac{2i+1}{2n+2}\pi\right),\quad i=0,\hdots,n
+\end{eqnbox}
+The Chebyshev nodes minimize the error: \begin{align*}
+    \max_{x\in[a,b]}\prod_{j=0}^n\abs{x-x_j}
+\end{align*}
+
+\begin{theorem}[\textbf{Chebyshev Polynomials}]
+    Let $T_n(x)=\prod_{k=0}^n(x-\tilde{x}_k)$ be the $n^{th}$-order Chebyshev polynomial, where $\tilde{x}_k$ are the $n^{th}$-order Chebyshev nodes. Then $T_n(x)$ satisfies: \begin{enumerate}
+        \item $\underline{T_n(x)=2^{-n}\cos\bigg((n+1)\arccos(x)\bigg)}\;\forall\;x\in(-1,1)$
+        \item The $T_n$'s are recursive: \underline{$T_{n+1}(x)=xT_n(x)-\frac{1}{4}T_{n-1}(x)$}
+    \end{enumerate}
+\end{theorem}
+
+\newpage
+\newp
+\ulbf{Cubic Splines}
+
+\newp
+\begin{whitebox}
+    A \term{cubic spline} for a function $f$ on $[a,b]$ (with nodes $a=x_0<x_1<\hdots<x_n=b$) is a function $S(x)$ satisfying: \begin{enumerate}
+        \item \textbf{Piecewise Cubic Polynomial}: on each subinterval $I_j=[x_j,x_{j+1}]$ for $j=0,1,\hdots,n-1$, $S(x)$ is a cubic polynomial of the form (for $x\in I_j$): \begin{eqnbox}
+            S(x)=S_j(x)=a_j+b_j(x-x_j)+c_j(x-x_j)^2+d_j(x-x_j)^3
+        \end{eqnbox}
+        \item \textbf{Interpolation}: $S(x)$ satisfies $S(x_j)=f(x_j)$ for $j=0,1,\hdots,n$
+        \item \textbf{Continuity \& Differentiability}: $S(x)$ is continuous and has continuous $1^{st}$ \& $2^{nd}$ derivatives
+    \end{enumerate}
+\end{whitebox}
+
+\newp
+\textbf{Boundary conditions}: Need 2 addl. constraints to obtain $(4n)\times(4n)$ linear system: \begin{enumerate}
+    \item \textbf{Natural boundary condition}: $S''(x_0)=S''(x_n)=0$
+    \item \textbf{Clamped boundary condition}: For $f'(x_0),f'(x_n)$ known: $S'(x_0)=f'(x_0)$, $S'(x_n)=f'(x_n)$
+\end{enumerate}
+
+\newp
+\textbf{Constraints}: \begin{enumerate}
+    \item Interpolation: $S_j(x_j)=f(x_j)$, $S_{j+1}(x_{j+))}=f(x_{j+1})$ for $j=0,1,\hdots,n-1$ [$(n+1)$-many]
+    \item $S(x)\in\mathcal{C}^2$: $S_j^{(k)}(x_{j+1})=S_{j+1}^{(k)}(x_{j+1})$ for $j=0,\hdots,n-2$ and $k=0,1,2$ [$3\times(n-1)$-many]
+    \item Boundary conditions: 2
+\end{enumerate}
+\pstart$\to$ \textbf{Theorem}: The spline interpolant is unique.
+
+\pagebreak
+\section{Numerical Differentiation}
+\textbf{First-order methods}: Evaluate limit defn. of derivative for finite $h$: \begin{align*}
+    \text{\textbf{Forward diff}: } f'(x_0)\approx\frac{f(x_0+h)-f(x_0)}{h},\quad\text{\textbf{backward diff}: }f'(x_0)\approx\frac{f(x_0)-f(x_0-h)}{h}
+\end{align*}
+\begin{itemize}
+    \item \textit{Error}: $\frac{f(x_0+h)-f(x_0)}{h}=f'(x_0)+\frac{h}{2}f''(\xi)$ [$\xi\in[x_0,x_0+h]$, by Taylor] $\to$ $e\leq\frac{h}{2}M$ for $f'\leq M$
+\end{itemize}
+
+\newp
+\textbf{Second-order methods}: Difference of finite difference equations \begin{align*}
+    \to\text{ \textbf{Central difference}: }\frac{f(x_0+h)-f(x_0-h)}{2h}=f'(x_0)+\frac{f^{(3)}(\xi_1)f^{(3)}(\xi_2)}{12}h^2\quad[\text{O($h^2$)}]
+\end{align*}
+
+\newp
+\textbf{Richardson extrapolation}: Combine low-order formulas (with different $h$) to generate higher-order results \begin{itemize}
+    \item Based on Taylor: want to cancel lower-order terms in formulas' error expressions
+    \item R.E. for forward difference [$2D_{\frac{h}{2}}^+f(x_0)-D_h^+f(x_0)$]: \begin{eqnbox}
+        \frac{-f(x_0+h)+4f(x_0+\frac{h}{2})-3f(x_0)}{h}=f'(x_0)+\frac{1}{6}h^2\left(\frac{1}{2}f^{(3)}(\xi_2)-f^{(3)}(\xi_1)\right)
+    \end{eqnbox} 
+\end{itemize}
+
+\newp
+\textbf{Differentiation round-off error}: $\tilde{f}(x)=f(x)+e(x)$ \begin{align*}
+    \implies\abs{f'(x_0)-\frac{\tilde{f}(x_0+h)-\tilde{f}(x_0-h)}{2h}}\leq\frac{\epsilon}{h}+\frac{h^2}{6}M\quad[\text{assuming } e(x)\leq\epsilon,\;f^{(3)}\leq M]
+\end{align*}
+
+
+\newpage
+\section{Numerical Integration}
+\textbf{Numerical Quadrature}: Approximate $\int_a^bf(x)dx$ by a discrete weighted sum of $f(x_i)$s: \begin{align*}
+    \int_a^bf(x)dx\approx\sum_{i=0}^Nw_if(x_i)
+\end{align*}
+
+\newp
+\textbf{Weighted MVT}: Let $h\in C(a,b)$ and $g$ integrable on $(a,b)$. If $g(x)$ does not change sign on $[a,b]$, then $\exists$ $c\in(a,b)$ s.t. $\int_a^bh(x)g(x)dx=h(c)\int_a^bg(x)dx$
+
+\newp
+\term{Newton-Cotes}: Approximate $f(x)$ by its Lagrange polynomial $P(x)$ \begin{enumerate}
+    \item \textbf{Trapezoidal Rule} [2 points]: \begin{align*}
+        \int_a^bf(x)dx=\left[\frac{h}{2}f(a)+\frac{h}{2}f(b)\right]-\frac{h^3}{12}f''(c)
+    \end{align*}
+    \item \textbf{Simpson's Rule} [3 equispaced points]: $\int_a^bf(x)dx=\frac{h}{3}\left[f(x_0)+4f(x_1)+f(x_2)\right]-h^5\frac{f^{(4)}(\eta)}{90}$
+    \item \textbf{General Newton-Cotes}: Given $(n+1)$ equispaced points $a=x_0<\hdots<x_n=b$: \begin{eqnbox}
+        \int_a^bf(x)dx\approx\sum_{i=0}^nw_if(x_i)\text{ with }w_i=\int_a^bL_i(x)dx=\int_a^b\prod_{\substack{j=0 \\ j\neq i}}^a\frac{x-x_j}{x_i-x_j}dx
+    \end{eqnbox}
+\end{enumerate}
+
+\newp
+\textbf{Degree of precision}: Largest integer $n$ for which a formula is exact for $x^k\;\forall\;k=0,1,\hdots,n$ [i.e. $E[x^k]=0$ for $k=0,1,\hdots,n$, but $E[x^{n+1}]\neq0$]. \begin{itemize}
+    \item Trapezoidal Rule: 2nd order, degree of precision 1
+    \item Simpson's Rule: 4th order, degree of precision 3
+    \item Newton-Cotes: $(n+1)$ nodes $\to$ degree of exactness $n$
+\end{itemize}
+
+\newp
+\textbf{Composite Numerical Integration}: Higher-order Newton-Cotes susceptible to Runge's phenomenon $\to$ use lower-order Newton-Cotes on subintervals \begin{align*}
+    \int_a^bf=\int_{x_0}^{x_1}f+\int_{x_1}^{x_2}f+\hdots+\int_{x_{n-1}}^{x_n}f
+\end{align*}
+\begin{itemize}
+    \item Composite Trapezoidal Rule [$x_i=x_0+ih$]: \begin{align*}
+        \int_a^bf(x)dx=\sum_{i=0}^{n-1}\int_{x_i}^{x_{i+1}}f(x)dx=\frac{h}{2}\left(f(a)+2\sum_{i=0}^{n-1}f(x_i)+f(b)\right)-\frac{h^2}{12}(b-a)f''(\xi)
+    \end{align*}
+    \item Composite Simpson's Rule: \begin{align*}
+        \int_a^bf(x)dx=\frac{h}{3}\left(f(a)+2\sum_{i=1}^{\frac{n}{2}-1}f(x_{2i})+4\sum_{i=1}^{\frac{n}{2}}f(x_{2i-1})+f(b)\right)-\frac{h^4}{180}(b-a)f^{(4)}(\xi)
+    \end{align*}
+    \item Round-off error: $e(h)\leq(b-a)\epsilon=hn\epsilon$ [stable as $h\to0$]
+\end{itemize}
+
+\newp
+\textbf{Motivation (Gaussian Quadrature)}: Want to find $n$ nodes $x_i$ and weights $c_i$ such that the formula $\int_{-1}^1f(x)dx\approx\sum_{i=1}^nw_if(x_i)$ is exact for polynomials of degree $\leq 2n-1$
+
+\newp
+\textbf{Orthogonal Polynomials}: Define the inner product of functions on $[-1,1]$ by \begin{eqnbox}
+    \inner{f}{g}=\int_{-1}^1f(x)g(x)dx
+\end{eqnbox}
+$\to$ Two functions $f,g$ are \term{orthogonal} if $\inner{f}{g}=0$.
+
+\newp
+\textbf{Recall (Gram-Schmidt)}: The vector project of a vector $v$ onto a vector $u$ is defined by: \begin{eqnbox}
+    \text{proj}_u(v)=\frac{\inner{v}{u}}{\inner{u}{u}}u
+\end{eqnbox}
+$\to$ Given vectors $v_1,v_2,\hdots$, the \term{Gram-Schmidt} finds $u_1,u_2,\hdots$ orthogonal by: \begin{eqnbox}
+    u_i=v_i-\text{proj}_{u_1}(v_1)-\hdots-\text{proj}_{u_{i-1}}(v_{i-1})
+\end{eqnbox}
+
+\newp
+\textbf{Legendre Polynomials}: The \term{Legendre polynomials} are the set of orthogonal polynomials obtained from performing the Gram-Schmidt process on $\set{1,x,x^2,\hdots}$; ex: \begin{align*}
+    p_0(x)=1;\quad p_1(x)=x;\quad p_2(x)=\frac{3x^2-1}{2};\quad p_3(x)=\frac{5x^3-3x}{2}
+\end{align*}
+
+\newp
+\begin{whitebox}
+    \ulbf{Gaussian Quadrature}: Let $\set{x_i}_{i=1}^n$ be the roots of the $n$-degree Legendre polynomial (assumed real, distinct). Then the Gaussian quadrature rule is: \begin{align*}
+        \int_{-1}^1f(x)dx\approx\sum_{i=1}^nw_if(x_i)\text{ with weights }w_i=\int_{-1}^1\prod_{\substack{j=1 \\ j\neq i}}^n\frac{x-x_j}{x_i-x_j}\text{ for $i=1,2,\hdots,n$}
+    \end{align*}
+\end{whitebox}
+\begin{itemize}
+    \item Weights based on Lagrange polynomial; Gaussian quadrature exact for $f\in\mathbb{P}_{2n-1}$
+    \item Error term: for some $\xi\in[a,b]$, $\frac{(b-a)^{2n+1}(n!)^4}{(2n+1)[2n!]^3}f^{(2n)}(\xi)$
+    \item Convert unbounded domains into bounded: via change of variables
+
+    Ex: $\int_0^\infty e^{-x^2}dx$ $\to$ change of vars with $z=\frac{x}{1+x}$ [$z(0)=0,z(\infty)=1$]
+\end{itemize}
+
+
+\newpage
+\section{Direct Methods for Solving Linear Systems}
+\begin{whitebox}
+    \textbf{Gaussian Elimination}: Solve $Ax=b$ [$A$ invertible] via 2-phase process: \begin{enumerate}
+        \item Transform $Ax=b$ into a new system $Ux=y$, where $U$ is upper-triangular \begin{itemize}
+            \item Notation: Eliminate $x_i$ by $(E_j-\frac{a_{ji}}{a_{ii}}E_i)\to(E_j)$ for $j=i+1,i+2,\hdots,n$
+        \end{itemize}
+        \item Solve $Ux=y$ via backward substitution
+    \end{enumerate}
+\end{whitebox}
+
+\newp
+\textbf{Cost of G.E.: \underline{O($n^3$)}} \begin{enumerate}
+    \item \textbf{Variable elimination}: O($n^3$) \begin{itemize}
+        \item One variable: $(n-i)$ divisions, $(n-i)(n-i+1)$ multiplications \& subtractions
+        \item Over $n$ variables: $\frac{2n^3+3n^2-5n}{6}$ mult/div, $\frac{n^3-n}{3}$ add/subtract
+    \end{itemize}
+    \item \textbf{Backward substitution}: O($n^2$) \begin{itemize}
+        \item One variable: $(n-i)$ multiplications, $(n-i+1)$ adds, 1 div \& 1 subtract
+        \item Total: $\frac{1}{2}(n^2+n)$ mult/div, $\frac{1}{2}(n^2-n)$ add/subtract
+    \end{itemize}
+\end{enumerate}
+
+\newp
+\textbf{Partial Pivoting}: To avoid round-off error: to choose which variable to eliminate, select the row $E_p$ [$p\geq i$] with largest $\abs{a_{pi}}$, then swap $E_p$ with $E_i$ and eliminate $x_i'=x_p$ \begin{itemize}
+    \item Round-off error: From dividing by small or subtracting nearly-equal
+\end{itemize}
+
+\newp
+\textbf{LU Decomposition}: Factor $A=LU$ [$L,U$ lower- and upper-$\Delta$], then solve $LUx=b$ via (i) $Ly=b$ into (ii) $Ux=y$, using forward/backward substitution
+\begin{itemize}
+    \item Gaussian Elimination: Compute \begin{align*}
+        A^{(n)}x=M^{(n-1)}M^{(n-2)}\hdots M^{(2)}M^{(1)}x=b^{(n)}=M^{(n-1)}M^{(n-2)}\hdots M^{(2)}M^{(1)}b
+    \end{align*}
+    \item \textbf{LU Factorization}: \begin{eqnbox}
+        L=(M^{(1)})^{-1}(M^{(2)})^{-1}\hdots(M^{(n)})^{-1},\quad U=A^{(n)}
+    \end{eqnbox}
+    \item Inverting Gaussian transformation matrices: \begin{align*}
+        M^{(i)}=\begin{pmatrix}
+            1 \\ 
+            & \ddots \\
+            & & 1 \\
+            & & -m_{i+1,i} & \ddots \\
+            & & \vdots & & \ddots \\
+            & & -m_{n,i} & & & 1
+        \end{pmatrix}\implies (M^{(i)})^{-1}=\begin{pmatrix}
+            1 \\ 
+            & \ddots \\
+            & & 1 \\
+            & & +m_{i+1,i} & \ddots \\
+            & & \vdots & & \ddots \\
+            & & +m_{n,i} & & & 1
+        \end{pmatrix}
+    \end{align*}
+    Overall $L$: \begin{align*}
+        \begin{pmatrix}
+            1 & 0 & \hdots & 0 \\
+            m_{21} & 1 & \hdots & 0 \\
+            \vdots & \vdots & \ddots & \vdots \\
+            m_{n1} & m_{n2} & \hdots & 1
+        \end{pmatrix}
+    \end{align*}
+    \item With row swaps: $A=P^{-1}LU$
+    \item Cost of LU decomp.: $O(n^3)$ factor $\to$ O($n^2$) solve
+\end{itemize}
+
+\newp
+\ulbf{Special Matrices}
+
+\newp
+\textbf{Diagonally Dominant}: A matrix $A$ is diagonally dominant if: \begin{align*}
+    \abs{a_{ii}}\geq\sum_{\substack{j=1\\j\neq i}}^n\abs{a_{ij}}\text{ for $i=1,2,\hdots,n$}
+\end{align*} \begin{itemize}
+    \item \ul{Strictly} DD $\implies$ $A$ nonsingular, G.E. is numerically stable w.r.t. round-off and no swaps
+    \item ``Numerically stable'': Large divisors, unequal subtractands in all expressions
+\end{itemize}
+
+\newp
+\textbf{SPD}: A matrix $A$ is SPD if if its symmetric ($A^T=A$) and \begin{align*}
+    x^TAx>0\;\forall\;x\neq0 \quad[\text{Equiv.: All $\lambda$s$>0$}]
+\end{align*}
+$A$ SPD $\implies$ $A$ invertible, no row swaps needed for G.E.
+
+\newp
+\textbf{Cholesky factorization}: $A$ is SPD iff $\exists$ $L$ lower-$\Delta$ with positive diagonal entries s.t.: \begin{align*}
+    A=LL^T\quad[\text{$\leftarrow$ this is $A$'s LU decomp, $L^T=U$}]
+\end{align*}
+
+\begin{whitebox}
+    \ulbf{Cholesky Algorithm}
+    \begin{enumerate}
+        \item Set $l_{11}=\sqrt{a_{11}}$
+        \item For $j-2,\hdots,n$, set $l_{j1}=a_{j1}/l_{11}$
+        \item For $i=2,\hdots,n-1$: \begin{enumerate}
+            \item Set $l_{ii}=\sqrt{a_{ii}-\sum_{k=1}^{i-1}l_{ik}^2}$
+            \item For $j=i+1,\hdots,n$, set: \begin{align*}
+                l_{ji}=\frac{a_{ji}-\sum_{k=1}^{i-1}l_{jk}l_{ik}}{l_{ii}}
+            \end{align*}
+        \end{enumerate}
+        \item Set $l_{nn}=\sqrt{a_{nn}-\sum_{k=1}^{n-1}l_{nk}^2}$
+    \end{enumerate}
+    
+\end{whitebox}
+
+\newp
+Tridiagonal matrices: All entries zero except main diagonal and its two adjacent diagonals \begin{itemize}
+    \item $A$ tridiag $\implies$ can do GE, LU decomp in $O(n)$
+    \item LU factorization has $L$ zero except main/lower diags, $U$ zero except main/upper diags
+\end{itemize}
+
+\newpage
+\section{Indirect Methods for Solving Linear Systems}
+\textbf{Jacobi Method}: For $D,L,U$ diagonal, strictly lower-$\Delta$, strictly upper-$\Delta$ portions of $A$: \begin{eqnbox}
+    x^{(k+1)}=D^{-1}(b-(L+U)x^k), \quad\quad x^{(k+1)}_i=\frac{1}{a_{ii}}\left(b_i-\sum_{j\neq i}a_{ij}x_j^{(k)}\right)
+\end{eqnbox}
+\begin{itemize}
+    \item Requires nonzero diagonal entries (can ensure via row/column swaps)
+    \item Guaranteed convergence under certain conditions (e.g. $A$ strictly diagonally dominant)
+\end{itemize}
+
+\newp
+\textbf{Gauss-Seidel}: Use earlier components of $x^{(k+1)}$ to inform later ones: \begin{eqnbox}
+    x^{(k+1)}=(D+L)^{-1}(b-Ux^{(k)}),\quad\quad x_i^{(k+1)}=\frac{1}{a_{ii}}\left(b_i-\sum_{j<i}a_{ij}x_j^{(k+1)}+\sum_{j>i}a_{ij}x_j^{(k)}\right)
+\end{eqnbox}
+\begin{itemize}
+    \item Has some weaker convergence conditions (e.g. $A$ SPD)
+    \item \textbf{Successive Over-Relaxation/SOR}: Scales step size by $\omega$ [$x_{GS}^{(k+1)}$: GS iterate] \begin{align*}
+        x^{(k+1)}=(1-\omega)x^{(k)}+\omega x_{GS}^{(k+1)}
+    \end{align*} \begin{itemize}
+        \item $\omega=1$ is GS; $\omega<1$, $1<\omega<2$ under-/over-relaxation; $\omega>2$ is divergence
+    \end{itemize}
+\end{itemize}
+
+\newp
+\textbf{Convergence for Iterative Methods}: For matrix $A$ with eigenvalues $\lambda_1,\hdots,\lambda_n$, define \term{spectral radius} as $\rho(A)=\max\set{\abs{\lambda_1},\hdots,\abs{\lambda_n}}$
+
+\newp
+$\to$ \textit{Theorem}: $\rho(A)<1$ iff $\lim_{k\to\infty}A^k=0$ \begin{itemize}
+    \item Iterative methods: $x^{(k+1)}=Bx^{(k)}+g\implies e^{(k+1)}=Be^{(k)}\implies e^{(k)}=B^ke^{(0)}$ [$e^{(k)}=x^{(k)-x^\ast}$]
+
+    Converges for arbitrary $x^{(0)}$ iff $\lim_{k\to\infty}B^k=0\Longleftrightarrow\underline{\rho(B)<1}$
+\end{itemize}
+
+\end{document}

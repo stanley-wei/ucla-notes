@@ -1,0 +1,333 @@
+\documentclass[12pt]{extarticle}
+\include{utils.sty}
+
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{#1\hrule\vspace*{-20pt}}
+
+% \usepackage[lmargin=0.3in,rmargin=0.3in,bmargin=0.3in,tmargin=0.3in]{geometry} % <- Shrunken sizing
+\usepackage[lmargin=0.7in,rmargin=0.7in,tmargin=0.7in,bmargin=0.7in]{geometry}
+\pagenumbering{gobble}
+
+\begin{document}
+
+% \pstart Stanley Wei
+
+\begin{center}
+    \begin{Large}
+        \textbf{Math 155: Mathematical Imaging}
+    \end{Large}
+    
+    \begin{large}
+        \vspace{8pt}
+        Prof. F. Han $\vert$ Winter 2025
+    \end{large}
+\end{center}
+\tableofcontents
+
+
+\newpage
+\section{Overview}
+\textit{Image acquisition model}: Based on illumination (light) \& reflectance (material/object properties): \begin{align*}
+    f(x,y)=i(x,y)\cdot r(x,y)
+\end{align*}
+2 main types of image processing: \begin{enumerate}
+    \item \textbf{Spatial domain}: Operates on pixels directly \begin{enumerate}
+        \item \ul{Intensity transformation}: Operates on single pixels (pointwise), $T:\naturals\to\naturals$
+        \item \ul{Spatial filtering}: Operates on ($m\times n$) neighborhoods of pixels, $H:\naturals^{m\times n}\to\naturals$
+    \end{enumerate}
+    \item \textbf{Frequency domain}: Transform to \& process in frequency domain
+\end{enumerate}
+\textbf{PDF Properties}: \begin{enumerate}
+    \item $p_r(r)\geq0\;\forall\;r\in\reals$; $\int_{-\infty}^\infty p_r(r)dr=1$
+\end{enumerate}
+
+\section{Intensity Transformations}
+\textbf{Basic transformations}: Image negatives [$s=(L-1)-r$], piecewise linear \begin{itemize}
+    \item Log/exp [$s=c\cdot\log(1-r)$]: Expands range of dark/light pixels, respectively
+    \item Power law/gamma [$s=c\cdot r^\gamma$]:$\gamma\in(0,1)$ expands dark pixels; $\gamma>1$ compresses dark pixels
+\end{itemize}
+
+\pstart
+\ulbf{Histogram Processing}: For $r_k=0,1,\hdots,L-1$: \begin{gatherbox}
+    \textbf{Histogram: } h(r_k)=\sum_{x=0}^{M-1}\sum_{y=0}^{M-1}\mathcal{I}(f(x,y)=r_k) \\[4pt]
+    \textbf{Normalized: } p(r_k)=\frac{h(r_k)}{MN}
+\end{gatherbox}
+
+\pstart
+\textbf{Histogram Equalization}: \begin{eqnbox}
+    s=T(r)=(L-1)\cdot\int_0^rp_r(w)dw\quad\left[(L-1)\cdot\sum_{j=0}^kp(r_j)\right]
+\end{eqnbox}
+\begin{itemize}
+    \item Stipulations: $T$ is monotonically increasing, $0\leq T(r)\leq L-1$
+    \item $p_s(s)\sim$ Uniform($0, L-1$) for $p_r$ continuous
+    \item Proof: Via that $\abs{p_r(r)dr}=\abs{p_s(s)ds}\implies p_s(s)=p_r(r)\abs{\frac{dr}{ds}}$
+\end{itemize}
+
+\newp
+\textbf{Histogram Matching}: \begin{enumerate}
+    \item Apply histogram equalization to the source $r$ to get $s=T(r)\sim$ Uniform($0,L-1
+    $)
+    \item Apply histogram equalization to the target $z$ to get $s'=G(z)\sim$ Uniform($0,L-1
+    $)
+    \item \ul{Final transformation}: $z=G^{-1}(T(r))$
+\end{enumerate}
+
+\newp
+\textbf{Histogram Statistics}: \begin{align*}
+    \text{\ul{Mean}: }m=\sum_{i=0}^{L-1}r_ip(r_i)\;;\quad\text{\ul{$n^{th}$ moment}: }\mu_n(r)=\sum_{i=0}^{L-1}(r_i-m)^np(r_i)&&\left[\text{Variance: }\mu_2(r)\right]
+\end{align*}
+
+
+\section{Spatial Filtering}
+\textbf{Linear Spatial Filtering}: On neighborhoods $\set{f(x+s,y+t):-a\leq s\leq a,-b\leq s\leq b}$: \begin{eqnbox}
+    g(x,y)=\sum_{s=-a}^a\sum_{t=-b}^tw(s,t)f(x+s,y+t)
+\end{eqnbox}
+\begin{itemize}
+    \item $(2a+1)\times(2b+1)$ kernel $\to$ $a$ rows of padding on top \& bottom, $b$ columns on left \& right
+\end{itemize}
+
+\newp
+\textbf{Smoothing Filters}: Blur images for noise reduction; larger mask $\to$ more blurring, typically \begin{enumerate}
+    \item Weighted average filter: $g(x,y)=\frac{\sum_{s}\sum_{t}v(s,t)f(x+s,y+t)}{\sum_{s}\sum_{t}v(s,t)}$
+    \item Order-statistic filters (nonlinear): Median/max/min filters (good for salt \& pepper)
+\end{enumerate}
+
+\newp
+\textbf{Sharpening Filters}: Highlight transitions in intensity; compute using 2D discrete Laplacian [limit definition of the derivative evaluated at $h=1$, $\delta=1$]: \begin{eqnbox}
+    \Delta f(x,y)=\frac{\partial^2f}{\partial x^2}+\frac{\partial^2f}{\partial y^2}=f(x+1,y)+f(x,y+1)+f(x-1,y)+f(x,y-1)-4f(x,y)
+\end{eqnbox} \\[-32pt]
+\begin{gather*}
+    \to\;\text{\textbf{Composite Laplacian} (sharpened image): } g(x,y)=f(x,y)-\Delta f(x,y)
+\end{gather*}
+
+\newp
+\textbf{Unsharp Masking}: Use blurring to sharpen images \begin{enumerate}
+    \item Blur the original image $f$ to obtain a blurred image $\bar{f}$
+    \item Take $g_{mask}(x,y)=f(x,y)-\bar{f}(x,y)$
+    \item For $k\geq0$ [scaling factor], take $g(x,y)=f(x,y)+k\cdot g_{mask}(x,y)$
+\end{enumerate}
+
+\newp
+($\ast$) Gradients for image sharpening: use $g(x,y)=\abs{\nabla f}$ (various formulas; ex: central difference)
+
+
+\section{Frequency-Domain Filtering}
+\subsection{Background}
+\textbf{Euler's formula}: $e^{i\theta}=\cos(\theta)+i\sin(\theta)$
+
+\newp
+\textbf{Complex Functions}: $\bar{F(u)}=R(u)-iI(u)$; $\abs{F(u)}^2=R(u)^2+I(u)^2$
+
+\newp
+\ulbf{The Impulse Function}: \begin{eqnbox}
+    \delta(t)=\begin{cases}
+        \infty & t=0 \\ 0 & t\neq0
+    \end{cases}
+\end{eqnbox}
+\textbf{Properties}: \begin{itemize}
+    \item Integral: $\int_{-\infty}^\infty \delta(t)dt=1$
+    \item \term{Sifting property}: $\int_{-\infty}^\infty f(t)\delta(t-t_0)dt=f(t_0)$
+    \item Variations: continuous/discrete, 1D/2D
+\end{itemize}
+
+\newp
+\textbf{Fourier Series}: \begin{align*}
+    f_T(t)=\sum_{n=-\infty}^\infty c_ne^{i2\pi nt/T} \text{, where } c_n=\frac{1}{T}\int_{-T/2}^{T/2}f_t(t)e^{-i2\pi nt/T}dt \text{ [for $n=0,\pm1,\pm2,\hdots$]}
+\end{align*}
+
+\newp
+\begin{whitebox}
+    \ulbf{Fourier Transform} [$t\to\omega$]: \begin{eqnbox}
+        F(\mu)=\fourier{f(t)}=\int_{-\infty}^\infty f(t)e^{-i2\pi\mu t}dt \quad\left[F(\mu)=\sum_{x=0}^{M-1}f(x)e^{-i2\pi\mu x/M}\right]
+    \end{eqnbox}
+
+    \newp
+    \ulbf{Inverse Fourier Transform} [$\omega\to t$]: \begin{eqnbox}
+        f(t)=\fourierinv{F(\mu)}=\int_{-\infty}^\infty F(\mu)e^{i2\pi\mu t}d\mu \quad\left[f(x)=\frac{1}{M}\sum_{\mu=0}^{M-1}F(\mu)e^{-2\pi\mu x/M}\right]
+    \end{eqnbox}
+\end{whitebox}
+
+\newp
+Fourier/frequency spectrum: $\abs{F(\mu)}=\sqrt{R(\mu)^2+I(\mu)^2}$
+
+\newp
+2D Fourier transform (continuous \& discrete): \begin{align*}
+    F(\mu,\nu)=\int_{-\infty}^\infty\int_{-\infty}^\infty f(t,z)e^{-i2\pi(\mu t+\nu z)dtdz}\quad F(\mu,\nu)=\sum_{x=0}^{M-1}\sum_{y=0}^{N-1}f(x,y)e^{-i2\pi(\mu x/M+\nu y/N
+    )}
+\end{align*}
+
+\pstart
+2D IFT: \begin{align*}
+    f(t,z)=\int_{-\infty}^\infty\int_{-\infty}^\infty F(\mu,\nu)e^{i2\pi(\mu t+\nu z)}d\mu d\nu \quad f(x,y)=\frac{1}{MN}\sum_{\mu=0}^{M-1}\sum_{\nu=0}^{N-1}F(\mu,\nu)e^{i2\pi(\mu x/M+\nu y/N)}
+\end{align*}
+
+\pstart
+\textbf{Periodicity of the DFT}: $F(\mu,\nu)=F(\mu+k_1 M,\nu+k_2N)$; $f(x,y)=f(x+k_1M,y+k_2N)$ \begin{itemize}
+    \item Periodic with periods $M$, $N$
+\end{itemize}
+
+\newp
+\begin{whitebox}
+    \textbf{Convolution} (associative, commutative, distributive): \begin{eqnbox}
+        (f\ast h)(t)=\int_{-\infty}^{\infty}f(\tau)h(t-\tau)d\tau \quad\left[\sum_{m=0}^{M-1}f(m)\cdot h(x-m)\right]
+    \end{eqnbox}
+
+    ~\\
+    $\longrightarrow$ \textbf{Convolution Theorem}: $\fourier{f\ast h}=\fourier{f}\cdot\fourier{h}$, $\fourier{f\cdot h}=\fourier{f}\ast\fourier{h}$
+\end{whitebox}
+\begin{itemize}
+    \item 2D convolution: \begin{align*}
+        [f\ast h](t,z)=\int_{-\infty}^\infty\int_{-\infty}^\infty f(t,\xi)h(t-\tau,z-\xi)d\tau d\xi \quad [f\ast h](x,y)=\sum_{m=0}^{M-1}\sum_{n=0}^{N-1}f(m,n)h(x-m,y-n)
+    \end{align*}
+\end{itemize}
+
+\newp
+\ulbf{Fourier Transform - Additional Properties}
+\begin{itemize}
+    \item $\fourier{\delta(t,z)}=1$
+    \item $F(0,0)=MNf_{\text{mean}}$
+    \item \textbf{Translation Properties}: \begin{enumerate}
+        \item $f(x,y)e^{i2\pi(\mu_0x/M+\nu_0y/M)}\Longleftrightarrow F(\mu-\mu_0,\nu-\nu_0)$
+        \item $f(x-x_0,y-y_0)\Longleftrightarrow F(\mu,\nu)e^{-i2\pi(\mu x_0/M+\nu y_0/N)}$
+    \end{enumerate}
+    \item \textbf{Conjugate Symmetric Property}: If $f(x,y)$ is real, then $\overline{F(\mu,\nu)}=F(-\mu,-\nu)$
+    \item Polar coordinates: $f(r,\theta+\theta_0)=F(w,\phi+\theta_0)$
+    \item[($\ast$)] Separability of the DFT: $F(\mu,\nu)=\sum_{x=0}^{M-1}F(x,\nu)e^{-2\pi i\mu x/M}$ [sum of 1D DFTs]
+\end{itemize}
+
+\subsection{Frequency-Domain Filtering}
+\textbf{Motivations}: \begin{itemize}
+    \item Low-frequency components correspond to slowly-varying regions (i.e. smooth regions); high-frequency components correspond to fast-varying components (e.g. noise, edges)
+    \item Filtering in frequency domain can be faster than in spatial domain
+    \item Can express symmetric linear spatial filters as frequency-domain filters
+\end{itemize}
+\textbf{Frequency Filtering}: \begin{eqnbox}
+    g(x,y)=(-1)^{x+y}\cdot\text{Real}\left\{\text{IDFT}\left[H(\mu,\nu)\cdot\fourier{(-1)^{x+y}f(x,y)}\right]\right\}
+\end{eqnbox}
+\begin{itemize}
+    \item $\fourier{f(x,y)(-1)^{x+y}}=F(\mu-M/2,\nu-N/2)$ [same for $H$], shifts $(0,0)$ from corner to center
+    \item Lowpass (smoothing)/highpass (sharpening): Bandwidth $D_0$ [larger $\to$ less filtering]
+    \item $H_{\text{highpass}}=1-H_{\text{lowpass}}$; $H_{BR}=1-H_{BP}$, $H_{NR}=1-H_{NP}$
+    \item Notch reject filters: $H_{NR}=\prod_{k=1}^NH_{NR}{(k)}(\mu,\nu)H_{NR}{(-k)}(\mu,\nu)$, for spatially dependent noise
+\end{itemize}
+2D continuous Laplacian filter: $\fourier{\Delta f}=-4\pi^2(\mu^2+\nu^2)F(\mu,\nu)$ \begin{itemize}
+    \item Using that: $f(x,y)=\int\int F(\mu,\nu)e^{2\pi i(\mu x+\nu y)}d\mu d\nu\implies\frac{\partial^n}{\partial x^n}f=(2\pi i\mu)^n\int\int F(\mu,\nu)e^{2\pi i(\mu x+\nu y)}d\mu d\nu$
+\end{itemize}
+
+\newp
+Homomorphic filtering: $f(x,y)=i(x,y)\cdot r(x,y)\implies z(x,y):=\ln[f(x,y)]=\ln[i(x,y)]+\ln[r(x,y)]\implies \fourier{z(x,y)}=\fourier{\ln[i(x,y)]}+\fourier{\ln[r(x,y)]}$ \begin{itemize}
+    \item $S=H\cdot Z=H\cdot F_i+H\cdot F_r\implies s=i'+r'=\ln(g(x,y))\implies g=e^s=e^{i'}e^{r'}$
+\end{itemize}
+
+
+\section{Image Restoration}
+\textbf{Image Degradation Model}: \begin{eqnbox}
+    g(x,y)=h(x,y)\ast f(x,y)+\eta(x,y)\Longleftrightarrow G(\mu,\nu)=H(\mu,\nu)F(\mu,\nu)+N(\mu,\nu)
+\end{eqnbox}
+\begin{itemize}
+    \item $g$ [output] = $h$ [degradation] $\ast f$ [original] $+\eta$ [noise]
+\end{itemize}
+
+\newp
+\textbf{Estimation of Noise Parameters}: \begin{enumerate}
+    \item Find a subregion $S$ of the image with relatively constant background intensity
+    \item Generate the histogram of $S$ and compare it with known probability density functions \begin{itemize}
+        \item For impulse noise: instead, look at probabilities of black \& white pixels, respectively
+    \end{itemize}
+    \item Estimate the mean and variance $\longrightarrow$ use to estimate the noise parameters
+\end{enumerate}
+
+\newp
+\textbf{Image Restoration with Spatial Filtering}: 
+
+\newp
+For spatially-invariant noise (noise is indep. of coords $(x,y)$, uncorrelated with image $f(x,y)$):
+\begin{itemize}
+    \item Arithmetic, geometric mean filters
+    \item Order-statistic: Median, min/max, midpoint (avg of min/max), alpha-trimmed (average of subset of neighborhood; delete $d/2$ highest \& lowest intensities; extremes: arith mean, median)
+    \item \textit{Harmonic mean filter}: $\hat{f}(x,y)=mn/\left[\sum_{s,t}1/g(s,t)\right]$ \begin{itemize}
+        \item Good for salt noise ($1/g(s,t)$ small), but not pepper noise ($1/g(s,t)$ large)
+    \end{itemize}
+    \item \textit{Contraharmonic mean filter}: $\hat{f}(x,y)=\left[\sum_{s,t}g(s,t)^{Q+1}\right]/\left[\sum_{s,t}g(s,t)^{Q}\right]$ \begin{itemize}
+        \item $Q>0$ for pepper noise; $Q<1$ for salt noise
+    \end{itemize}
+\end{itemize}
+
+\newp
+\textbf{Image Restoration with Frequency-Domain Filtering}
+Spatially-dependent periodic noise: \begin{align*}
+    \fourier{\sin(2\pi\mu_0x+2\pi\nu_0y)}=\frac{iMN}{2}\left[\delta(\mu+\mu_0,\nu+\nu_0)-\delta(\mu-\mu_0,\nu-\nu_0)\right]
+\end{align*}
+\begin{itemize}
+    \item Shifted: impulses at $(\mu/2-\mu_0,\nu/2-\nu_0),(\mu/2+\mu_0,\nu/2+\nu_0)$ $\to$ use notch reject filter to remove
+\end{itemize}
+
+\newp
+\textbf{Estimating the Degradation Function}
+\begin{enumerate}
+    \item By observation: Find subimage $s$ where $\eta\approx0$, use sharpening filter to obtain unblurred subimage $\hat{f}$ (within $s$), use $H_s=G_s/\hat{f}$ to approximate $H$ for entire image
+    \item By experimentation: Given source used to acquire degraded image, obtain degradation $g$ of a small dot of light $f=A\delta(x,y)$; use $F,G$ to compute degradation f'n $H$
+    \item By modeling: based on physical parameters
+
+    Blurring from linear motion: \begin{align*}
+        g(x,y)=\int_0^Tf(x-x_0(t),y-y_0(t))dt\implies G(\mu,\nu)=F(\mu,\nu)\int_0^Te^{2\pi i(\mu x_0(t)+\nu y_0(t))}dt
+    \end{align*}
+    For uniform linear motion [$x_0(t)=at/T,y_0(t)=bt/T$]: \begin{align*}
+        H=\frac{T}{\pi(\mu a+\nu b)}\sin\left(\pi(\mu a+\nu b)\right)e^{-i\pi(\mu a+\nu b)}
+    \end{align*}
+\end{enumerate}
+
+\newp
+\textbf{Frequency-Domain Filtering}
+\begin{itemize}
+    \item Inverse filtering: $\hat{F}(\mu,\nu)=G(\mu,\nu)/H(\mu,\nu)$, assumes $\eta$ negligible
+    \begin{itemize}
+        \item Approximation suffers when noise is significant (divide by small $H$) $\to$ use a lowpass filter to suppress high-frequency noise
+    \end{itemize}
+    \item Wiener/min-MSE filtering: Minimizes $\abs{f-\hat{f}}$ MSE [average over all $(x,y)$] \begin{itemize}
+        \item Assumes $\hat{F}_{opt}=WG$ for some $W$ linear (want to find), either $F$ or $N$ mean 0, we know $H$, noise $\eta$ \& image $f$ are uncorrelated
+        \item Plancherel's theorem: \begin{align*}
+            \int_\reals\int_{\reals}\abs{f}^2dxdy=\int_\reals\int_\reals\abs{F}^2d\mu d\nu\quad\sum_{x=0}^{M-1}\sum_{y=0}^{N-1}\abs{f}^2=\frac{1}{MN}\sum\sum\abs{F}^2
+        \end{align*}
+        \item Rewrite filters $W(\mu,\nu)=R_W(\mu,\nu)+iI_W(\mu,\nu)$, take partials of MSE w.r.t. $R_W$, $I_W$
+        \item Final result: \begin{align*}
+            W=\frac{1}{H}\cdot\frac{\abs{H}}{\abs{H}^2+S_\eta/S_F}\;\left[\text{approx. $S_\eta/S_f$ by $k$; $k=0$ gives direct inverse filter}\right]
+        \end{align*}
+    \end{itemize}
+    \item Constrained least-squares: find $\hat{f}=\min_f\gamma\norm{\Delta f}_2^2+\norm{g-h\ast f}_2^2$ \begin{itemize}
+        \item Unconstrained reformulation of orig. constrained optimization: \begin{align*}
+            \min_f&\;\norm{\Delta f}_2^2\text{ subject to }\norm{g-h\ast\hat{f}}_2^2=\norm{\eta}_2^2
+        \end{align*}
+        \begin{itemize}
+            \item Have a constraint; ``best solution'' is $\hat{f}$ maximally smooth [min Laplacian 2-norm]
+        \end{itemize}
+        \item Same method as prev. (Plancherel's $+$ minimize $\hat{F}$ over real/imaginary separately)
+        \item Final result ($P$: FT of Laplacian): \begin{align*}
+            \hat{F}(\mu,\nu)=\left[\frac{1}{H}\cdot\frac{\abs{H}}{\abs{H}^2+\gamma\abs{P}^2}\right]G
+        \end{align*}
+        \item Connection with mean/variance: \begin{align*}
+            \norm{\eta}^2=\sum_{x=1}^{M}\sum_{y=1}^N\underbrace{\left[(\eta(x,y)-\bar{\eta})^2+2\eta(x,y)\bar{\eta}-\bar{\eta}^2\right]}_{\eta(x,y)^2}=MN(\sigma^2_\eta+\bar{\eta}^2)
+        \end{align*}
+    \end{itemize}
+\end{itemize}
+
+
+\section{Color Image Processing}
+RGB: $f(x,y)=\Vec{c}(x,y)=[c_R(x,y),c_G(x,y),c_B(x,y)]$, point in Cartesian space; pixel depth: total \# bits/pixel \begin{itemize}
+    \item Per-component vs vector-based processing
+\end{itemize}
+
+\newp
+\textbf{HSI}: \begin{enumerate}
+    \item Intensity: $I=\frac{1}{3}(c_R+c_G+c_B)$, $\in[0,1]$
+    \item Saturation: $S=1-\min\set{c_r,c_g,c_B}/I$, $\in[0,1]$ (0=gray, 1=pure)
+    \item Hue (angle $\in[0,360]$): \begin{align*}
+        \theta=\arccos\left(\frac{(c_R-c_G)+(c_R-c_B)}{2\sqrt{(c_R-c_B)^2+(c_R-c_B)(c_G-c_B)}}\right)
+    \end{align*}
+\end{enumerate}
+
+\newp
+Can use grayscale processing techniques (histogram eq., smoothing) on intensity channel only for HSI $\to$ more efficient, less unwanted color alterations compared to RGB per-component \begin{itemize}
+    \item Complementary color: $H'=180+H$, liket grayscale negative, use for color image completion
+\end{itemize}
+
+\end{document}
